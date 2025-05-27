@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>予約管理（管理者用）</title>
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 30px;
+      background-color: #f0f8ff;
+    }
+    h1 {
+      color: #0277bd;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    button {
+      padding: 6px 12px;
+      background-color: #0288d1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0277bd;
+    }
+    #adminInfo {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>管理者用：予約一覧</h1>
+  <div id="adminInfo"></div>
+  <button id="logoutButton">ログアウト</button>
+
+  <table id="reservationsTable">
+    <thead>
+      <tr>
+        <th>日付</th>
+        <th>時間</th>
+        <th>部屋</th>
+        <th>名前</th>
+        <th>学籍番号</th>
+        <th>学年</th>
+        <th>メール</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    // Firebase 初期化
+    const firebaseConfig = {
+      apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+      authDomain: "yhasn-reserve.firebaseapp.com",
+      projectId: "yhasn-reserve",
+      storageBucket: "yhasn-reserve.appspot.com",
+      messagingSenderId: "406712332925",
+      appId: "1:406712332925:web:fb9253a313e4c76cfcb714"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const adminEmails = ["admin1@yhasn.ed.jp", "admin2@yhasn.ed.jp"]; // 管理者メールアドレスをここに追加
+
+// 一時的に誰でも見られるようにする（ログイン不要）
+loadReservations();
+
+    function loadReservations() {
+  const tbody = document.querySelector("#reservationsTable tbody");
+  tbody.innerHTML = "";
+
+  db.collection("reservations")
+    .orderBy("date", "desc")
+    .orderBy("time")
+    .get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        console.log("予約データなし");
+        tbody.innerHTML = "<tr><td colspan='8'>予約データがありません</td></tr>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.date}</td>
+          <td>${data.time}</td>
+          <td>${data.room}</td>
+          <td>${data.name}</td>
+          <td>${data.studentId}</td>
+          <td>${data.grade}</td>
+          <td>${data.email}</td>
+          <td><button data-id="${doc.id}">キャンセル</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          if (confirm("この予約をキャンセルしますか？")) {
+            db.collection("reservations").doc(id).delete().then(() => {
+              alert("キャンセルしました");
+              loadReservations();
+            }).catch(err => {
+              alert("キャンセルに失敗しました");
+              console.error(err);
+            });
+          }
+        });
+      });
+    })
+    .catch(err => {
+      console.error("読み込みエラー:", err);
+      tbody.innerHTML = "<tr><td colspan='8'>読み込みに失敗しました</td></tr>";
+    });
+}
+
+    document.getElementById("logoutButton").addEventListener("click", () => {
+      firebase.auth().signOut().then(() => {
+        alert("ログアウトしました");
+        location.href = "/";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>教室予約フォーム</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans JP', sans-serif;
+      background: linear-gradient(to bottom, #e0f7fa, #80deea);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+    }
+    h1 {
+      text-align: center;
+      color: #0277bd;
+    }
+    .container {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      padding: 30px;
+      width: 100%;
+      max-width: 900px;
+    }
+    label, p {
+      font-size: 16px;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #e1f5fe;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th {
+      height:200px;
+    }
+    th, td {
+      border: 1px solid #81d4fa;
+      padding: 12px;
+      text-align: center;
+      height: 40px;
+    }
+    td.disabled {
+      background-color: #b3e5fc;
+      color: #999;
+      cursor: not-allowed;
+    }
+    td.available {
+      background-color: #ffffff;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    td.available:hover {
+      background-color: #b2ebf2;
+    }
+    button {
+      background-color: #0288d1;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0277bd;
+    }
+    #dateControls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    #completeSection {
+      text-align: center;
+      margin-top: 30px;
+    }
+    #errorMsg {
+      color: red;
+      margin-top: 10px;
+    }
+    #loading {
+      text-align: center;
+      font-size: 24px;
+      color: #0277bd;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>教室予約フォーム</h1>
+
+    <div id="dateControls">
+      <button type="button" id="prevDayBtn">＜ 前の日</button>
+      <label id="dateLabel">日付を選択してください: <input type="text" id="date" required></label>
+      <button type="button" id="nextDayBtn">次の日 ＞</button>
+    </div>
+
+    <form id="reserveForm">
+  <div id="selectedDateDisplay" style="text-align:center; font-size:22px; font-weight:bold; margin:20px 0;"></div>
+  <div id="scheduleTable"></div>
+
+      <div id="reservationSection" style="display:none; margin-top:20px;">
+        <h2>予約確認</h2>
+        <p id="selectedInfo"></p>
+        <p><strong>学籍番号:</strong> <span id="studentIdDisplay"></span></p><br><br>
+        <label>学年:
+          <select id="grade" required>
+            <option value="">選択してください</option>
+            <option value="1年">1年</option>
+            <option value="2年">2年</option>
+            <option value="3年">3年</option>
+          </select>
+        </label><br><br>
+        <label>名前: <input type="text" id="name" required></label><br><br>
+        <button type="button" id="loginAndReserveButton">ログインして予約する</button>
+      </div>
+    </form>
+
+    <div style="text-align:center; margin-top:20px;">
+  <button type="button" id="loginButton">ログイン</button>
+  <button type="button" id="logoutButton" style="display:none;">ログアウト</button>
+  <p id="userEmail" style="margin-top:10px;"></p>
+</div>
+
+    <div id="completeSection" style="display:none;">
+      <h2>予約が完了しました！</h2>
+      <button id="backButton">予約ページへ戻る</button>
+    </div>
+
+    <div id="errorMsg"></div>
+    <div id="loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+    authDomain: "yhasn-reserve.firebaseapp.com",
+    projectId: "yhasn-reserve",
+    storageBucket: "yhasn-reserve.appspot.com",
+    messagingSenderId: "406712332925",
+    appId: "1:406712332925:web:fb9253a313e4c76cfcb714"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let currentUser = null;
+
+firebase.auth().onAuthStateChanged(user => {
+  currentUser = user;
+  const loginBtn = document.getElementById("loginButton");
+  const logoutBtn = document.getElementById("logoutButton");
+  const userEmail = document.getElementById("userEmail");
+
+    const reserveSection = document.getElementById("reservationSection");
+
+  if (user) {
+    reserveSection.style.display = "block";
+  } else {
+    reserveSection.style.display = "none";
+  }
+
+  if (user) {
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    userEmail.textContent = "ログイン中: " + user.email;
+    const email = user.email;
+const match = email.match(/^(\d{6,})@/);  // 6桁以上の数字にマッチ
+if (match) {
+  const studentIdField = document.getElementById("studentId");
+  studentIdField.value = match[1];  // 学番として入力
+}
+  } else {
+    loginBtn.style.display = "inline-block";
+    logoutBtn.style.display = "none";
+    userEmail.textContent = "";
+  }
+});
+
+  const holidays = {
+    "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
+    "2025-04-29": true, "2025-05-03": true, "2025-05-04": true, "2025-05-05": true,
+    "2025-07-21": true, "2025-08-11": true, "2025-09-15": true, "2025-09-23": true,
+    "2025-10-13": true, "2025-11-03": true, "2025-11-23": true, "2025-12-23": true
+  };
+
+  function addSubstituteHolidays(holidays) {
+    const holidayDates = Object.keys(holidays).sort();
+    const substituteHolidays = {};
+
+    holidayDates.forEach(dateStr => {
+      const date = new Date(dateStr);
+      if (date.getDay() === 0) {
+        let offset = 1;
+        while (true) {
+          const substitute = new Date(date);
+          substitute.setDate(date.getDate() + offset);
+          const y = substitute.getFullYear();
+          const m = String(substitute.getMonth() + 1).padStart(2, "0");
+          const d = String(substitute.getDate()).padStart(2, "0");
+          const formatted = `${y}-${m}-${d}`;
+          if (!holidays[formatted] && !substituteHolidays[formatted]) {
+            substituteHolidays[formatted] = true;
+            break;
+          }
+          offset++;
+        }
+      }
+    });
+
+    return { ...holidays, ...substituteHolidays };
+  }
+
+  const allHolidays = addSubstituteHolidays(holidays);
+
+  const rooms = [
+    "学生演習室1", "学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5",
+    "交流室", "ベッド1", "ベッド2", "ベッド3", "ベッド4", "ベッド5", "ベッド6",
+    "ベッド7", "ベッド8", "ベッド9", "ベッド10", "ベッド11", "ベッド12"
+  ];
+  const times = ["08:30-09:00", "09:00-10:40", "10:40-12:10", "12:10-13:20", "13:20-15:00", "15:00-16:30", "16:30-18:00", "18:00-20:00"];
+
+  let selectedDate = "";
+  let selectedRoom = "";
+  let selectedTime = "";
+  let datePicker;
+
+  function formatDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function formatDisplayDate(dateStr) {
+  const date = new Date(dateStr);
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const w = weekdays[date.getDay()];
+  return `${y}年${m}月${d}日（${w}）`;
+}
+
+  function getNextValidDate(date, step) {
+    const newDate = new Date(date);
+    while (true) {
+      newDate.setDate(newDate.getDate() + step);
+      const formatted = formatDate(newDate);
+      if (newDate.getDay() !== 0 && newDate.getDay() !== 6 && !allHolidays[formatted]) {
+        return formatted;
+      }
+    }
+  }
+
+  function loadSchedule(date) {
+  selectedDate = date;
+  document.getElementById("selectedDateDisplay").textContent = formatDisplayDate(date);
+  if (datePicker) {
+    datePicker.setDate(date);
+  }
+
+    // 「前の日」ボタンの表示制御
+    const today = formatDate(new Date());
+    document.getElementById("prevDayBtn").style.display = (date === today) ? "none" : "inline-block";
+
+    const scheduleTable = document.getElementById("scheduleTable");
+    const loading = document.getElementById("loading");
+    scheduleTable.innerHTML = "";
+    loading.style.display = "block";
+
+    const roomTimeStatus = {};
+    const promises = [];
+
+    times.forEach(time => {
+      roomTimeStatus[time] = {};
+      rooms.forEach(room => {
+        roomTimeStatus[time][room] = false;
+        const query = db.collection("reservations")
+          .where("date", "==", date)
+          .where("time", "==", time)
+          .where("room", "==", room);
+        promises.push(query.get().then(snapshot => {
+          if (!snapshot.empty) {
+            roomTimeStatus[time][room] = true;
+          }
+        }));
+      });
+    });
+
+    Promise.all(promises).then(() => {
+      renderSchedule(roomTimeStatus);
+      loading.style.display = "none";
+    });
+  }
+
+  function renderSchedule(status) {
+    const scheduleTable = document.getElementById("scheduleTable");
+    let html = "<table><thead><tr><th>時間帯</th>";
+    rooms.forEach(room => {
+      html += `<th>${room}</th>`;
+    });
+    html += "</tr></thead><tbody>";
+
+    times.forEach(time => {
+      html += `<tr><th>${time}</th>`;
+      rooms.forEach(room => {
+        if (status[time][room]) {
+          html += `<td class="disabled"><i class="fas fa-times"></i></td>`;
+        } else {
+          html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
+        }
+      });
+      html += "</tr>";
+    });
+
+    html += "</tbody></table>";
+    scheduleTable.innerHTML = html;
+    const user = firebase.auth().currentUser;
+document.querySelectorAll("td.available").forEach(cell => {
+  cell.style.cursor = user ? "pointer" : "default";
+});
+
+
+function handleSelection(cell) {
+  selectedRoom = cell.dataset.room;
+  selectedTime = cell.dataset.time;
+  document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
+}    
+
+if (user) {
+  document.querySelectorAll("td.available").forEach(cell => {
+    cell.addEventListener("click", () => {
+      handleSelection(cell);
+      document.getElementById("reservationSection").style.display = "block";
+    });
+  });
+}
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    datePicker = flatpickr("#date", {
+      dateFormat: "Y-m-d",
+      minDate: "today",
+      disable: [
+        date => {
+          const formatted = formatDate(date);
+          return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
+        }
+      ],
+      locale: "ja",
+      allowInput: false,
+      onChange: (selectedDates) => {
+        if (selectedDates.length > 0) {
+          const date = formatDate(selectedDates[0]);
+          loadSchedule(date);
+        }
+      }
+    });
+
+    const today = formatDate(new Date());
+    selectedDate = getNextValidDate(new Date(), 0);
+    loadSchedule(selectedDate);
+
+    document.getElementById("prevDayBtn").addEventListener("click", () => {
+      const date = new Date(selectedDate);
+      const prev = getNextValidDate(date, -1);
+      loadSchedule(prev);
+    });
+
+    document.getElementById("nextDayBtn").addEventListener("click", () => {
+      const date = new Date(selectedDate);
+      const next = getNextValidDate(date, 1);
+      loadSchedule(next);
+    });
+
+    document.getElementById("backButton").addEventListener("click", () => {
+      location.reload();
+    });
+  });
+
+  document.getElementById("loginButton").addEventListener("click", () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).then(result => {
+    if (!result.user.email.endsWith("@yhasn.ed.jp")) {
+      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+      firebase.auth().signOut();
+    }
+  });
+});
+
+document.getElementById("logoutButton").addEventListener("click", () => {
+  firebase.auth().signOut().then(() => {
+    alert("ログアウトしました");
+  });
+});
+
+  document.getElementById("loginAndReserveButton").addEventListener("click", function () {
+    const name = document.getElementById("name").value.trim();
+    const studentId = document.getElementById("studentId").value.trim();
+    const grade = document.getElementById("grade").value;
+
+    if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
+      document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
+      return;
+    }
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    firebase.auth().signInWithPopup(provider).then(result => {
+      const user = result.user;
+      if (!user.email.endsWith("@yhasn.ed.jp")) {
+        alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+        firebase.auth().signOut();
+        return;
+      }
+
+      db.collection("reservations").add({
+        room: selectedRoom,
+        date: selectedDate,
+        time: selectedTime,
+        name,
+        studentId,
+        grade,
+        email: user.email,
+        createdAt: new Date()
+      }).then(() => {
+        document.getElementById("reservationSection").style.display = "none";
+        document.getElementById("scheduleTable").style.display = "none";
+        document.getElementById("dateControls").style.display = "none";
+        document.getElementById("completeSection").style.display = "block";
+      }).catch(error => {
+        console.error("予約エラー:", error);
+        document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
+      });
+    }).catch(error => {
+      console.error("ログインエラー:", error);
+      document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
+    });
+  });
+</script>
+</body>
+</html>

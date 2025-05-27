@@ -86,7 +86,34 @@
     </div>
     <div id="scheduleTable"></div>
   </div>
-
+<!-- 管理者予約追加フォーム -->
+<h2>新規予約追加（管理者用）</h2>
+<form id="adminReserveForm">
+  <label>日付: <input type="date" id="adminDate" required></label><br>
+  <label>時間帯:
+    <select id="adminTime" required>
+      <option value="">選択してください</option>
+    </select>
+  </label><br>
+  <label>部屋:
+    <select id="adminRoom" required>
+      <option value="">選択してください</option>
+    </select>
+  </label><br>
+  <label>学籍番号: <input type="text" id="adminStudentId" required></label><br>
+  <label>学年:
+    <select id="adminGrade" required>
+      <option value="1年">1年</option>
+      <option value="2年">2年</option>
+      <option value="3年">3年</option>
+    </select>
+  </label><br>
+  <label>名前: <input type="text" id="adminName" required></label><br>
+  <label>メール: <input type="email" id="adminEmail" required></label><br>
+  <button type="submit">予約を登録する</button>
+</form>
+<div id="adminReserveMsg" style="margin-top:10px;"></div>
+  
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -243,6 +270,63 @@
     // 初期表示
     loadReservations();
     loadSchedule(selectedDate);
+
+    // セレクトに時間・部屋の初期値を追加
+document.addEventListener("DOMContentLoaded", () => {
+  const timeSelect = document.getElementById("adminTime");
+  times.forEach(t => {
+    const option = document.createElement("option");
+    option.value = t;
+    option.textContent = t;
+    timeSelect.appendChild(option);
+  });
+
+  const roomSelect = document.getElementById("adminRoom");
+  rooms.forEach(r => {
+    const option = document.createElement("option");
+    option.value = r;
+    option.textContent = r;
+    roomSelect.appendChild(option);
+  });
+});
+
+// 管理者による予約登録
+document.getElementById("adminReserveForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const date = document.getElementById("adminDate").value;
+  const time = document.getElementById("adminTime").value;
+  const room = document.getElementById("adminRoom").value;
+  const studentId = document.getElementById("adminStudentId").value.trim();
+  const grade = document.getElementById("adminGrade").value;
+  const name = document.getElementById("adminName").value.trim();
+  const email = document.getElementById("adminEmail").value.trim();
+
+  if (!date || !time || !room || !studentId || !grade || !name || !email) {
+    document.getElementById("adminReserveMsg").textContent = "全ての項目を入力してください。";
+    return;
+  }
+
+  db.collection("reservations").add({
+    date,
+    time,
+    room,
+    studentId,
+    grade,
+    name,
+    email,
+    createdAt: new Date()
+  }).then(() => {
+    document.getElementById("adminReserveMsg").textContent = "予約を登録しました。";
+    loadReservations();
+    loadSchedule(selectedDate);
+    document.getElementById("adminReserveForm").reset();
+  }).catch(err => {
+    document.getElementById("adminReserveMsg").textContent = "登録に失敗しました。";
+    console.error(err);
+  });
+});
+  
   </script>
 </body>
 </html>

@@ -63,9 +63,9 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-    td.available:hover {
-      background-color: #b2ebf2;
-    }
+    td.available.selected {
+  background-color: #4dd0e1 !important;
+}
     button {
       background-color: #0288d1;
       color: #fff;
@@ -351,6 +351,12 @@ function handleSelection(cell) {
 if (user) {
   document.querySelectorAll("td.available").forEach(cell => {
     cell.addEventListener("click", () => {
+      // 前に選択されていたマスから selected を外す
+      document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
+
+      // 今回選択したマスに selected を追加
+      cell.classList.add("selected");
+
       handleSelection(cell);
       document.getElementById("reservationSection").style.display = "block";
     });

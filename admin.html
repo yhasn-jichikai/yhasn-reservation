@@ -15,12 +15,20 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 10px;
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 8px;
+      padding: 6px;
       text-align: center;
+    }
+    td.reserved {
+      background-color: #b3e5fc;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    td.empty {
+      background-color: #ffffff;
     }
     button {
       padding: 6px 12px;
@@ -29,6 +37,7 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      margin: 4px;
     }
     button:hover {
       background-color: #0277bd;
@@ -36,35 +45,51 @@
     #adminInfo {
       margin-bottom: 10px;
     }
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+    #dateControls {
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>管理者用：予約一覧</h1>
+  <h1>管理者用：予約管理</h1>
   <div id="adminInfo"></div>
+  <button id="showListBtn">予約一覧を表示</button>
+  <button id="showTableBtn">空席表を表示</button>
   <button id="logoutButton">ログアウト</button>
 
-  <table id="reservationsTable">
-    <thead>
-      <tr>
-        <th>日付</th>
-        <th>時間</th>
-        <th>部屋</th>
-        <th>名前</th>
-        <th>学籍番号</th>
-        <th>学年</th>
-        <th>メール</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- 予約一覧 -->
+  <div id="listSection" class="section active">
+    <table id="reservationsTable">
+      <thead>
+        <tr>
+          <th>日付</th><th>時間</th><th>部屋</th><th>名前</th><th>学籍番号</th><th>学年</th><th>メール</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- 空席表 -->
+  <div id="tableSection" class="section">
+    <div id="dateControls">
+      <button id="prevDayBtn">＜ 前の日</button>
+      <span id="dateLabel" style="font-weight: bold;"></span>
+      <button id="nextDayBtn">次の日 ＞</button>
+    </div>
+    <div id="scheduleTable"></div>
+  </div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
-    // Firebase 初期化
     const firebaseConfig = {
       apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
       authDomain: "yhasn-reserve.firebaseapp.com",
@@ -76,67 +101,133 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // 一時的にログイン不要で実行
-    loadReservations();
+    const rooms = ["学生演習室1", "学生演習室2", "学生演習室3", "ベッド1", "ベッド2", "ベッド3"];
+    const times = ["08:30-10:00", "10:00-11:30", "11:30-13:00", "13:00-14:30", "14:30-16:00"];
+
+    const holidays = {
+      "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
+      "2025-04-29": true, "2025-05-03": true, "2025-05-04": true, "2025-05-05": true,
+      "2025-07-21": true, "2025-08-11": true, "2025-09-15": true, "2025-09-23": true,
+      "2025-10-13": true, "2025-11-03": true, "2025-11-23": true, "2025-12-23": true
+    };
+
+    function formatDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function isHolidayOrWeekend(date) {
+      const day = date.getDay();
+      const dateStr = formatDate(date);
+      return day === 0 || day === 6 || holidays[dateStr];
+    }
+
+    function getNextValidDate(date, step) {
+      const newDate = new Date(date);
+      while (true) {
+        newDate.setDate(newDate.getDate() + step);
+        if (!isHolidayOrWeekend(newDate)) break;
+      }
+      return formatDate(newDate);
+    }
+
+    function formatDisplayDate(dateStr) {
+      const date = new Date(dateStr);
+      const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+      return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日（${weekdays[date.getDay()]}）`;
+    }
+
+    let selectedDate = getNextValidDate(new Date(), 0);
 
     function loadReservations() {
-  const tbody = document.querySelector("#reservationsTable tbody");
-  tbody.innerHTML = "";
+      const tbody = document.querySelector("#reservationsTable tbody");
+      tbody.innerHTML = "";
 
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const todayStr = `${yyyy}-${mm}-${dd}`;
+      const today = new Date();
+      const todayStr = formatDate(today);
 
-  db.collection("reservations")
-    .where("date", ">=", todayStr)
-    .orderBy("date", "asc")
-    .orderBy("time", "asc")
-    .get()
-    .then(snapshot => {
-      if (snapshot.empty) {
-        tbody.innerHTML = "<tr><td colspan='8'>本日以降の予約はありません</td></tr>";
-        return;
-      }
+      db.collection("reservations")
+        .where("date", ">=", todayStr)
+        .orderBy("date")
+        .orderBy("time")
+        .get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${data.date}</td><td>${data.time}</td><td>${data.room}</td>
+              <td>${data.name}</td><td>${data.studentId}</td><td>${data.grade}</td><td>${data.email}</td>
+              <td><button data-id="${doc.id}">キャンセル</button></td>
+            `;
+            tbody.appendChild(tr);
+          });
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${data.date}</td>
-          <td>${data.time}</td>
-          <td>${data.room}</td>
-          <td>${data.name}</td>
-          <td>${data.studentId}</td>
-          <td>${data.grade}</td>
-          <td>${data.email}</td>
-          <td><button data-id="${doc.id}">キャンセル</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      tbody.querySelectorAll("button").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          if (confirm("この予約をキャンセルしますか？")) {
-            db.collection("reservations").doc(id).delete().then(() => {
-              alert("キャンセルしました");
-              loadReservations();
-            }).catch(err => {
-              alert("キャンセルに失敗しました");
-              console.error(err);
+          tbody.querySelectorAll("button").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const id = btn.dataset.id;
+              if (confirm("この予約をキャンセルしますか？")) {
+                db.collection("reservations").doc(id).delete().then(() => {
+                  alert("キャンセルしました");
+                  loadReservations();
+                  loadSchedule(selectedDate);
+                });
+              }
             });
-          }
+          });
         });
-      });
-    })
-    .catch(err => {
-      console.error("読み込みエラー:", err);
-      tbody.innerHTML = "<tr><td colspan='8'>読み込みに失敗しました</td></tr>";
-      document.body.innerHTML += `<p style="color:red;">読み込みエラー: ${err.message}</p>`;
+    }
+
+    function loadSchedule(dateStr) {
+      selectedDate = dateStr;
+      document.getElementById("dateLabel").textContent = formatDisplayDate(dateStr);
+      const table = document.getElementById("scheduleTable");
+      table.innerHTML = "<table><thead><tr><th>時間</th>" + rooms.map(r => `<th>${r}</th>`).join('') + "</tr></thead><tbody>" +
+        times.map(time => {
+          return "<tr><th>" + time + "</th>" + rooms.map(room => {
+            return `<td id="cell-${time}-${room}" class="empty"></td>`;
+          }).join('') + "</tr>";
+        }).join('') + "</tbody></table>";
+
+      db.collection("reservations")
+        .where("date", "==", dateStr)
+        .get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const id = `cell-${data.time}-${data.room}`;
+            const cell = document.getElementById(id);
+            if (cell) {
+              cell.className = "reserved";
+              cell.innerHTML = `${data.studentId}<br>${data.grade}<br>${data.name}`;
+            }
+          });
+        });
+    }
+
+    document.getElementById("prevDayBtn").addEventListener("click", () => {
+      const d = new Date(selectedDate);
+      selectedDate = getNextValidDate(d, -1);
+      loadSchedule(selectedDate);
     });
-}
+
+    document.getElementById("nextDayBtn").addEventListener("click", () => {
+      const d = new Date(selectedDate);
+      selectedDate = getNextValidDate(d, 1);
+      loadSchedule(selectedDate);
+    });
+
+    document.getElementById("showListBtn").addEventListener("click", () => {
+      document.getElementById("listSection").classList.add("active");
+      document.getElementById("tableSection").classList.remove("active");
+    });
+
+    document.getElementById("showTableBtn").addEventListener("click", () => {
+      document.getElementById("listSection").classList.remove("active");
+      document.getElementById("tableSection").classList.add("active");
+    });
 
     document.getElementById("logoutButton").addEventListener("click", () => {
       firebase.auth().signOut().then(() => {
@@ -144,6 +235,10 @@
         location.href = "/";
       });
     });
+
+    // 初期表示
+    loadReservations();
+    loadSchedule(selectedDate);
   </script>
 </body>
 </html>

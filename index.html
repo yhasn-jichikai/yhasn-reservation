@@ -36,14 +36,14 @@
       font-size: 16px;
       color: #333;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: #e1f5fe;
-      border-radius: 8px;
-      overflow: hidden;
-    }
+   table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: #e1f5fe;
+  border-radius: 8px;
+  overflow: hidden;
+}
     th {
       height:200px;
     }
@@ -253,7 +253,7 @@ firebase.auth().onAuthStateChanged(user => {
   const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
   const y = date.getFullYear();
   const m = date.getMonth() + 1;
-  const d = date.getDate();
+  const d = date.getDate()
   const w = weekdays[date.getDay()];
   return `${y}年${m}月${d}日（${w}）`;
 }

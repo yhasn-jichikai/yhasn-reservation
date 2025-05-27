@@ -291,15 +291,18 @@ firebase.auth().onAuthStateChanged(user => {
     times.forEach(time => {
       roomTimeStatus[time] = {};
       rooms.forEach(room => {
-        roomTimeStatus[time][room] = false;
+        roomTimeStatus[time][room] = null;
         const query = db.collection("reservations")
           .where("date", "==", date)
           .where("time", "==", time)
           .where("room", "==", room);
         promises.push(query.get().then(snapshot => {
-          if (!snapshot.empty) {
-            roomTimeStatus[time][room] = true;
-          }
+         if (!snapshot.empty) {
+  const data = snapshot.docs[0].data();
+  roomTimeStatus[time][room] = {
+    name: data.name || ""
+  };
+}
         }));
       });
     });
@@ -321,11 +324,12 @@ firebase.auth().onAuthStateChanged(user => {
     times.forEach(time => {
       html += `<tr><th>${time}</th>`;
       rooms.forEach(room => {
-        if (status[time][room]) {
-          html += `<td class="disabled"><i class="fas fa-times"></i></td>`;
-        } else {
-          html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
-        }
+       if (status[time][room]) {
+  const info = status[time][room]; // 名前情報などがある場合に使う
+  html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+} else {
+  html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
+}
       });
       html += "</tr>";
     });

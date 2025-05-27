@@ -120,7 +120,7 @@
       <div id="reservationSection" style="display:none; margin-top:20px;">
         <h2>予約確認</h2>
         <p id="selectedInfo"></p>
-        <p><strong>学籍番号:</strong> <span id="studentIdDisplay"></span></p><br><br>
+        <label>学籍番号: <input type="text" id="studentId" required></label><br><br>
         <label>学年:
           <select id="grade" required>
             <option value="">選択してください</option>
@@ -186,12 +186,6 @@ firebase.auth().onAuthStateChanged(user => {
     loginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
     userEmail.textContent = "ログイン中: " + user.email;
-    const email = user.email;
-const match = email.match(/^(\d{6,})@/);  // 6桁以上の数字にマッチ
-if (match) {
-  const studentIdField = document.getElementById("studentId");
-  studentIdField.value = match[1];  // 学番として入力
-}
   } else {
     loginBtn.style.display = "inline-block";
     logoutBtn.style.display = "none";

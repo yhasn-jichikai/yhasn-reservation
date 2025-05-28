@@ -139,7 +139,7 @@
     </form>
 
     <div style="text-align:center; margin-top:20px;">
-  <button type="button" id="loginButton">ログイン</button>
+  <button type="button" id="loginButton">ログインして予約する</button>
   <button type="button" id="logoutButton" style="display:none;">ログアウト</button>
   <p id="userEmail" style="margin-top:10px;"></p>
 </div>
@@ -444,13 +444,18 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    firebase.auth().signInWithPopup(provider).then(result => {
-      const user = result.user;
-      if (!user.email.endsWith("@yhasn.ed.jp")) {
-        alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-        firebase.auth().signOut();
-        return;
-      }
+   firebase.auth().signInWithPopup(provider).then(result => {
+  const user = result.user;
+  if (!user.email.endsWith("@yhasn.ed.jp")) {
+    alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+    firebase.auth().signOut();
+    return;
+  }
+
+  // ✅ ログイン後に再描画（クリック可能に）
+  if (selectedDate) {
+    loadSchedule(selectedDate);
+  }
 
       db.collection("reservations").add({
         room: selectedRoom,

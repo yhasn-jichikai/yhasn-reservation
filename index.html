@@ -177,24 +177,24 @@ firebase.auth().onAuthStateChanged(user => {
   const loginBtn = document.getElementById("loginButton");
   const logoutBtn = document.getElementById("logoutButton");
   const userEmail = document.getElementById("userEmail");
-
   const reserveSection = document.getElementById("reservationSection");
 
-  // reservationSection はログイン中のみ表示（初期非表示）
-  if (user) {
-    document.getElementById("reservationSection").style.display = "block";
-  } else {
-    document.getElementById("reservationSection").style.display = "none";
-  }
-
+  // UI切り替え
   if (user) {
     loginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
     userEmail.textContent = "ログイン中: " + user.email;
+    reserveSection.style.display = "block";
   } else {
     loginBtn.style.display = "inline-block";
     logoutBtn.style.display = "none";
     userEmail.textContent = "";
+    reserveSection.style.display = "none";
+  }
+
+  // 🔁 状態変化に応じて表を再描画
+  if (selectedDate) {
+    loadSchedule(selectedDate);
   }
 });
 

@@ -178,14 +178,14 @@ firebase.auth().onAuthStateChanged(user => {
   const logoutBtn = document.getElementById("logoutButton");
   const userEmail = document.getElementById("userEmail");
 
-    const reserveSection = document.getElementById("reservationSection");
+  const reserveSection = document.getElementById("reservationSection");
 
   // reservationSection はログイン中のみ表示（初期非表示）
-if (user) {
-  document.getElementById("reservationSection").style.display = "block";
-} else {
-  document.getElementById("reservationSection").style.display = "none";
-}
+  if (user) {
+    document.getElementById("reservationSection").style.display = "block";
+  } else {
+    document.getElementById("reservationSection").style.display = "none";
+  }
 
   if (user) {
     loginBtn.style.display = "none";

@@ -144,19 +144,10 @@ td.available.selected {
   <p id="userEmail" style="margin-top:10px;"></p>
 </div>
 
-    <div id="historySection" style="display:none; margin-top:30px;">
-  <h2>自分の予約履歴</h2>
-  <table id="historyTable" style="width:100%; border-collapse:collapse;">
-    <thead>
-      <tr>
-        <th>日付</th>
-        <th>時間帯</th>
-        <th>部屋</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
+    <div id="completeSection" style="display:none;">
+      <h2>予約が完了しました！</h2>
+      <button id="backButton">予約ページへ戻る</button>
+    </div>
 
     <div id="errorMsg"></div>
     <div id="loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>
@@ -190,13 +181,11 @@ firebase.auth().onAuthStateChanged(user => {
 
   // UI切り替え
   if (user) {
-  loginBtn.style.display = "none";
-  logoutBtn.style.display = "inline-block";
-  userEmail.textContent = "ログイン中: " + user.email;
-  reserveSection.style.display = "block";
-
-  loadUserReservations(user.email);  // 🔁 予約履歴を読み込み
-} else {
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    userEmail.textContent = "ログイン中: " + user.email;
+    reserveSection.style.display = "block";
+  } else {
     loginBtn.style.display = "inline-block";
     logoutBtn.style.display = "none";
     userEmail.textContent = "";
@@ -368,20 +357,16 @@ document.querySelectorAll("td.available").forEach(cell => {
   cell.classList.remove("clickable");
   cell.removeEventListener("click", cell._clickHandler); // 過去のイベント削除
 
- if (firebase.auth().currentUser) {
-  cell.classList.add("clickable");
-  cell.style.pointerEvents = "auto"; // 👈 明示的に再有効化
-  cell._clickHandler = () => {
-    document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
-    cell.classList.add("selected");
-    handleSelection(cell);
-    document.getElementById("reservationSection").style.display = "block";
-  };
-  cell.addEventListener("click", cell._clickHandler);
-} else {
-  cell.classList.remove("clickable");
-  cell.style.pointerEvents = "none";
-} else {
+  if (firebase.auth().currentUser) {
+    cell.classList.add("clickable");
+    cell._clickHandler = () => {
+      document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
+      cell.classList.add("selected");
+      handleSelection(cell);
+      document.getElementById("reservationSection").style.display = "block";
+    };
+    cell.addEventListener("click", cell._clickHandler);
+  } else {
     // ログインしていない場合はクリック無効（見た目はそのまま）
     cell._clickHandler = null;
     cell.style.pointerEvents = "none";
@@ -389,49 +374,46 @@ document.querySelectorAll("td.available").forEach(cell => {
 });
   }
 
-window.onload = () => {
-  datePicker = flatpickr("#date", {
-    dateFormat: "Y-m-d",
-    minDate: "today",
-    disable: [
-      date => {
-        const formatted = formatDate(date);
-        return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
+  document.addEventListener("DOMContentLoaded", () => {
+    datePicker = flatpickr("#date", {
+      dateFormat: "Y-m-d",
+      minDate: "today",
+      disable: [
+        date => {
+          const formatted = formatDate(date);
+          return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
+        }
+      ],
+      locale: "ja",
+      allowInput: false,
+      onChange: (selectedDates) => {
+        if (selectedDates.length > 0) {
+          const date = formatDate(selectedDates[0]);
+          loadSchedule(date);
+        }
       }
-    ],
-    locale: "ja",
-    allowInput: false,
-    onChange: (selectedDates) => {
-      if (selectedDates.length > 0) {
-        const date = formatDate(selectedDates[0]);
-        loadSchedule(date);
-      }
-    }
-  });
+    });
 
-  const today = formatDate(new Date());
-  selectedDate = getNextValidDate(new Date(), 0);
-  loadSchedule(selectedDate);
+    const today = formatDate(new Date());
+    selectedDate = getNextValidDate(new Date(), 0);
+    loadSchedule(selectedDate);
 
-  document.getElementById("prevDayBtn").addEventListener("click", () => {
-    const date = new Date(selectedDate);
-    const prev = getNextValidDate(date, -1);
-    loadSchedule(prev);
-  });
+    document.getElementById("prevDayBtn").addEventListener("click", () => {
+      const date = new Date(selectedDate);
+      const prev = getNextValidDate(date, -1);
+      loadSchedule(prev);
+    });
 
-  document.getElementById("nextDayBtn").addEventListener("click", () => {
-    const date = new Date(selectedDate);
-    const next = getNextValidDate(date, 1);
-    loadSchedule(next);
-  });
+    document.getElementById("nextDayBtn").addEventListener("click", () => {
+      const date = new Date(selectedDate);
+      const next = getNextValidDate(date, 1);
+      loadSchedule(next);
+    });
 
-  const backBtn = document.getElementById("backButton");
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
+    document.getElementById("backButton").addEventListener("click", () => {
       location.reload();
     });
-  }
-};
+  });
 
   document.getElementById("loginButton").addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();
@@ -446,21 +428,7 @@ window.onload = () => {
 document.getElementById("logoutButton").addEventListener("click", () => {
   firebase.auth().signOut().then(() => {
     alert("ログアウトしました");
-
-    // UIとステータス初期化
-    document.getElementById("reservationSection").style.display = "none";
-    document.getElementById("userEmail").textContent = "";
-    document.getElementById("loginButton").style.display = "inline-block";
-    document.getElementById("logoutButton").style.display = "none";
-    document.getElementById("historySection").style.display = "none";
-    document.getElementById("completeSection").style.display = "none";
-    document.getElementById("scheduleTable").style.display = "block";     // 👈 表を再表示
-    document.getElementById("dateControls").style.display = "flex";       // 👈 日付選択を再表示
-
-    // 再ログイン用に再描画
-    if (selectedDate) {
-      loadSchedule(selectedDate);
-    }
+    if (selectedDate) loadSchedule(selectedDate); // 👈 強制再描画でUIリセット
   });
 });
 
@@ -507,37 +475,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
         console.error("予約エラー:", error);
         document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
       });
-
-function loadUserReservations(email) {
-  const historySection = document.getElementById("historySection");
-  const historyTable = document.getElementById("historyTable").querySelector("tbody");
-  historyTable.innerHTML = "";
-
-  db.collection("reservations")
-    .where("email", "==", email)
-    .orderBy("date", "desc")
-    .orderBy("time", "desc")
-    .get()
-    .then(snapshot => {
-      if (snapshot.empty) {
-        historySection.style.display = "none";
-        return;
-      }
-
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.date}</td>
-          <td>${data.time}</td>
-          <td>${data.room}</td>
-        `;
-        historyTable.appendChild(row);
-      });
-
-      historySection.style.display = "block";
-    });
-}    }).catch(error => {
+    }).catch(error => {
       console.error("ログインエラー:", error);
       document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
     });

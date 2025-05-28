@@ -472,16 +472,7 @@ db.collection("reservations")
       document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
     });
   });
-      .then(() => {
-        document.getElementById("reservationSection").style.display = "none";
-        document.getElementById("scheduleTable").style.display = "none";
-        document.getElementById("dateControls").style.display = "none";
-        document.getElementById("completeSection").style.display = "block";
-      }).catch(error => {
-        console.error("予約エラー:", error);
-        document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
-      });
-    }).catch(error => {
+  ).catch(error => {
       console.error("ログインエラー:", error);
       document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
     });

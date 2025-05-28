@@ -368,16 +368,20 @@ document.querySelectorAll("td.available").forEach(cell => {
   cell.classList.remove("clickable");
   cell.removeEventListener("click", cell._clickHandler); // 過去のイベント削除
 
-  if (firebase.auth().currentUser) {
-    cell.classList.add("clickable");
-    cell._clickHandler = () => {
-      document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
-      cell.classList.add("selected");
-      handleSelection(cell);
-      document.getElementById("reservationSection").style.display = "block";
-    };
-    cell.addEventListener("click", cell._clickHandler);
-  } else {
+ if (firebase.auth().currentUser) {
+  cell.classList.add("clickable");
+  cell.style.pointerEvents = "auto"; // 👈 明示的に再有効化
+  cell._clickHandler = () => {
+    document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
+    cell.classList.add("selected");
+    handleSelection(cell);
+    document.getElementById("reservationSection").style.display = "block";
+  };
+  cell.addEventListener("click", cell._clickHandler);
+} else {
+  cell.classList.remove("clickable");
+  cell.style.pointerEvents = "none";
+} else {
     // ログインしていない場合はクリック無効（見た目はそのまま）
     cell._clickHandler = null;
     cell.style.pointerEvents = "none";
@@ -487,7 +491,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
         document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
       });
 
-     function loadUserReservations(email) {
+function loadUserReservations(email) {
   const historySection = document.getElementById("historySection");
   const historyTable = document.getElementById("historyTable").querySelector("tbody");
   historyTable.innerHTML = "";
@@ -516,8 +520,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
       historySection.style.display = "block";
     });
-}
-    }).catch(error => {
+}    }).catch(error => {
       console.error("ログインエラー:", error);
       document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
     });

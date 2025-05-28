@@ -425,9 +425,13 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
       loadSchedule(next);
     });
 
-    document.getElementById("backButton").addEventListener("click", () => {
-      location.reload();
-    });
+   document.getElementById("backButton").addEventListener("click", () => {
+  document.getElementById("completeSection").style.display = "none";
+  document.getElementById("scheduleTableRooms").style.display = "block";
+  document.getElementById("scheduleTableBeds").style.display = "block";
+  document.getElementById("dateControls").style.display = "flex";
+  loadSchedule(selectedDate);
+});
   });
 
   document.getElementById("loginButton").addEventListener("click", () => {
@@ -483,7 +487,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
         createdAt: new Date()
       }).then(() => {
         document.getElementById("reservationSection").style.display = "none";
-        document.getElementById("scheduleTable").style.display = "none";
+       
         document.getElementById("dateControls").style.display = "none";
         document.getElementById("completeSection").style.display = "block";
       }).catch(error => {

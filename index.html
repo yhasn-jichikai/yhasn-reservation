@@ -441,38 +441,25 @@ document.getElementById("logoutButton").addEventListener("click", () => {
         return;
       }
 
-      // 予約数チェックを追加
-db.collection("reservations")
-  .where("date", "==", selectedDate)
-  .where("email", "==", user.email)
-  .get()
-  .then(snapshot => {
-    if (snapshot.size >= 3) {
-      document.getElementById("errorMsg").textContent = "1日に予約できるのは3枠までです。";
-      return;
-    }
-
-    // ここで予約登録を実行
-    db.collection("reservations").add({
-      room: selectedRoom,
-      date: selectedDate,
-      time: selectedTime,
-      name,
-      studentId,
-      grade,
-      email: user.email,
-      createdAt: new Date()
-    }).then(() => {
-      document.getElementById("reservationSection").style.display = "none";
-      document.getElementById("scheduleTable").style.display = "none";
-      document.getElementById("dateControls").style.display = "none";
-      document.getElementById("completeSection").style.display = "block";
+      db.collection("reservations").add({
+        room: selectedRoom,
+        date: selectedDate,
+        time: selectedTime,
+        name,
+        studentId,
+        grade,
+        email: user.email,
+        createdAt: new Date()
+      }).then(() => {
+        document.getElementById("reservationSection").style.display = "none";
+        document.getElementById("scheduleTable").style.display = "none";
+        document.getElementById("dateControls").style.display = "none";
+        document.getElementById("completeSection").style.display = "block";
+      }).catch(error => {
+        console.error("予約エラー:", error);
+        document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
+      });
     }).catch(error => {
-      console.error("予約エラー:", error);
-      document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
-    });
-  });
-  ).catch(error => {
       console.error("ログインエラー:", error);
       document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
     });

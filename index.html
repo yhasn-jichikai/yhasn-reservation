@@ -449,6 +449,10 @@ document.getElementById("logoutButton").addEventListener("click", () => {
     document.getElementById("userEmail").textContent = "";
     document.getElementById("loginButton").style.display = "inline-block";
     document.getElementById("logoutButton").style.display = "none";
+    document.getElementById("historySection").style.display = "none";
+    document.getElementById("completeSection").style.display = "none";
+    document.getElementById("scheduleTable").style.display = "block";     // 👈 表を再表示
+    document.getElementById("dateControls").style.display = "flex";       // 👈 日付選択を再表示
 
     // 再ログイン用に再描画
     if (selectedDate) {

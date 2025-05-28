@@ -119,7 +119,11 @@ td.available.selected {
 
     <form id="reserveForm">
   <div id="selectedDateDisplay" style="text-align:center; font-size:22px; font-weight:bold; margin:20px 0;"></div>
-  <div id="scheduleTable"></div>
+  <h3>学生演習室・交流室</h3>
+<div id="scheduleTableRooms"></div>
+
+<h3>ベッド（1〜12）</h3>
+<div id="scheduleTableBeds"></div>
 
       <div id="reservationSection" style="display:none; margin-top:20px;">
         <h2>予約確認</h2>
@@ -319,60 +323,71 @@ firebase.auth().onAuthStateChanged(user => {
   }
 
   function renderSchedule(status) {
-    const scheduleTable = document.getElementById("scheduleTable");
+  const scheduleTableRooms = document.getElementById("scheduleTableRooms");
+  const scheduleTableBeds = document.getElementById("scheduleTableBeds");
+  scheduleTableRooms.innerHTML = "";
+  scheduleTableBeds.innerHTML = "";
+
+  const roomGroup1 = rooms.filter(r => r.includes("演習室") || r.includes("交流室"));
+  const roomGroup2 = rooms.filter(r => r.includes("ベッド"));
+
+  function generateTable(roomsSubset) {
     let html = "<table><thead><tr><th>時間帯</th>";
-    rooms.forEach(room => {
+    roomsSubset.forEach(room => {
       html += `<th>${room}</th>`;
     });
     html += "</tr></thead><tbody>";
 
     times.forEach(time => {
       html += `<tr><th>${time}</th>`;
-      rooms.forEach(room => {
-       if (status[time][room]) {
-  const info = status[time][room]; // 名前情報などがある場合に使う
-  html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
-} else {
-  html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
-}
+      roomsSubset.forEach(room => {
+        if (status[time][room]) {
+          const info = status[time][room];
+          html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+        } else {
+          html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
+        }
       });
       html += "</tr>";
     });
 
     html += "</tbody></table>";
-    scheduleTable.innerHTML = html;
-    const user = firebase.auth().currentUser;
-document.querySelectorAll("td.available").forEach(cell => {
-  cell.style.cursor = user ? "pointer" : "default";
-});
-
-
-function handleSelection(cell) {
-  selectedRoom = cell.dataset.room;
-  selectedTime = cell.dataset.time;
-  document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
-}    
-
-document.querySelectorAll("td.available").forEach(cell => {
-  cell.classList.remove("clickable");
-  cell.removeEventListener("click", cell._clickHandler); // 過去のイベント削除
-
-  if (firebase.auth().currentUser) {
-    cell.classList.add("clickable");
-    cell._clickHandler = () => {
-      document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
-      cell.classList.add("selected");
-      handleSelection(cell);
-      document.getElementById("reservationSection").style.display = "block";
-    };
-    cell.addEventListener("click", cell._clickHandler);
-  } else {
-    // ログインしていない場合はクリック無効（見た目はそのまま）
-    cell._clickHandler = null;
-    cell.style.pointerEvents = "none";
+    return html;
   }
-});
+
+  scheduleTableRooms.innerHTML = generateTable(roomGroup1);
+  scheduleTableBeds.innerHTML = generateTable(roomGroup2);
+
+  const user = firebase.auth().currentUser;
+  document.querySelectorAll("td.available").forEach(cell => {
+    cell.style.cursor = user ? "pointer" : "default";
+  });
+
+  function handleSelection(cell) {
+    selectedRoom = cell.dataset.room;
+    selectedTime = cell.dataset.time;
+    document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
   }
+
+  document.querySelectorAll("td.available").forEach(cell => {
+    cell.classList.remove("clickable");
+    cell.removeEventListener("click", cell._clickHandler);
+
+    if (firebase.auth().currentUser) {
+      cell.classList.add("clickable");
+      cell._clickHandler = () => {
+        document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
+        cell.classList.add("selected");
+        handleSelection(cell);
+        document.getElementById("reservationSection").style.display = "block";
+      };
+      cell.addEventListener("click", cell._clickHandler);
+    } else {
+      cell._clickHandler = null;
+      cell.style.pointerEvents = "none";
+    }
+  });
+}
 
   document.addEventListener("DOMContentLoaded", () => {
     datePicker = flatpickr("#date", {

@@ -366,11 +366,10 @@ document.querySelectorAll("td.available").forEach(cell => {
       document.getElementById("reservationSection").style.display = "block";
     };
     cell.addEventListener("click", cell._clickHandler);
-    cell.style.pointerEvents = "auto";
-    cell.style.opacity = "1";
   } else {
+    // ログインしていない場合はクリック無効（見た目はそのまま）
+    cell._clickHandler = null;
     cell.style.pointerEvents = "none";
-    cell.style.opacity = "0.4";
   }
 });
   }

@@ -58,16 +58,16 @@
       color: #999;
       cursor: not-allowed;
     }
-    td.available {
-      background-color: #ffffff;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    td.available:not(.clickable) {
-  cursor: not-allowed;
-  opacity: 0.4;
+   td.available {
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
-    td.available.selected {
+td.available:not(.clickable) {
+  cursor: not-allowed;
+  /* opacity: 0.4; ← これを削除 */
+}
+td.available.selected {
   background-color: #4dd0e1 !important;
 }
     button {

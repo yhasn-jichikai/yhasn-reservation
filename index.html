@@ -443,7 +443,17 @@ document.querySelectorAll("td.available").forEach(cell => {
 document.getElementById("logoutButton").addEventListener("click", () => {
   firebase.auth().signOut().then(() => {
     alert("ログアウトしました");
-    if (selectedDate) loadSchedule(selectedDate); // 👈 強制再描画でUIリセット
+
+    // UIとステータス初期化
+    document.getElementById("reservationSection").style.display = "none";
+    document.getElementById("userEmail").textContent = "";
+    document.getElementById("loginButton").style.display = "inline-block";
+    document.getElementById("logoutButton").style.display = "none";
+
+    // 再ログイン用に再描画
+    if (selectedDate) {
+      loadSchedule(selectedDate);
+    }
   });
 });
 

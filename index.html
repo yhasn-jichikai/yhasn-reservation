@@ -289,9 +289,9 @@ firebase.auth().onAuthStateChanged(user => {
     const today = formatDate(new Date());
     document.getElementById("prevDayBtn").style.display = (date === today) ? "none" : "inline-block";
 
-    const scheduleTable = document.getElementById("scheduleTable");
-    const loading = document.getElementById("loading");
-    scheduleTable.innerHTML = "";
+   const loading = document.getElementById("loading");
+document.getElementById("scheduleTableRooms").innerHTML = "";
+document.getElementById("scheduleTableBeds").innerHTML = "";
     loading.style.display = "block";
 
     const roomTimeStatus = {};

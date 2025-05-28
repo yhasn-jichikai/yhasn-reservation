@@ -354,19 +354,23 @@ function handleSelection(cell) {
 }    
 
 document.querySelectorAll("td.available").forEach(cell => {
-  if (user) {
-    // ログイン中ならクリック可能
+  cell.classList.remove("clickable");
+  cell.removeEventListener("click", cell._clickHandler); // 過去のイベント削除
+
+  if (firebase.auth().currentUser) {
     cell.classList.add("clickable");
-    cell.addEventListener("click", () => {
+    cell._clickHandler = () => {
       document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
       cell.classList.add("selected");
       handleSelection(cell);
       document.getElementById("reservationSection").style.display = "block";
-    });
+    };
+    cell.addEventListener("click", cell._clickHandler);
+    cell.style.pointerEvents = "auto";
+    cell.style.opacity = "1";
   } else {
-    // ログインしていない場合はクリックイベントを無効に
     cell.style.pointerEvents = "none";
-    cell.style.opacity = "0.4";  // 見た目も少し薄く
+    cell.style.opacity = "0.4";
   }
 });
   }

@@ -176,11 +176,12 @@ firebase.auth().onAuthStateChanged(user => {
 
     const reserveSection = document.getElementById("reservationSection");
 
-  if (user) {
-    reserveSection.style.display = "block";
-  } else {
-    reserveSection.style.display = "none";
-  }
+  // reservationSection はログイン中のみ表示（初期非表示）
+if (user) {
+  document.getElementById("reservationSection").style.display = "block";
+} else {
+  document.getElementById("reservationSection").style.display = "none";
+}
 
   if (user) {
     loginBtn.style.display = "none";

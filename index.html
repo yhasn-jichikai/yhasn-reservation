@@ -63,6 +63,10 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
+    td.available:not(.clickable) {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
     td.available.selected {
   background-color: #4dd0e1 !important;
 }
@@ -349,20 +353,22 @@ function handleSelection(cell) {
   document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
 }    
 
-if (user) {
-  document.querySelectorAll("td.available").forEach(cell => {
+document.querySelectorAll("td.available").forEach(cell => {
+  if (user) {
+    // ログイン中ならクリック可能
+    cell.classList.add("clickable");
     cell.addEventListener("click", () => {
-      // 前に選択されていたマスから selected を外す
       document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
-
-      // 今回選択したマスに selected を追加
       cell.classList.add("selected");
-
       handleSelection(cell);
       document.getElementById("reservationSection").style.display = "block";
     });
-  });
-}
+  } else {
+    // ログインしていない場合はクリックイベントを無効に
+    cell.style.pointerEvents = "none";
+    cell.style.opacity = "0.4";  // 見た目も少し薄く
+  }
+});
   }
 
   document.addEventListener("DOMContentLoaded", () => {

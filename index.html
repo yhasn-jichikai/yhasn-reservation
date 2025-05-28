@@ -389,46 +389,49 @@ document.querySelectorAll("td.available").forEach(cell => {
 });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    datePicker = flatpickr("#date", {
-      dateFormat: "Y-m-d",
-      minDate: "today",
-      disable: [
-        date => {
-          const formatted = formatDate(date);
-          return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
-        }
-      ],
-      locale: "ja",
-      allowInput: false,
-      onChange: (selectedDates) => {
-        if (selectedDates.length > 0) {
-          const date = formatDate(selectedDates[0]);
-          loadSchedule(date);
-        }
+window.onload = () => {
+  datePicker = flatpickr("#date", {
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    disable: [
+      date => {
+        const formatted = formatDate(date);
+        return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
       }
-    });
+    ],
+    locale: "ja",
+    allowInput: false,
+    onChange: (selectedDates) => {
+      if (selectedDates.length > 0) {
+        const date = formatDate(selectedDates[0]);
+        loadSchedule(date);
+      }
+    }
+  });
 
-    const today = formatDate(new Date());
-    selectedDate = getNextValidDate(new Date(), 0);
-    loadSchedule(selectedDate);
+  const today = formatDate(new Date());
+  selectedDate = getNextValidDate(new Date(), 0);
+  loadSchedule(selectedDate);
 
-    document.getElementById("prevDayBtn").addEventListener("click", () => {
-      const date = new Date(selectedDate);
-      const prev = getNextValidDate(date, -1);
-      loadSchedule(prev);
-    });
+  document.getElementById("prevDayBtn").addEventListener("click", () => {
+    const date = new Date(selectedDate);
+    const prev = getNextValidDate(date, -1);
+    loadSchedule(prev);
+  });
 
-    document.getElementById("nextDayBtn").addEventListener("click", () => {
-      const date = new Date(selectedDate);
-      const next = getNextValidDate(date, 1);
-      loadSchedule(next);
-    });
+  document.getElementById("nextDayBtn").addEventListener("click", () => {
+    const date = new Date(selectedDate);
+    const next = getNextValidDate(date, 1);
+    loadSchedule(next);
+  });
 
-    document.getElementById("backButton").addEventListener("click", () => {
+  const backBtn = document.getElementById("backButton");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
       location.reload();
     });
-  });
+  }
+};
 
   document.getElementById("loginButton").addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();

@@ -221,13 +221,7 @@ th, td {
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) {
-    // ログインしていなければログインページに戻す
-    alert("ログインしてください");
-    window.location.href = "admin-login.html";
-  }
-});
+
     
     // Firebase 初期化
     const firebaseConfig = {
@@ -241,8 +235,17 @@ firebase.auth().onAuthStateChanged(user => {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // 一時的にログイン不要で実行
-    loadReservations();
+    firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    alert("ログインしてください");
+    window.location.href = "admin-login.html";
+  } else {
+    loadReservations(); // ← ログイン済みのときだけ読み込み実行！
+  }
+});
 
     function loadReservations() {
   const tbody = document.querySelector("#reservationsTable tbody");

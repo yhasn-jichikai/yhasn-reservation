@@ -450,11 +450,21 @@ minDate: new Date(), // ← 土日祝に関係なく「今日」から選択可�
 });
 
 document.getElementById("prevDayBtn").addEventListener("click", () => {
-  const date = new Date(document.getElementById("datePicker").value);
+  const fp = document.getElementById("datePicker")._flatpickr;
+  const date = new Date(fp.input.value || fp.selectedDates[0]);
   const newDate = getNextValidDate(date, -1);
-  document.getElementById("datePicker")._flatpickr.setDate(newDate);
+  fp.setDate(newDate, true); // 第2引数 true で input.value も更新
   loadSchedule(newDate);
-  updatePrevButtonVisibility(newDate); // ← 追記
+  updatePrevButtonVisibility(newDate);
+});
+
+document.getElementById("nextDayBtn").addEventListener("click", () => {
+  const fp = document.getElementById("datePicker")._flatpickr;
+  const date = new Date(fp.input.value || fp.selectedDates[0]);
+  const newDate = getNextValidDate(date, 1);
+  fp.setDate(newDate, true); // ここも value 更新を明示
+  loadSchedule(newDate);
+  updatePrevButtonVisibility(newDate);
 });
 
   document.getElementById("nextDayBtn").addEventListener("click", () => {

@@ -308,10 +308,11 @@ firebase.auth().onAuthStateChanged(user => {
 }
 
     document.getElementById("logoutButton").addEventListener("click", () => {
-      firebase.auth().signOut().then(() => {
-        alert("ログアウトしました");
-        location.href = "https://kurokeneko.github.io/yhasn-reservation/admin-login.html";
-      });
+firebase.auth().signOut().then(() => {
+  alert("ログアウトしました。画面遷移します");
+  console.log("Redirecting to login...");
+  location.href = "admin-login.html"; // または絶対パス
+});
     });
     function switchTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(div => div.style.display = "none");

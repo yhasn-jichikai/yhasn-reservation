@@ -64,7 +64,30 @@
 
 const provider = new firebase.auth.GoogleAuthProvider();
 
-document.getElementById("googleLogin").addEventListener("click", () => {
+    document.getElementById("googleLogin").addEventListener("click", () => {
+  // メッセージリセット
+  document.getElementById("alert").textContent = "";
+  document.getElementById("message").textContent = "";
+
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      const email = result.user.email;
+      if (email.endsWith("@yhasn.ed.jp")) {
+        document.getElementById("verifyPassword").style.display = "inline-block";
+        document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
+      } else {
+        firebase.auth().signOut();
+        document.getElementById("alert").textContent = "許可されていないドメインです。";
+      }
+    })
+    .catch(error => {
+      if (error.code === 'auth/popup-closed-by-user') return;
+      document.getElementById("alert").textContent = "ログインに失敗しました。再度試してください。";
+      console.error(error);
+    });
+});
+
+    document.getElementById("googleLogin").addEventListener("click", () => {
   firebase.auth().signInWithPopup(provider)
     .then(result => {
       const email = result.user.email;

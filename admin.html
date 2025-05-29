@@ -274,6 +274,7 @@ th, td {
       });
 
       tbody.querySelectorAll("button").forEach(btn => {
+      
         btn.addEventListener("click", () => {
           const id = btn.dataset.id;
           if (confirm("この予約をキャンセルしますか？")) {

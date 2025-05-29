@@ -434,7 +434,7 @@ function setupFlatpickrAndButtons() {
   locale: "ja",
   dateFormat: "Y-m-d",
   defaultDate: getNextValidDate(new Date()),
-  minDate: getNextValidDate(new Date()), // ← 過去日付を無効化
+minDate: new Date(), // ← 土日祝に関係なく「今日」から選択可能
   disable: [
     function(date) {
       const day = date.getDay();
@@ -470,7 +470,8 @@ updatePrevButtonVisibility(today); // ← 追加
  
   function updatePrevButtonVisibility(selectedDate) {
   const min = getNextValidDate(new Date());
-  const isToday = formatDate(selectedDate) === formatDate(min);
+  const isTodayOrBefore = selectedDate <= new Date();
+document.getElementById("prevDayBtn").style.display = isTodayOrBefore ? "none" : "inline-block";
   document.getElementById("prevDayBtn").style.display = isToday ? "none" : "inline-block";
 }
 }

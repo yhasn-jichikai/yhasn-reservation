@@ -467,19 +467,29 @@ document.getElementById("nextDayBtn").addEventListener("click", () => {
   updatePrevButtonVisibility(newDate);
 });
 
-   // flatpickr 初期化後に確実に prev ボタンを更新するため、初期化完了イベントを利用
-  setTimeout(() => {
-    const fp = document.getElementById("datePicker")._flatpickr;
-    const initialDate = fp.selectedDates[0] || fp.config.defaultDate || new Date();
-    updatePrevButtonVisibility(initialDate);
-  }, 100); // flatpickr 初期化後の遅延で実行
-
-    // 初期表示の当日分を確実に描画する
-  const initial = document.getElementById("datePicker")._flatpickr.selectedDates[0];
-  if (initial) {
-    loadSchedule(initial);
-    updatePrevButtonVisibility(initial);
+flatpickr("#datePicker", {
+  locale: "ja",
+  dateFormat: "Y-m-d",
+  defaultDate: getNextValidDate(new Date()),
+  minDate: new Date(),
+  disable: [
+    function(date) {
+      const day = date.getDay();
+      const dateStr = formatDate(date);
+      return day === 0 || day === 6 || allHolidays[dateStr];
+    }
+  ],
+  onChange: ([selectedDate]) => {
+    loadSchedule(selectedDate);
+    updatePrevButtonVisibility(selectedDate);
+  },
+  onReady: ([selectedDate]) => {
+    if (selectedDate) {
+      loadSchedule(selectedDate);
+      updatePrevButtonVisibility(selectedDate);
+    }
   }
+});
  
   function updatePrevButtonVisibility(selectedDate) {
   const today = new Date();

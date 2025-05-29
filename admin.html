@@ -306,6 +306,14 @@ th, td {
   document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
   document.getElementById(tabId).style.display = "block";
   event.target.classList.add("active");
+
+  // 空室表タブが表示されたら、そのタイミングで表を更新
+  if (tabId === "emptyTab") {
+    const selectedDate = document.getElementById("datePicker")._flatpickr.selectedDates[0];
+    if (selectedDate) {
+      loadSchedule(selectedDate);
+    }
+  }
 }
 // 祝日リスト
 const allHolidays = {

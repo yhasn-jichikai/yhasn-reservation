@@ -136,10 +136,16 @@ th, td {
   color: #006064;
 }
 
-#scheduleTable td.empty {
+
+#scheduleTable td.empty:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+    #scheduleTable td.empty {
   background-color: #ffffff;
   color: #ccc;
-  border: 1px solid #ddd;
+  border: 1px solid #bbb;
 }
 #scheduleTable td.empty:hover {
   background-color: #f0f0f0;
@@ -147,15 +153,17 @@ th, td {
 }
 
 #scheduleTable td:not(.empty) {
-  background-color: #fff3e0; /* ← 明るいオレンジ */
+  background-color: #fff3e0;
   font-weight: bold;
   color: #e65100;
-  border: 1px solid #ffcc80;
+  border: 1px solid #bbb;
 }
+
 #scheduleTable td.time-label {
   background-color: #e0f7fa;
   font-weight: bold;
   color: #006064;
+  border: 1px solid #bbb;
 }
     
   </style>

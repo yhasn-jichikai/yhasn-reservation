@@ -255,10 +255,18 @@
       loadSchedule(selectedDate);
     });
 
-    document.getElementById("showListBtn").addEventListener("click", () => {
-      document.getElementById("listSection").classList.add("active");
-      document.getElementById("tableSection").classList.remove("active");
-    });
+    function showSection(sectionId) {
+  document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+}
+
+document.getElementById("showListBtn").addEventListener("click", () => {
+  showSection("listSection");
+});
+
+document.getElementById("showTableBtn").addEventListener("click", () => {
+  showSection("tableSection");
+});
 
     document.getElementById("showTableBtn").addEventListener("click", () => {
       document.getElementById("listSection").classList.remove("active");

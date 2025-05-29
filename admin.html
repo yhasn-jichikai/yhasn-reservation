@@ -211,7 +211,128 @@
   document.getElementById(tabId).style.display = "block";
   event.target.classList.add("active");
 }
+<!-- 祝日リスト -->
+<script>
+const allHolidays = {
+  "2025-01-01": "元日",
+  "2025-01-13": "成人の日",
+  "2025-02-11": "建国記念の日",
+  "2025-02-23": "天皇誕生日",
+  "2025-03-20": "春分の日",
+  "2025-04-29": "昭和の日",
+  "2025-05-03": "憲法記念日",
+  "2025-05-04": "みどりの日",
+  "2025-05-05": "こどもの日",
+  "2025-05-06": "振替休日",
+  "2025-07-21": "海の日",
+  "2025-08-11": "山の日",
+  "2025-09-15": "敬老の日",
+  "2025-09-23": "秋分の日",
+  "2025-10-13": "スポーツの日",
+  "2025-11-03": "文化の日",
+  "2025-11-23": "勤労感謝の日",
+  "2025-12-23": "天皇誕生日"
+};
 
+// flatpickr初期化
+flatpickr("#datePicker", {
+  locale: "ja",
+  dateFormat: "Y-m-d",
+  defaultDate: getNextValidDate(new Date()),
+  onChange: ([selectedDate]) => {
+    loadSchedule(selectedDate);
+  }
+});
+
+// ボタンクリックで日付変更
+document.getElementById("prevDayBtn").addEventListener("click", () => {
+  const date = new Date(document.getElementById("datePicker").value);
+  document.getElementById("datePicker")._flatpickr.setDate(getNextValidDate(date, -1));
+});
+
+document.getElementById("nextDayBtn").addEventListener("click", () => {
+  const date = new Date(document.getElementById("datePicker").value);
+  document.getElementById("datePicker")._flatpickr.setDate(getNextValidDate(date, 1));
+});
+
+function getNextValidDate(date, step = 0) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + step);
+  while (next.getDay() === 0 || next.getDay() === 6 || allHolidays[formatDate(next)]) {
+    next.setDate(next.getDate() + (step >= 0 ? 1 : -1));
+  }
+  return next;
+}
+
+function formatDate(date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function loadSchedule(date) {
+  const scheduleTable = document.getElementById("scheduleTable");
+  scheduleTable.innerHTML = "";
+
+  const dateStr = formatDate(date);
+  const timeSlots = ["08:30-09:00", "09:00-10:40", "10:50-12:20", "13:00-14:30", "14:40-16:10", "16:20-17:50"];
+  const rooms = [
+    { name: "学生演習室1", beds: ["1", "2"] },
+    { name: "学生演習室2", beds: ["3", "4"] },
+    { name: "学生演習室3", beds: ["5", "6"] },
+    { name: "学生演習室4", beds: ["7", "8"] },
+    { name: "学生演習室5", beds: ["9", "10"] },
+    { name: "交流室", beds: ["11", "12"] }
+  ];
+
+  db.collection("reservations")
+    .where("date", "==", dateStr)
+    .get()
+    .then(snapshot => {
+      const dataMap = {};
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        dataMap[`${data.time}_${data.room}`] = data;
+      });
+
+      let html = "";
+      rooms.forEach(room => {
+        html += `<h3>${room.name}</h3>`;
+        html += `<table><thead><tr><th>時間帯</th>`;
+        room.beds.forEach(b => {
+          html += `<th>ベッド${b}</th>`;
+        });
+        html += `</tr></thead><tbody>`;
+        timeSlots.forEach(time => {
+          html += `<tr><td>${time}</td>`;
+          room.beds.forEach(bed => {
+            const key = `${time}_ベッド${bed}`;
+            const d = dataMap[key];
+            if (d) {
+              html += `<td><div>${d.studentId || ""}</div><div>${d.grade || ""}</div><div>${d.name || ""}</div></td>`;
+            } else {
+              html += `<td class="empty">空き</td>`;
+            }
+          });
+          html += `</tr>`;
+        });
+        html += `</tbody></table><br>`;
+      });
+
+      scheduleTable.innerHTML = html;
+    })
+    .catch(err => {
+      scheduleTable.innerHTML = `<p style="color:red;">読み込み失敗: ${err.message}</p>`;
+    });
+}
+
+// 初期表示
+document.addEventListener("DOMContentLoaded", () => {
+  const today = getNextValidDate(new Date());
+  document.getElementById("datePicker")._flatpickr.setDate(today);
+});
+</script>
     
   </script>
 </body>

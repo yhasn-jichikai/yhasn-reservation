@@ -76,9 +76,10 @@ document.getElementById("googleLogin").addEventListener("click", () => {
       }
     })
     .catch(error => {
-      document.getElementById("message").textContent = "ログインに失敗しました。";
-      console.error(error);
-    });
+  if (error.code === 'auth/popup-closed-by-user') return; // ポップアップ閉じただけなら無視
+  document.getElementById("message").textContent = "ログインに失敗しました。";
+  console.error(error);
+});
 });
 
 document.getElementById("verifyPassword").addEventListener("click", () => {

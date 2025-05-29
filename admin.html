@@ -99,7 +99,7 @@
   </div>
 
   <!-- 管理者予約フォーム -->
-  <form id="adminReserveForm">
+  <form id="adminReserveForm" class="section">
     <h2>新規予約追加（管理者用）</h2>
     <label>日付: <input type="date" id="adminDate" required></label><br>
     <label>時間帯:
@@ -268,15 +268,12 @@ document.getElementById("showTableBtn").addEventListener("click", () => {
   showSection("tableSection");
 });
 
-    document.getElementById("showTableBtn").addEventListener("click", () => {
-      document.getElementById("listSection").classList.remove("active");
-      document.getElementById("tableSection").classList.add("active");
-    });
+    
 
-    document.getElementById("showAdminFormBtn").addEventListener("click", () => {
-      const form = document.getElementById("adminReserveForm");
-      form.style.display = form.style.display === "none" ? "block" : "none";
-    });
+   document.getElementById("showAdminFormBtn").addEventListener("click", () => {
+  document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+  document.getElementById("adminReserveForm").style.display = "block";
+});
 
     document.getElementById("logoutButton").addEventListener("click", () => {
       firebase.auth().signOut().then(() => {

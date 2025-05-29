@@ -94,6 +94,10 @@ th, td {
 #scheduleTable td.empty {
   color: #ccc;
 }
+    #scheduleTable td.empty:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
   </style>
   
   <!-- flatpickr -->
@@ -331,7 +335,7 @@ function loadSchedule(date) {
   <div style="font-size: 14px; font-weight: 600; color: #0277bd;">${d.name || ""}</div>
 </td>`;
             } else {
-              html += `<td class="empty"><i class="fas fa-circle"></i></td>`;
+           html += `<td class="empty" title="予約可能"><i class="fas fa-circle"></i></td>`;
             }
           });
           html += `</tr>`;

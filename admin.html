@@ -462,11 +462,14 @@ document.getElementById("prevDayBtn").addEventListener("click", () => {
     const newDate = getNextValidDate(date, 1);
     document.getElementById("datePicker")._flatpickr.setDate(newDate);
     loadSchedule(newDate);
+    updatePrevButtonVisibility(newDate); // ← これを追加
   });
 
-  const today = getNextValidDate(new Date());
-document.getElementById("datePicker")._flatpickr.setDate(today);
-updatePrevButtonVisibility(today); // ← 追加
+  // flatpickr の初期化後に確実に prev ボタンを更新するため、初期化完了イベントを利用
+  setTimeout(() => {
+    const initialDate = document.getElementById("datePicker")._flatpickr.selectedDates[0];
+    updatePrevButtonVisibility(initialDate);
+  }, 100); // flatpickr 初期化後の遅延で実行
  
   function updatePrevButtonVisibility(selectedDate) {
   const today = new Date();

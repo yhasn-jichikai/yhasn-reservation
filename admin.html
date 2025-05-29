@@ -310,7 +310,7 @@ firebase.auth().onAuthStateChanged(user => {
     document.getElementById("logoutButton").addEventListener("click", () => {
       firebase.auth().signOut().then(() => {
         alert("ログアウトしました");
-        location.href = "admin-login.html";
+        location.href = "https://kurokeneko.github.io/yhasn-reservation/admin-login.html";
       });
     });
     function switchTab(tabId) {

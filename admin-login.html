@@ -61,9 +61,7 @@
     const provider = new firebase.auth.GoogleAuthProvider();
 
    // Googleログインボタンでリダイレクト処理を開始
-document.getElementById("googleLogin").addEventListener("click", () => {
-  firebase.auth().signInWithRedirect(provider);
-});
+
 
 // リダイレクト後に戻ってきたときの処理
 document.addEventListener("DOMContentLoaded", () => {
@@ -102,14 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-    document.getElementById("verifyPassword").addEventListener("click", () => {
-      const password = document.getElementById("adminPassword").value;
-      if (password === "admin2025") {
-        window.location.href = "admin.html"; // 管理者画面へ遷移
-      } else {
-        document.getElementById("message").textContent = "パスワードが間違っています。";
-      }
-    });
+   
   </script>
 </body>
 </html>

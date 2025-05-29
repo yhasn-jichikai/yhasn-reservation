@@ -66,23 +66,41 @@ document.getElementById("googleLogin").addEventListener("click", () => {
 });
 
 // リダイレクト後に戻ってきたときの処理
-firebase.auth().getRedirectResult()
-  .then(result => {
-    if (result.user) {
-      const email = result.user.email;
-      if (email.endsWith("@yhasn.ed.jp")) {
-        document.getElementById("verifyPassword").style.display = "inline-block";
-        document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
-      } else {
-        firebase.auth().signOut();
-        document.getElementById("message").textContent = "許可されていないドメインです。";
-      }
-    }
-  })
-  .catch(error => {
-    document.getElementById("message").textContent = "ログイン処理中にエラーが発生しました。";
-    console.error(error);
+document.addEventListener("DOMContentLoaded", () => {
+  // Googleログインボタンでリダイレクト処理を開始
+  document.getElementById("googleLogin").addEventListener("click", () => {
+    firebase.auth().signInWithRedirect(provider);
   });
+
+  // リダイレクト後に戻ってきたときの処理
+  firebase.auth().getRedirectResult()
+    .then(result => {
+      if (result.user) {
+        const email = result.user.email;
+        if (email.endsWith("@yhasn.ed.jp")) {
+          document.getElementById("verifyPassword").style.display = "inline-block";
+          document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
+        } else {
+          firebase.auth().signOut();
+          document.getElementById("message").textContent = "許可されていないドメインです。";
+        }
+      }
+    })
+    .catch(error => {
+      document.getElementById("message").textContent = "ログイン処理中にエラーが発生しました。";
+      console.error(error);
+    });
+
+  // パスワード認証処理
+  document.getElementById("verifyPassword").addEventListener("click", () => {
+    const password = document.getElementById("adminPassword").value;
+    if (password === "admin2025") {
+      window.location.href = "admin.html";
+    } else {
+      document.getElementById("message").textContent = "パスワードが間違っています。";
+    }
+  });
+});
 
     document.getElementById("verifyPassword").addEventListener("click", () => {
       const password = document.getElementById("adminPassword").value;

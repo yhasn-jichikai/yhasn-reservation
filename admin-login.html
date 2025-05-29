@@ -44,7 +44,7 @@
     <button id="googleLogin">Googleでログイン</button><br>
     <input type="password" id="adminPassword" placeholder="パスワードを入力">
     <button id="verifyPassword" style="display:none;">管理画面へ進む</button>
-    <p id="message" style="color:red;"></p>
+   <p id="message"></p>
   </div>
 
   <script>
@@ -69,7 +69,8 @@ document.getElementById("googleLogin").addEventListener("click", () => {
       const email = result.user.email;
       if (email.endsWith("@yhasn.ed.jp")) {
         document.getElementById("verifyPassword").style.display = "inline-block";
-        document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
+       document.getElementById("message").style.color = "blue";
+document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
       } else {
         firebase.auth().signOut();
         document.getElementById("message").textContent = "許可されていないドメインです。";
@@ -77,7 +78,7 @@ document.getElementById("googleLogin").addEventListener("click", () => {
     })
     .catch(error => {
   if (error.code === 'auth/popup-closed-by-user') return; // ポップアップ閉じただけなら無視
-  document.getElementById("message").textContent = "ログインに失敗しました。";
+  document.getElementById("message").textContent = "ログインに失敗しました。再度試してください。";
   console.error(error);
 });
 });

@@ -235,15 +235,15 @@ th, td {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+
 
 firebase.auth().onAuthStateChanged(user => {
   if (!user) {
     alert("ログインしてください");
     window.location.href = "admin-login.html";
   } else {
-    loadReservations(); // ← ログイン済みのときだけ読み込み実行！
+    loadReservations();           // ← ログイン済みなら予約一覧を読み込む
+    setupFlatpickrAndButtons();  // ← flatpickrなどの初期化を実行
   }
 });
 
@@ -349,35 +349,7 @@ const allHolidays = {
   "2025-12-23": "天皇誕生日"
 };
 
-flatpickr("#datePicker", {
-  locale: "ja",
-  dateFormat: "Y-m-d",
-  defaultDate: getNextValidDate(new Date()),
-  disable: [
-    function(date) {
-      const day = date.getDay();
-      const dateStr = formatDate(date);
-      return day === 0 || day === 6 || allHolidays[dateStr];
-    }
-  ],
-  onChange: ([selectedDate]) => {
-    loadSchedule(selectedDate);
-  }
-});
 
-document.getElementById("prevDayBtn").addEventListener("click", () => {
-  const date = new Date(document.getElementById("datePicker").value);
-  const newDate = getNextValidDate(date, -1);
-  document.getElementById("datePicker")._flatpickr.setDate(newDate);
-  loadSchedule(newDate); // ← 追加！
-});
-
-document.getElementById("nextDayBtn").addEventListener("click", () => {
-  const date = new Date(document.getElementById("datePicker").value);
-  const newDate = getNextValidDate(date, 1);
-  document.getElementById("datePicker")._flatpickr.setDate(newDate);
-  loadSchedule(newDate); // ← 追加！
-});
 
 function getNextValidDate(date, step = 0) {
   const next = new Date(date);
@@ -456,10 +428,41 @@ function loadSchedule(date) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function setupFlatpickrAndButtons() {
+  flatpickr("#datePicker", {
+    locale: "ja",
+    dateFormat: "Y-m-d",
+    defaultDate: getNextValidDate(new Date()),
+    disable: [
+      function(date) {
+        const day = date.getDay();
+        const dateStr = formatDate(date);
+        return day === 0 || day === 6 || allHolidays[dateStr];
+      }
+    ],
+    onChange: ([selectedDate]) => {
+      loadSchedule(selectedDate);
+    }
+  });
+
+  document.getElementById("prevDayBtn").addEventListener("click", () => {
+    const date = new Date(document.getElementById("datePicker").value);
+    const newDate = getNextValidDate(date, -1);
+    document.getElementById("datePicker")._flatpickr.setDate(newDate);
+    loadSchedule(newDate);
+  });
+
+  document.getElementById("nextDayBtn").addEventListener("click", () => {
+    const date = new Date(document.getElementById("datePicker").value);
+    const newDate = getNextValidDate(date, 1);
+    document.getElementById("datePicker")._flatpickr.setDate(newDate);
+    loadSchedule(newDate);
+  });
+
   const today = getNextValidDate(new Date());
   document.getElementById("datePicker")._flatpickr.setDate(today);
-});    
+}
+    
   </script>
 </body>
 </html>

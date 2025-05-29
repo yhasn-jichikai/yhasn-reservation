@@ -44,7 +44,8 @@
     <button id="googleLogin">Googleでログイン</button><br>
     <input type="password" id="adminPassword" placeholder="パスワードを入力">
     <button id="verifyPassword" style="display:none;">管理画面へ進む</button>
-   <p id="message" style="color:red;"></p>
+   <p id="alert" style="color:red;"></p>
+   <p id="message" style="color:blue;"></p>
   </div>
 
   <script>
@@ -69,16 +70,16 @@ document.getElementById("googleLogin").addEventListener("click", () => {
       const email = result.user.email;
       if (email.endsWith("@yhasn.ed.jp")) {
         document.getElementById("verifyPassword").style.display = "inline-block";
-       document.getElementById("message").style.color = "blue";
+       
 document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
       } else {
         firebase.auth().signOut();
-        document.getElementById("message").textContent = "許可されていないドメインです。";
+        document.getElementById("alart").textContent = "許可されていないドメインです。";
       }
     })
     .catch(error => {
   if (error.code === 'auth/popup-closed-by-user') return; // ポップアップ閉じただけなら無視
-  document.getElementById("message").textContent = "ログインに失敗しました。再度試してください。";
+  document.getElementById("alert").textContent = "ログインに失敗しました。再度試してください。";
   console.error(error);
 });
 });
@@ -88,7 +89,7 @@ document.getElementById("verifyPassword").addEventListener("click", () => {
   if (password === "admin2025") {
     window.location.href = "admin.html";
   } else {
-    document.getElementById("message").textContent = "パスワードが間違っています。";
+    document.getElementById("alert").textContent = "パスワードが間違っています。";
   }
 });
 

@@ -211,8 +211,7 @@
   document.getElementById(tabId).style.display = "block";
   event.target.classList.add("active");
 }
-<!-- 祝日リスト -->
-<script>
+// 祝日リスト
 const allHolidays = {
   "2025-01-01": "元日",
   "2025-01-13": "成人の日",
@@ -234,7 +233,6 @@ const allHolidays = {
   "2025-12-23": "天皇誕生日"
 };
 
-// flatpickr初期化
 flatpickr("#datePicker", {
   locale: "ja",
   dateFormat: "Y-m-d",
@@ -244,7 +242,6 @@ flatpickr("#datePicker", {
   }
 });
 
-// ボタンクリックで日付変更
 document.getElementById("prevDayBtn").addEventListener("click", () => {
   const date = new Date(document.getElementById("datePicker").value);
   document.getElementById("datePicker")._flatpickr.setDate(getNextValidDate(date, -1));
@@ -327,13 +324,10 @@ function loadSchedule(date) {
     });
 }
 
-// 初期表示
 document.addEventListener("DOMContentLoaded", () => {
   const today = getNextValidDate(new Date());
   document.getElementById("datePicker")._flatpickr.setDate(today);
-});
-</script>
-    
+});    
   </script>
 </body>
 </html>

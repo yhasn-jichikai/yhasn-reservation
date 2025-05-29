@@ -341,6 +341,13 @@ flatpickr("#datePicker", {
   locale: "ja",
   dateFormat: "Y-m-d",
   defaultDate: getNextValidDate(new Date()),
+  disable: [
+    function(date) {
+      const day = date.getDay();
+      const dateStr = formatDate(date);
+      return day === 0 || day === 6 || allHolidays[dateStr];
+    }
+  ],
   onChange: ([selectedDate]) => {
     loadSchedule(selectedDate);
   }

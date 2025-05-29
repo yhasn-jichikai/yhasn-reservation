@@ -53,7 +53,28 @@
 .tab-content {
   margin-top: 20px;
 }
-  </style>
+
+    #scheduleTable table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  margin-top: 10px;
+}
+#scheduleTable th, #scheduleTable td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  height: 60px;
+  text-align: center;
+  vertical-align: middle;
+}
+#scheduleTable td.empty {
+  color: #ccc;
+}
+  </style
+  <!-- flatpickr -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">>
 </head>
 <body>
 <h1>管理者用画面</h1>
@@ -85,7 +106,12 @@
 </div>
 
 <div id="emptyTab" class="tab-content" style="display:none;">
-  <p>（ここに空室表を表示予定）</p>
+  <div style="text-align: center; margin-bottom: 10px;">
+    <button id="prevDayBtn">＜ 前の日</button>
+    <input type="text" id="datePicker" readonly style="width: 150px; text-align:center;">
+    <button id="nextDayBtn">次の日 ＞</button>
+  </div>
+  <div id="scheduleTable"></div>
 </div>
 
   <!-- Firebase SDK -->
@@ -179,6 +205,11 @@
   document.getElementById(tabId).style.display = "block";
   event.target.classList.add("active");
 }
+<!-- flatpickr -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
   </script>
 </body>
 </html>

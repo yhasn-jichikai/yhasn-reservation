@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>管理者ログイン</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #e3f2fd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #loginContainer {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      margin-top: 10px;
+      width: 200px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #0288d1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginContainer">
+    <h2>管理者ログイン</h2>
+    <button id="googleLogin">Googleでログイン</button><br>
+    <input type="password" id="adminPassword" placeholder="パスワードを入力">
+    <button id="verifyPassword" style="display:none;">管理画面へ進む</button>
+    <p id="message" style="color:red;"></p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+      authDomain: "yhasn-reserve.firebaseapp.com",
+      projectId: "yhasn-reserve",
+      storageBucket: "yhasn-reserve.appspot.com",
+      messagingSenderId: "406712332925",
+      appId: "1:406712332925:web:fb9253a313e4c76cfcb714"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    document.getElementById("googleLogin").addEventListener("click", () => {
+      firebase.auth().signInWithPopup(provider)
+        .then(result => {
+          const email = result.user.email;
+          if (email.endsWith("@yhasn.ed.jp")) {
+            document.getElementById("verifyPassword").style.display = "inline-block";
+            document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
+          } else {
+            firebase.auth().signOut();
+            document.getElementById("message").textContent = "許可されていないドメインです。";
+          }
+        })
+        .catch(error => {
+          document.getElementById("message").textContent = "ログインに失敗しました。";
+          console.error(error);
+        });
+    });
+
+    document.getElementById("verifyPassword").addEventListener("click", () => {
+      const password = document.getElementById("adminPassword").value;
+      if (password === "admin2025") {
+        window.location.href = "admin.html"; // 管理者画面へ遷移
+      } else {
+        document.getElementById("message").textContent = "パスワードが間違っています。";
+      }
+    });
+  </script>
+</body>
+</html>

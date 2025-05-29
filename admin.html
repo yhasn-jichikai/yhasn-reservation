@@ -152,6 +152,12 @@ th, td {
   color: #e65100;
   border: 1px solid #ffcc80;
 }
+#scheduleTable td.time-label {
+  background-color: #e0f7fa;
+  font-weight: bold;
+  color: #006064;
+}
+    
   </style>
   
   <!-- flatpickr -->
@@ -378,7 +384,7 @@ function loadSchedule(date) {
         html += `</tr></thead><tbody>`;
 
         timeSlots.forEach(time => {
-          html += `<tr><td>${time}</td>`;
+          html += `<tr><td class="time-label">${time}</td>`;
           rooms.forEach(room => {
             const key = `${time}_${room}`;
             const d = dataMap[key];

@@ -273,14 +273,11 @@ function loadSchedule(date) {
   scheduleTable.innerHTML = "";
 
   const dateStr = formatDate(date);
-  const timeSlots = ["08:30-09:00", "09:00-10:40", "10:50-12:20", "13:00-14:30", "14:40-16:10", "16:20-17:50"];
-  const rooms = [
-    { name: "学生演習室1", beds: ["1", "2"] },
-    { name: "学生演習室2", beds: ["3", "4"] },
-    { name: "学生演習室3", beds: ["5", "6"] },
-    { name: "学生演習室4", beds: ["7", "8"] },
-    { name: "学生演習室5", beds: ["9", "10"] },
-    { name: "交流室", beds: ["11", "12"] }
+  const timeSlots = ["08:30-09:00", "09:00-10:40", "10:40-12:10", "12:10-13:20", "13:20-15:00", "15:00-16:30", "16:30-18:00", "18:00-20:00"];
+  const allRooms = [
+    "学生演習室1", "学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5",
+    "交流室", "ベッド1", "ベッド2", "ベッド3", "ベッド4", "ベッド5", "ベッド6",
+    "ベッド7", "ベッド8", "ベッド9", "ベッド10", "ベッド11", "ベッド12"
   ];
 
   db.collection("reservations")
@@ -293,31 +290,35 @@ function loadSchedule(date) {
         dataMap[`${data.time}_${data.room}`] = data;
       });
 
-      let html = "";
-      rooms.forEach(room => {
-        html += `<h3>${room.name}</h3>`;
-        html += `<table><thead><tr><th>時間帯</th>`;
-        room.beds.forEach(b => {
-          html += `<th>ベッド${b}</th>`;
-        });
+      function generateTable(rooms, title) {
+        let html = `<h3>${title}</h3><table><thead><tr><th>時間帯</th>`;
+        rooms.forEach(room => html += `<th>${room}</th>`);
         html += `</tr></thead><tbody>`;
+
         timeSlots.forEach(time => {
           html += `<tr><td>${time}</td>`;
-          room.beds.forEach(bed => {
-            const key = `${time}_ベッド${bed}`;
+          rooms.forEach(room => {
+            const key = `${time}_${room}`;
             const d = dataMap[key];
             if (d) {
               html += `<td><div>${d.studentId || ""}</div><div>${d.grade || ""}</div><div>${d.name || ""}</div></td>`;
             } else {
-              html += `<td class="empty">空き</td>`;
+              html += `<td class="empty"><i class="fas fa-circle"></i></td>`;
             }
           });
           html += `</tr>`;
         });
-        html += `</tbody></table><br>`;
-      });
 
-      scheduleTable.innerHTML = html;
+        html += `</tbody></table><br>`;
+        return html;
+      }
+
+      const group1 = allRooms.filter(r => r.includes("演習室") || r.includes("交流室"));
+      const group2 = allRooms.filter(r => r.includes("ベッド"));
+
+      scheduleTable.innerHTML =
+        generateTable(group1, "学生演習室・交流室") +
+        generateTable(group2, "ベッド（1〜12）");
     })
     .catch(err => {
       scheduleTable.innerHTML = `<p style="color:red;">読み込み失敗: ${err.message}</p>`;

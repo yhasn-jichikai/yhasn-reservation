@@ -221,6 +221,14 @@ th, td {
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    // ログインしていなければログインページに戻す
+    alert("ログインしてください");
+    window.location.href = "admin-login.html";
+  }
+});
+    
     // Firebase 初期化
     const firebaseConfig = {
       apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",

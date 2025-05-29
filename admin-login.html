@@ -66,8 +66,10 @@ const provider = new firebase.auth.GoogleAuthProvider();
 document.getElementById("googleLogin").addEventListener("click", () => {
   firebase.auth().signInWithPopup(provider)
     .then(result => {
-      const email = result.user.email;
-      if (email.endsWith("@yhasn.ed.jp")) {
+  document.getElementById("message").textContent = ""; // 以前のエラーメッセージをクリア
+  document.getElementById("message").style.color = "green"; // 成功時は緑
+  const email = result.user.email;
+  if (email.endsWith("@yhasn.ed.jp")) {
         document.getElementById("verifyPassword").style.display = "inline-block";
         
      document.getElementById("message").style.color = "green";
@@ -87,6 +89,7 @@ document.getElementById("message").textContent = "Googleログイン成功。パ
 });
 
 document.getElementById("verifyPassword").addEventListener("click", () => {
+  document.getElementById("message").textContent = ""; // 過去のメッセージを消す
   const password = document.getElementById("adminPassword").value;
   if (password === "admin2025") {
     window.location.href = "admin.html";

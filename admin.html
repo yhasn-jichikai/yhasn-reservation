@@ -431,27 +431,31 @@ function loadSchedule(date) {
 
 function setupFlatpickrAndButtons() {
   flatpickr("#datePicker", {
-    locale: "ja",
-    dateFormat: "Y-m-d",
-    defaultDate: getNextValidDate(new Date()),
-    disable: [
-      function(date) {
-        const day = date.getDay();
-        const dateStr = formatDate(date);
-        return day === 0 || day === 6 || allHolidays[dateStr];
-      }
-    ],
-    onChange: ([selectedDate]) => {
-      loadSchedule(selectedDate);
+  locale: "ja",
+  dateFormat: "Y-m-d",
+  defaultDate: getNextValidDate(new Date()),
+  minDate: getNextValidDate(new Date()), // ← 過去日付を無効化
+  disable: [
+    function(date) {
+      const day = date.getDay();
+      const dateStr = formatDate(date);
+      return day === 0 || day === 6 || allHolidays[dateStr];
     }
-  });
+  ],
+  onChange: ([selectedDate]) => {
+    loadSchedule(selectedDate);
+    updatePrevButtonVisibility(selectedDate); // ← 追加：前日ボタンの表示制御
+  }
+    
+});
 
-  document.getElementById("prevDayBtn").addEventListener("click", () => {
-    const date = new Date(document.getElementById("datePicker").value);
-    const newDate = getNextValidDate(date, -1);
-    document.getElementById("datePicker")._flatpickr.setDate(newDate);
-    loadSchedule(newDate);
-  });
+document.getElementById("prevDayBtn").addEventListener("click", () => {
+  const date = new Date(document.getElementById("datePicker").value);
+  const newDate = getNextValidDate(date, -1);
+  document.getElementById("datePicker")._flatpickr.setDate(newDate);
+  loadSchedule(newDate);
+  updatePrevButtonVisibility(newDate); // ← 追記
+});
 
   document.getElementById("nextDayBtn").addEventListener("click", () => {
     const date = new Date(document.getElementById("datePicker").value);
@@ -461,7 +465,14 @@ function setupFlatpickrAndButtons() {
   });
 
   const today = getNextValidDate(new Date());
-  document.getElementById("datePicker")._flatpickr.setDate(today);
+document.getElementById("datePicker")._flatpickr.setDate(today);
+updatePrevButtonVisibility(today); // ← 追加
+ 
+  function updatePrevButtonVisibility(selectedDate) {
+  const min = getNextValidDate(new Date());
+  const isToday = formatDate(selectedDate) === formatDate(min);
+  document.getElementById("prevDayBtn").style.display = isToday ? "none" : "inline-block";
+}
 }
     
   </script>

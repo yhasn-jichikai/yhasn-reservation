@@ -62,6 +62,22 @@ th, td {
     button:hover {
       background-color: #0277bd;
     }
+    #logoutButton {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #ef5350;
+  border-radius: 6px;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.3s, transform 0.2s;
+}
+#logoutButton:hover {
+  background-color: #e53935;
+  transform: scale(1.05);
+}
     #adminInfo {
       margin-bottom: 10px;
     }
@@ -97,6 +113,12 @@ th, td {
     #scheduleTable td.empty:hover {
   background-color: #f0f0f0;
   cursor: pointer;
+}
+    #scheduleTable td:not(.empty) {
+  background-color: #e1f5fe;
+  font-weight: bold;
+  color: #0277bd;
+  border: 1px solid #81d4fa;
 }
   </style>
   

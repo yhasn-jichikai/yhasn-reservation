@@ -348,12 +348,16 @@ flatpickr("#datePicker", {
 
 document.getElementById("prevDayBtn").addEventListener("click", () => {
   const date = new Date(document.getElementById("datePicker").value);
-  document.getElementById("datePicker")._flatpickr.setDate(getNextValidDate(date, -1));
+  const newDate = getNextValidDate(date, -1);
+  document.getElementById("datePicker")._flatpickr.setDate(newDate);
+  loadSchedule(newDate); // ← 追加！
 });
 
 document.getElementById("nextDayBtn").addEventListener("click", () => {
   const date = new Date(document.getElementById("datePicker").value);
-  document.getElementById("datePicker")._flatpickr.setDate(getNextValidDate(date, 1));
+  const newDate = getNextValidDate(date, 1);
+  document.getElementById("datePicker")._flatpickr.setDate(newDate);
+  loadSchedule(newDate); // ← 追加！
 });
 
 function getNextValidDate(date, step = 0) {

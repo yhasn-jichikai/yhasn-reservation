@@ -325,7 +325,11 @@ function loadSchedule(date) {
             const key = `${time}_${room}`;
             const d = dataMap[key];
             if (d) {
-              html += `<td><div>${d.studentId || ""}</div><div>${d.grade || ""}</div><div>${d.name || ""}</div></td>`;
+             html += `<td>
+  <div style="font-size: 12px; font-weight: bold;">${d.studentId || ""}</div>
+  <div style="font-size: 13px;">${d.grade || ""}</div>
+  <div style="font-size: 14px; font-weight: 600; color: #0277bd;">${d.name || ""}</div>
+</td>`;
             } else {
               html += `<td class="empty"><i class="fas fa-circle"></i></td>`;
             }

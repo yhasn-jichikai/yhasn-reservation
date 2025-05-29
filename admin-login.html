@@ -63,28 +63,21 @@
 
 const provider = new firebase.auth.GoogleAuthProvider();
 
-// Googleログインボタン → リダイレクトでログイン処理開始
 document.getElementById("googleLogin").addEventListener("click", () => {
-  firebase.auth().signInWithRedirect(provider);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  firebase.auth().getRedirectResult()
+  firebase.auth().signInWithPopup(provider)
     .then(result => {
-      if (result.user) {
-        const email = result.user.email;
-        if (email.endsWith("@yhasn.ed.jp")) {
-          document.getElementById("verifyPassword").style.display = "inline-block";
-          document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
-        } else {
-          firebase.auth().signOut();
-          document.getElementById("message").textContent = "許可されていないドメインです。";
-        }
+      const email = result.user.email;
+      if (email.endsWith("@yhasn.ed.jp")) {
+        document.getElementById("verifyPassword").style.display = "inline-block";
+        document.getElementById("message").textContent = "Googleログイン成功。パスワードを入力してください。";
+      } else {
+        firebase.auth().signOut();
+        document.getElementById("message").textContent = "許可されていないドメインです。";
       }
     })
     .catch(error => {
-      console.error("リダイレクト結果取得エラー:", error);
-      document.getElementById("message").textContent = "ログイン処理中にエラーが発生しました。";
+      document.getElementById("message").textContent = "ログインに失敗しました。";
+      console.error(error);
     });
 });
 

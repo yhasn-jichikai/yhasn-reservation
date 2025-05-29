@@ -469,10 +469,13 @@ document.getElementById("datePicker")._flatpickr.setDate(today);
 updatePrevButtonVisibility(today); // ← 追加
  
   function updatePrevButtonVisibility(selectedDate) {
-  const min = getNextValidDate(new Date());
-  const isTodayOrBefore = selectedDate <= new Date();
-document.getElementById("prevDayBtn").style.display = isTodayOrBefore ? "none" : "inline-block";
-  document.getElementById("prevDayBtn").style.display = isToday ? "none" : "inline-block";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 時間部分を無視するためクリア
+  const selected = new Date(selectedDate);
+  selected.setHours(0, 0, 0, 0);
+  
+  const isBeforeOrSame = selected <= today;
+  document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
 }
 }
     

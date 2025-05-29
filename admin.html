@@ -36,10 +36,34 @@
     #adminInfo {
       margin-bottom: 10px;
     }
+    .tab-button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  border: none;
+  background-color: #b3e5fc;
+  color: #0277bd;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.tab-button.active {
+  background-color: #0288d1;
+  color: white;
+}
+.tab-content {
+  margin-top: 20px;
+}
   </style>
 </head>
 <body>
-  <h1>管理者用：予約一覧</h1>
+<h1>管理者用画面</h1>
+
+<div style="margin-bottom: 20px;">
+  <button class="tab-button active" onclick="switchTab('reservationsTab')">予約情報一覧</button>
+  <button class="tab-button" onclick="switchTab('emptyTab')">空室表</button>
+</div>
+
+<div id="reservationsTab" class="tab-content">
   <div id="adminInfo"></div>
   <button id="logoutButton">ログアウト</button>
 
@@ -58,6 +82,11 @@
     </thead>
     <tbody></tbody>
   </table>
+</div>
+
+<div id="emptyTab" class="tab-content" style="display:none;">
+  <p>（ここに空室表を表示予定）</p>
+</div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -144,6 +173,12 @@
         location.href = "/";
       });
     });
+    function switchTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach(div => div.style.display = "none");
+  document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+  document.getElementById(tabId).style.display = "block";
+  event.target.classList.add("active");
+}
   </script>
 </body>
 </html>

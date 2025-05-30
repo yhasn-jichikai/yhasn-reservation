@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>管理者ログイン</title>
+  <!-- ここに追加 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <style>
@@ -44,7 +46,9 @@
     <button id="googleLogin">Googleでログイン</button><br>
    <div style="position: relative; display: inline-block;">
   <input type="password" id="adminPassword" placeholder="パスワードを入力" style="padding-right: 40px;">
-  <span id="togglePassword" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">👁️</span>
+<span id="togglePassword" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
+  <i class="fas fa-eye"></i>
+</span>
 </div>
     <button id="verifyPassword" style="display:none;">管理画面へ進む</button>
     <p id="message" style="color:red;"></p>
@@ -104,15 +108,17 @@ document.getElementById("verifyPassword").addEventListener("click", () => {
 
 document.getElementById("togglePassword").addEventListener("click", () => {
   const input = document.getElementById("adminPassword");
-  const toggle = document.getElementById("togglePassword");
+  const icon = document.querySelector("#togglePassword i");
   if (input.type === "password") {
     input.type = "text";
-    toggle.textContent = "🙈"; // 表示中は隠すアイコンに
+    icon.classList.remove("fa-eye");
+    icon.classList.add("fa-eye-slash");
   } else {
     input.type = "password";
-    toggle.textContent = "👁️"; // 非表示中は目のアイコンに
+    icon.classList.remove("fa-eye-slash");
+    icon.classList.add("fa-eye");
   }
-});   
+});
   </script>
 </body>
 </html>

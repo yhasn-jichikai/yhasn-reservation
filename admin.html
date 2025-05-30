@@ -239,19 +239,22 @@ th, td {
 
 
 firebase.auth().onAuthStateChanged(user => {
+  const redirectedFromLogout = sessionStorage.getItem("justLoggedOut");
+
   if (!user) {
-    alert("ログインしてください");
+    if (!redirectedFromLogout) {
+      alert("ログインしてください");
+    }
     window.location.href = "admin-login.html";
   } else {
-    // ログイン中のメールアドレスを表示
+    sessionStorage.removeItem("justLoggedOut"); // ログイン状態なら不要
     document.getElementById("adminInfo").innerHTML = `
       <div style="color:#0277bd; font-weight:bold; font-size:15px;">
         ${user.email} でログイン中
       </div>
     `;
-
-    loadReservations();           // ← ログイン済みなら予約一覧を読み込む
-    setupFlatpickrAndButtons();  // ← flatpickrなどの初期化を実行
+    loadReservations();
+    setupFlatpickrAndButtons();
   }
 });
 
@@ -315,13 +318,14 @@ firebase.auth().onAuthStateChanged(user => {
     });
 }
 
-    document.getElementById("logoutButton").addEventListener("click", () => {
-firebase.auth().signOut().then(() => {
-  alert("ログアウトしました。画面遷移します");
-  console.log("Redirecting to login...");
-  location.href = "admin-login.html"; // または絶対パス
+   document.getElementById("logoutButton").addEventListener("click", () => {
+  sessionStorage.setItem("justLoggedOut", "1"); // ← ログアウト直後の判定用
+  firebase.auth().signOut().then(() => {
+    alert("ログアウトしました。画面遷移します");
+    location.href = "admin-login.html";
+  });
 });
-    });
+    
     function switchTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(div => div.style.display = "none");
   document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));

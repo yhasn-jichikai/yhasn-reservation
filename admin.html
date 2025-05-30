@@ -188,6 +188,7 @@ th, td {
 
 <div id="reservationsTab" class="tab-content">
   <div id="adminInfo"></div>
+  
   <button id="logoutButton">ログアウト</button>
 
   <table id="reservationsTable">
@@ -242,6 +243,13 @@ firebase.auth().onAuthStateChanged(user => {
     alert("ログインしてください");
     window.location.href = "admin-login.html";
   } else {
+    // ログイン中のメールアドレスを表示
+    document.getElementById("adminInfo").innerHTML = `
+      <div style="color:#0277bd; font-weight:bold; font-size:15px;">
+        ${user.email} でログイン中
+      </div>
+    `;
+
     loadReservations();           // ← ログイン済みなら予約一覧を読み込む
     setupFlatpickrAndButtons();  // ← flatpickrなどの初期化を実行
   }

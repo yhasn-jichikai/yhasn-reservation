@@ -38,10 +38,17 @@
       border-radius: 5px;
       cursor: pointer;
     }
-  #togglePassword:hover i {
-    opacity: 1;
-    color: #000;
-  }
+
+    
+  #togglePassword {
+  opacity: 0.4;         /* 通常は薄く表示 */
+  color: #000;
+  transition: opacity 0.3s ease; /* スムーズに変化させたい時に便利（任意） */
+}
+
+#togglePassword:hover {
+  opacity: 1.0;         /* マウスを乗せたときはくっきり表示 */
+}
     
   </style>
 </head>

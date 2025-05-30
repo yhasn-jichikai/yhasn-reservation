@@ -42,7 +42,10 @@
   <div id="loginContainer">
     <h2>管理者ログイン</h2>
     <button id="googleLogin">Googleでログイン</button><br>
-    <input type="password" id="adminPassword" placeholder="パスワードを入力">
+   <div style="position: relative; display: inline-block;">
+  <input type="password" id="adminPassword" placeholder="パスワードを入力" style="padding-right: 40px;">
+  <span id="togglePassword" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">👁️</span>
+</div>
     <button id="verifyPassword" style="display:none;">管理画面へ進む</button>
     <p id="message" style="color:red;"></p>
   </div>
@@ -99,7 +102,17 @@ document.getElementById("verifyPassword").addEventListener("click", () => {
   }
 });
 
-   
+document.getElementById("togglePassword").addEventListener("click", () => {
+  const input = document.getElementById("adminPassword");
+  const toggle = document.getElementById("togglePassword");
+  if (input.type === "password") {
+    input.type = "text";
+    toggle.textContent = "🙈"; // 表示中は隠すアイコンに
+  } else {
+    input.type = "password";
+    toggle.textContent = "👁️"; // 非表示中は目のアイコンに
+  }
+});   
   </script>
 </body>
 </html>

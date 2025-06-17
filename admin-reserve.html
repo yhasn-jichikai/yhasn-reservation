@@ -332,12 +332,16 @@ const roomGroup1 = rooms.filter(r => r === "交流室" || r.includes("ベッド"
     times.forEach(time => {
       html += `<tr><th>${time}</th>`;
       roomsSubset.forEach(room => {
-        if (status[time][room]) {
-          const info = status[time][room];
-          html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
-        } else {
-          html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
-        }
+if (status[time] && status[time][room] !== undefined) {
+  const info = status[time][room];
+  if (info) {
+    html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+  } else {
+    html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
+  }
+} else {
+  html += `<td class="disabled">-</td>`;
+}
       });
       html += "</tr>";
     });

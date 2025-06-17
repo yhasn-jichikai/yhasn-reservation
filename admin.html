@@ -333,12 +333,12 @@ firebase.auth().onAuthStateChanged(user => {
   event.target.classList.add("active");
 
   // 空室表タブが表示されたら、そのタイミングで表を更新
-  if (tabId === "emptyTab") {
-    const selectedDate = document.getElementById("datePicker")._flatpickr.selectedDates[0];
-    if (selectedDate) {
-      loadSchedule(selectedDate);
-    }
+if (tabId === "emptyTab") {
+  if (currentDate) {
+    loadSchedule(currentDate);
+    updatePrevButtonVisibility(currentDate);
   }
+}
 }
 // 祝日リスト
 const allHolidays = {

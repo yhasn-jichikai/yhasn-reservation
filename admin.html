@@ -458,6 +458,12 @@ minDate: new Date(), // ← 土日祝に関係なく「今日」から選択可�
     loadSchedule(selectedDate);
     updatePrevButtonVisibility(selectedDate); // ← 追加：前日ボタンの表示制御
   }
+  onReady: ([selectedDate]) => {
+  const fp = document.getElementById("datePicker")._flatpickr;
+  const date = selectedDate || fp.selectedDates[0] || new Date(); // 念のため
+  loadSchedule(date);
+  updatePrevButtonVisibility(date);
+}
     
 });
 
@@ -479,29 +485,7 @@ document.getElementById("nextDayBtn").addEventListener("click", () => {
   updatePrevButtonVisibility(newDate);
 });
 
-flatpickr("#datePicker", {
-  locale: "ja",
-  dateFormat: "Y-m-d",
-  defaultDate: getNextValidDate(new Date()),
-  minDate: new Date(),
-  disable: [
-    function(date) {
-      const day = date.getDay();
-      const dateStr = formatDate(date);
-      return day === 0 || day === 6 || allHolidays[dateStr];
-    }
-  ],
-  onChange: ([selectedDate]) => {
-    loadSchedule(selectedDate);
-    updatePrevButtonVisibility(selectedDate);
-  },
-  onReady: ([selectedDate]) => {
-    if (selectedDate) {
-      loadSchedule(selectedDate);
-      updatePrevButtonVisibility(selectedDate);
-    }
-  }
-});
+
  
   function updatePrevButtonVisibility(selectedDate) {
   const today = new Date();

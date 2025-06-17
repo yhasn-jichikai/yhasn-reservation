@@ -457,7 +457,7 @@ minDate: new Date(), // ← 土日祝に関係なく「今日」から選択可�
   onChange: ([selectedDate]) => {
     loadSchedule(selectedDate);
     updatePrevButtonVisibility(selectedDate); // ← 追加：前日ボタンの表示制御
-  }
+  },
   onReady: ([selectedDate]) => {
   const fp = document.getElementById("datePicker")._flatpickr;
   const date = selectedDate || fp.selectedDates[0] || new Date(); // 念のため

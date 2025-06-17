@@ -316,9 +316,7 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
 
   function renderSchedule(status) {
   const scheduleTableRooms = document.getElementById("scheduleTableRooms");
-  const scheduleTableBeds = document.getElementById("scheduleTableBeds");
-  scheduleTableRooms.innerHTML = "";
-  scheduleTableBeds.innerHTML = "";
+scheduleTableRooms.innerHTML = "";
 
 const roomGroup1 = rooms.filter(r => r === "交流室" || r.includes("ベッド")); // 交流室とベッドだけ
 

@@ -128,15 +128,7 @@ td.available.selected {
       <div id="reservationSection" style="display:none; margin-top:20px;">
         <h2>予約確認</h2>
         <p id="selectedInfo"></p>
-        <label>学籍番号: <input type="text" id="studentId" required></label><br><br>
-        <label>学年:
-          <select id="grade" required>
-            <option value="">選択してください</option>
-            <option value="1年">1年</option>
-            <option value="2年">2年</option>
-            <option value="3年">3年</option>
-          </select>
-        </label><br><br>
+       
         <label>名前: <input type="text" id="name" required></label><br><br>
         <button type="button" id="loginAndReserveButton">予約する</button>
       </div>
@@ -454,8 +446,8 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
   document.getElementById("loginAndReserveButton").addEventListener("click", function () {
     const name = document.getElementById("name").value.trim();
-    const studentId = document.getElementById("studentId").value.trim();
-    const grade = document.getElementById("grade").value;
+    const studentId = "";
+    const grade = "";
 
     if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
       document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";

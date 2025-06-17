@@ -445,7 +445,7 @@ function setupFlatpickrAndButtons() {
   flatpickr("#datePicker", {
   locale: "ja",
   dateFormat: "Y-m-d",
-  defaultDate: getNextValidDate(new Date()),
+  defaultDate: currentDate,
 minDate: new Date(), // ← 土日祝に関係なく「今日」から選択可能
   disable: [
     function(date) {
@@ -454,38 +454,40 @@ minDate: new Date(), // ← 土日祝に関係なく「今日」から選択可�
       return day === 0 || day === 6 || allHolidays[dateStr];
     }
   ],
-  onChange: ([selectedDate]) => {
-    loadSchedule(selectedDate);
-    updatePrevButtonVisibility(selectedDate); // ← 追加：前日ボタンの表示制御
-  },
-  onReady: ([selectedDate]) => {
-  const fp = document.getElementById("datePicker")._flatpickr;
-  const date = selectedDate || fp.selectedDates[0] || new Date(); // 念のため
-  loadSchedule(date);
-  updatePrevButtonVisibility(date);
+onChange: ([selectedDate]) => {
+  if (selectedDate) {
+    currentDate = selectedDate;
+    loadSchedule(currentDate);
+    updatePrevButtonVisibility(currentDate);
+  }
+},
+ onReady: ([selectedDate]) => {
+  currentDate = selectedDate || currentDate;
+  loadSchedule(currentDate);
+  updatePrevButtonVisibility(currentDate);
 }
     
 });
 
 document.getElementById("prevDayBtn").addEventListener("click", () => {
   const fp = document.getElementById("datePicker")._flatpickr;
-  const date = fp.selectedDates[0] || new Date(); // 確実にDateオブジェクト
-  const newDate = getNextValidDate(date, -1);
-  fp.setDate(newDate, true); // 第2引数 true で input.value も更新
-  loadSchedule(newDate);
-  updatePrevButtonVisibility(newDate);
+  const newDate = getNextValidDate(currentDate, -1);
+currentDate = newDate;
+fp.setDate(newDate, true);
+loadSchedule(newDate);
+updatePrevButtonVisibility(currentDate);
 });
 
 document.getElementById("nextDayBtn").addEventListener("click", () => {
   const fp = document.getElementById("datePicker")._flatpickr;
-  const date = fp.selectedDates[0] || new Date(); // 確実にDateオブジェクト
-  const newDate = getNextValidDate(date, 1);
-  fp.setDate(newDate, true); // ここも value 更新を明示
-  loadSchedule(newDate);
-  updatePrevButtonVisibility(newDate);
+const newDate = getNextValidDate(currentDate, 1);
+currentDate = newDate;
+fp.setDate(newDate, true);
+loadSchedule(newDate);
+updatePrevButtonVisibility(currentDate);
 });
 
-
+let currentDate = getNextValidDate(new Date()); // ← グローバル日付管理用
  
   function updatePrevButtonVisibility(selectedDate) {
   const today = new Date();

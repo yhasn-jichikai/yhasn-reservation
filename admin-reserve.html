@@ -119,11 +119,8 @@ td.available.selected {
 
     <form id="reserveForm">
   <div id="selectedDateDisplay" style="text-align:center; font-size:22px; font-weight:bold; margin:20px 0;"></div>
-  <h3>学生演習室・交流室</h3>
+<h3>交流室・ベッド（1〜12）</h3>
 <div id="scheduleTableRooms"></div>
-
-<h3>ベッド（1〜12）</h3>
-<div id="scheduleTableBeds"></div>
 
       <div id="reservationSection" style="display:none; margin-top:20px;">
         <h2>予約確認</h2>
@@ -323,8 +320,7 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
   scheduleTableRooms.innerHTML = "";
   scheduleTableBeds.innerHTML = "";
 
-  const roomGroup1 = rooms.filter(r => r.includes("演習室") || r.includes("交流室"));
-  const roomGroup2 = rooms.filter(r => r.includes("ベッド"));
+const roomGroup1 = rooms.filter(r => r === "交流室" || r.includes("ベッド")); // 交流室とベッドだけ
 
   function generateTable(roomsSubset) {
     let html = "<table><thead><tr><th>時間帯</th>";
@@ -351,7 +347,7 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
   }
 
   scheduleTableRooms.innerHTML = generateTable(roomGroup1);
-  scheduleTableBeds.innerHTML = generateTable(roomGroup2);
+  scheduleTableBeds.innerHTML = ""
 
   const user = firebase.auth().currentUser;
   document.querySelectorAll("td.available").forEach(cell => {

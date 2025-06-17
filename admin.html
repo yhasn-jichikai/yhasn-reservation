@@ -326,19 +326,22 @@ firebase.auth().onAuthStateChanged(user => {
   });
 });
     
-    function switchTab(tabId) {
+function switchTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(div => div.style.display = "none");
   document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
   document.getElementById(tabId).style.display = "block";
   event.target.classList.add("active");
 
-  // 空室表タブが表示されたら、そのタイミングで表を更新
-if (tabId === "emptyTab") {
-  if (currentDate) {
-    loadSchedule(currentDate);
-    updatePrevButtonVisibility(currentDate);
+  if (tabId === "emptyTab") {
+    // flatpickrから正確な値を取得して currentDate に再代入
+    const fp = document.getElementById("datePicker")._flatpickr;
+    const selected = fp.selectedDates[0] || fp.latestSelectedDateObj || fp.parseDate(fp.input.value);
+    if (selected) {
+      currentDate = selected;
+      loadSchedule(currentDate);
+      updatePrevButtonVisibility(currentDate);
+    }
   }
-}
 }
 // 祝日リスト
 const allHolidays = {

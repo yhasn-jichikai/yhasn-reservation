@@ -130,6 +130,8 @@ td.available.selected {
         <p id="selectedInfo"></p>
        
         <label>名前: <input type="text" id="name" required></label><br><br>
+          <label>備考:</label><br>
+<textarea id="notes" placeholder="利用目的・特記事項などを記入してください" rows="4" style="width: 100%; padding: 10px; font-size: 14px; resize: vertical;"></textarea><br><br>
         <button type="button" id="loginAndReserveButton">予約する</button>
       </div>
     </form>
@@ -469,16 +471,19 @@ document.getElementById("logoutButton").addEventListener("click", () => {
     loadSchedule(selectedDate);
   }
 
-      db.collection("reservations").add({
-        room: selectedRoom,
-        date: selectedDate,
-        time: selectedTime,
-        name,
-        studentId,
-        grade,
-        email: user.email,
-        createdAt: new Date()
-      }).then(() => {
+const notes = document.getElementById("notes").value.trim();
+
+db.collection("reservations").add({
+  room: selectedRoom,
+  date: selectedDate,
+  time: selectedTime,
+  name,
+  studentId,
+  grade,
+  email: user.email,
+  notes,  // ←追加
+  createdAt: new Date()
+}).then(() => {
         document.getElementById("reservationSection").style.display = "none";
        
         document.getElementById("dateControls").style.display = "none";

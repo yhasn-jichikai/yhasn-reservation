@@ -410,7 +410,7 @@ if (selectAllBtn) {
   }
 
 // 🔁 テーブル生成のあとにイベント設定
-document.querySelectorAll("td.available").forEach(cell => {
+document.querySelectorAll("td.available, td.available.reserved").forEach(cell => {
   cell.classList.remove("clickable");
   cell.removeEventListener("click", cell._clickHandler);
 
@@ -419,7 +419,7 @@ document.querySelectorAll("td.available").forEach(cell => {
     cell._clickHandler = () => {
       cell.classList.toggle("selected");
 
-      const selectedCells = document.querySelectorAll("td.available.selected");
+      const selectedCells = document.querySelectorAll("td.available.selected, td.available.reserved.selected");
       if (selectedCells.length > 0) {
         document.getElementById("reservationSection").style.display = "block";
       } else {

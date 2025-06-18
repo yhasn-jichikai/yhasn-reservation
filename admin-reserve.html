@@ -461,7 +461,8 @@ document.getElementById("logoutButton").addEventListener("click", () => {
     const name = document.getElementById("name").value.trim();
 
 
-    if (!selectedDate || !selectedRoom || !selectedTime || !name) {
+const selectedCells = document.querySelectorAll("td.available.selected");
+if (!selectedDate || selectedCells.length === 0 || !name) {
       document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
       return;
     }
@@ -483,15 +484,26 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
 const notes = document.getElementById("notes").value.trim();
 
-db.collection("reservations").add({
-  room: selectedRoom,
-  date: selectedDate,
-  time: selectedTime,
-  name,
-  email: user.email,
-  notes,  // ←追加
-  createdAt: new Date()
-}).then(() => {
+const reservations = Array.from(selectedCells).map(cell => {
+  return db.collection("reservations").add({
+    room: cell.dataset.room,
+    date: selectedDate,
+    time: cell.dataset.time,
+    name,
+    email: user.email,
+    notes,
+    createdAt: new Date()
+  });
+});
+
+Promise.all(reservations).then(() => {
+  document.getElementById("reservationSection").style.display = "none";
+  document.getElementById("dateControls").style.display = "none";
+  document.getElementById("completeSection").style.display = "block";
+}).catch(error => {
+  console.error("予約エラー:", error);
+  document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
+});.then(() => {
         document.getElementById("reservationSection").style.display = "none";
        
         document.getElementById("dateControls").style.display = "none";

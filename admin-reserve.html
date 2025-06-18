@@ -121,9 +121,7 @@ td.available.selected {
   <div id="selectedDateDisplay" style="text-align:center; font-size:22px; font-weight:bold; margin:20px 0;"></div>
 <h3>交流室・ベッド（1〜12）</h3>
 <div id="scheduleTableRooms"></div>
-<div style="text-align:center; margin-top:10px;">
-  <button type="button" id="selectAllBedsButton">ベッド1〜12を一括選択</button>
-</div>
+
 <div id="scheduleTableBeds" style="display:none;"></div> <!-- ← 表示されないダミーでもOK -->
 
       <div id="reservationSection" style="display:none; margin-top:20px;">
@@ -388,24 +386,7 @@ document.querySelectorAll(".selectAllRowBtn").forEach(btn => {
   });
 });
   
-const selectAllBtn = document.getElementById("selectAllBedsButton");
-if (selectAllBtn) {
-  selectAllBtn.addEventListener("click", () => {
-    const bedCells = document.querySelectorAll("td.available[data-room^='ベッド']");
-    bedCells.forEach(cell => {
-      cell.classList.add("selected");
-    });
 
-    const info = Array.from(bedCells).map(c => {
-      const room = c.dataset.room;
-      const time = c.dataset.time;
-      return `${time} - ${room}`;
-    });
-
-    document.getElementById("reservationSection").style.display = "block";
-    document.getElementById("selectedInfo").textContent = `選択済:\n${info.join('\n')}`;
-  });
-}
   function handleSelection(cell) {
     selectedRoom = cell.dataset.room;
     selectedTime = cell.dataset.time;

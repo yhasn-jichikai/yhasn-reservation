@@ -459,10 +459,9 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
   document.getElementById("loginAndReserveButton").addEventListener("click", function () {
     const name = document.getElementById("name").value.trim();
-    const studentId = "";
-    const grade = "";
 
-    if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
+
+    if (!selectedDate || !selectedRoom || !selectedTime || !name) {
       document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
       return;
     }
@@ -489,8 +488,6 @@ db.collection("reservations").add({
   date: selectedDate,
   time: selectedTime,
   name,
-  studentId,
-  grade,
   email: user.email,
   notes,  // ←追加
   createdAt: new Date()

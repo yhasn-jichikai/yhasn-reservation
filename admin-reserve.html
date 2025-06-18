@@ -450,63 +450,88 @@ scheduleTableRooms.innerHTML = generateTable(roomGroup1);
   });
 });
 
-document.getElementById("logoutButton").addEventListener("click", () => {
-  firebase.auth().signOut().then(() => {
-    alert("ログアウトしました");
-    if (selectedDate) loadSchedule(selectedDate); // 👈 強制再描画でUIリセット
-  });
-});
+document.getElementById("loginAndReserveButton").addEventListener("click", async function () {
+  const name = document.getElementById("name").value.trim();
+  const studentId = "";  // 必要に応じて修正
+  const grade = "";      // 必要に応じて修正
+  const notes = document.getElementById("notes").value.trim();
+  const selectedCells = document.querySelectorAll("td.available.selected");
 
-  document.getElementById("loginAndReserveButton").addEventListener("click", function () {
-    const name = document.getElementById("name").value.trim();
-    const studentId = "";
-    const grade = "";
-
-    if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
-      document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
-      return;
-    }
-
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-   firebase.auth().signInWithPopup(provider).then(result => {
-  const user = result.user;
-  if (!user.email.endsWith("@yhasn.ed.jp")) {
-    alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-    firebase.auth().signOut();
+  if (!selectedDate || selectedCells.length === 0 || !name) {
+    document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
     return;
   }
 
-  // ✅ ログイン後に再描画（クリック可能に）
-  if (selectedDate) {
-    loadSchedule(selectedDate);
-  }
+  const provider = new firebase.auth.GoogleAuthProvider();
 
-const notes = document.getElementById("notes").value.trim();
+  try {
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
 
-db.collection("reservations").add({
-  room: selectedRoom,
-  date: selectedDate,
-  time: selectedTime,
-  name,
-  studentId,
-  grade,
-  email: user.email,
-  notes,  // ←追加
-  createdAt: new Date()
-}).then(() => {
-        document.getElementById("reservationSection").style.display = "none";
-       
-        document.getElementById("dateControls").style.display = "none";
-        document.getElementById("completeSection").style.display = "block";
-      }).catch(error => {
-        console.error("予約エラー:", error);
-        document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
+    if (!user.email.endsWith("@yhasn.ed.jp")) {
+      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+      await firebase.auth().signOut();
+      return;
+    }
+
+    const conflicts = [];
+
+    // 予約重複チェック
+    for (const cell of selectedCells) {
+      const room = cell.dataset.room;
+      const time = cell.dataset.time;
+
+      const snapshot = await db.collection("reservations")
+        .where("date", "==", selectedDate)
+        .where("time", "==", time)
+        .where("room", "==", room)
+        .get();
+
+      if (!snapshot.empty) {
+        conflicts.push({ room, time, docId: snapshot.docs[0].id });
+      }
+    }
+
+    // 上書き確認
+    if (conflicts.length > 0) {
+      const conflictText = conflicts.map(c => `${c.time} - ${c.room}`).join("\n");
+      const confirmOverwrite = confirm(
+        `以下の予約は既に存在します:\n\n${conflictText}\n\nこれらを上書き（キャンセル）してもよろしいですか？`
+      );
+      if (!confirmOverwrite) return;
+
+      // 重複予約を削除
+      for (const c of conflicts) {
+        await db.collection("reservations").doc(c.docId).delete();
+      }
+    }
+
+    // 新しい予約を追加
+    for (const cell of selectedCells) {
+      const room = cell.dataset.room;
+      const time = cell.dataset.time;
+
+      await db.collection("reservations").add({
+        room,
+        date: selectedDate,
+        time,
+        name,
+        studentId,
+        grade,
+        email: user.email,
+        notes,
+        createdAt: new Date()
       });
-    }).catch(error => {
-      console.error("ログインエラー:", error);
-      document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
-    });
+    }
+
+    document.getElementById("reservationSection").style.display = "none";
+    document.getElementById("dateControls").style.display = "none";
+    document.getElementById("completeSection").style.display = "block";
+  } catch (error) {
+    console.error("エラー:", error);
+    document.getElementById("errorMsg").textContent = "エラーが発生しました。もう一度試してください。";
+  }
+});
   });
 </script>
 </body>

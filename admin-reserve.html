@@ -104,6 +104,10 @@ td.available.selected {
       color: #0277bd;
       margin: 20px 0;
     }
+ button.selectAllRowBtn.on {
+  background-color: #d32f2f; /* 赤系（全解除） */
+  color: white;
+}
   </style>
 </head>
 
@@ -352,7 +356,7 @@ html += "</tr></thead><tbody>";
   });
 
   // 👇 一括選択ボタン（右端）を追加
-  html += `<td><button class="selectAllRowBtn" data-time="${time}">一括</button></td>`;
+html += `<td><button class="selectAllRowBtn" data-time="${time}" data-state="off">全選択</button></td>`;
 
   html += "</tr>";
 });
@@ -374,26 +378,27 @@ document.querySelectorAll(".selectAllRowBtn").forEach(btn => {
     const targetTime = btn.dataset.time;
     const targetCells = document.querySelectorAll(`td.available[data-time="${targetTime}"][data-room^="ベッド"]`);
 
-    // 選択済みのセルがあるかどうかチェック
     const allSelected = Array.from(targetCells).every(cell => cell.classList.contains("selected"));
 
     targetCells.forEach(cell => {
-      cell.classList.toggle("selected", !allSelected); // 全部ONかOFFに
+      cell.classList.toggle("selected", !allSelected);
     });
 
-    const selectedCells = document.querySelectorAll("td.available.selected, td.available.reserved.selected");
-    if (selectedCells.length > 0) {
-      document.getElementById("reservationSection").style.display = "block";
+    // 🔁 ボタンのテキスト・クラス・データ属性を更新
+    if (allSelected) {
+      btn.textContent = "全選択";
+      btn.dataset.state = "off";
+      btn.classList.remove("on");
     } else {
-      document.getElementById("reservationSection").style.display = "none";
+      btn.textContent = "全解除";
+      btn.dataset.state = "on";
+      btn.classList.add("on");
     }
 
-    const info = Array.from(selectedCells).map(c => {
-      const room = c.dataset.room;
-      const time = c.dataset.time;
-      return `${time} - ${room}`;
-    });
+    const selectedCells = document.querySelectorAll("td.available.selected, td.available.reserved.selected");
+    document.getElementById("reservationSection").style.display = selectedCells.length > 0 ? "block" : "none";
 
+    const info = Array.from(selectedCells).map(c => `${c.dataset.time} - ${c.dataset.room}`);
     document.getElementById("selectedInfo").textContent = `選択済: \n${info.join('\n')}`;
   });
 });

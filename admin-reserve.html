@@ -338,7 +338,10 @@ html += "</tr></thead><tbody>";
     if (status[time] && status[time][room] !== undefined) {
       const info = status[time][room];
       if (info) {
-        html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+  html += `<td class="available reserved" data-room="${room}" data-time="${time}" data-name="${info.name}">
+    <span title="既に予約あり：${info.name}">${info.name}</span>
+  </td>`;
+}
       } else {
         html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
       }

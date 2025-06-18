@@ -314,10 +314,15 @@ document.getElementById("scheduleTableRooms").innerHTML = "";
       });
     });
 
-    Promise.all(promises).then(() => {
-      renderSchedule(roomTimeStatus);
-      loading.style.display = "none";
-    });
+Promise.all(promises)
+  .then(() => {
+    renderSchedule(roomTimeStatus);
+    loading.style.display = "none";
+  })
+  .catch(error => {
+    console.error("読み込みエラー:", error);
+    document.getElementById("loading").innerHTML = "読み込みに失敗しました。";
+  });
   }
 
   function renderSchedule(status) {

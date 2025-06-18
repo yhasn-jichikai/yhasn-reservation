@@ -325,28 +325,33 @@ scheduleTableRooms.innerHTML = "";
 const roomGroup1 = rooms.filter(r => r === "交流室" || r.includes("ベッド")); // 交流室とベッドだけ
 
   function generateTable(roomsSubset) {
-    let html = "<table><thead><tr><th>時間帯</th>";
-    roomsSubset.forEach(room => {
-      html += `<th>${room}</th>`;
-    });
-    html += "</tr></thead><tbody>";
+let html = "<table><thead><tr><th>時間帯</th>";
+roomsSubset.forEach(room => {
+  html += `<th>${room}</th>`;
+});
+html += `<th>全選択</th>`;  // ← 右端に「全選択」列を追加
+html += "</tr></thead><tbody>";
 
     times.forEach(time => {
-      html += `<tr><th>${time}</th>`;
-      roomsSubset.forEach(room => {
-if (status[time] && status[time][room] !== undefined) {
-  const info = status[time][room];
-  if (info) {
-    html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
-  } else {
-    html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
-  }
-} else {
-  html += `<td class="disabled">-</td>`;
-}
-      });
-      html += "</tr>";
-    });
+  html += `<tr><th>${time}</th>`;
+  roomsSubset.forEach(room => {
+    if (status[time] && status[time][room] !== undefined) {
+      const info = status[time][room];
+      if (info) {
+        html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+      } else {
+        html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
+      }
+    } else {
+      html += `<td class="disabled">-</td>`;
+    }
+  });
+
+  // 👇 一括選択ボタン（右端）を追加
+  html += `<td><button class="selectAllRowBtn" data-time="${time}">一括</button></td>`;
+
+  html += "</tr>";
+});
 
     html += "</tbody></table>";
     return html;
@@ -359,6 +364,24 @@ scheduleTableRooms.innerHTML = generateTable(roomGroup1);
   document.querySelectorAll("td.available").forEach(cell => {
     cell.style.cursor = user ? "pointer" : "default";
   });
+  // ✅ 時間帯ごとの一括選択ボタンにイベント追加
+document.querySelectorAll(".selectAllRowBtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const targetTime = btn.dataset.time;
+    const targetCells = document.querySelectorAll(`td.available[data-time="${targetTime}"][data-room^="ベッド"]`);
+    targetCells.forEach(cell => {
+      cell.classList.add("selected");
+    });
+
+    const info = Array.from(document.querySelectorAll("td.available.selected")).map(c => {
+      return `${c.dataset.time} - ${c.dataset.room}`;
+    });
+
+    document.getElementById("reservationSection").style.display = "block";
+    document.getElementById("selectedInfo").textContent = `選択済: \n${info.join('\n')}`;
+  });
+});
+  
 const selectAllBtn = document.getElementById("selectAllBedsButton");
 if (selectAllBtn) {
   selectAllBtn.addEventListener("click", () => {

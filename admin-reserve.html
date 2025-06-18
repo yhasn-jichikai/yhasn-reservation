@@ -370,11 +370,23 @@ scheduleTableRooms.innerHTML = generateTable(roomGroup1);
     if (firebase.auth().currentUser) {
       cell.classList.add("clickable");
       cell._clickHandler = () => {
-        document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
-        cell.classList.add("selected");
-        handleSelection(cell);
-        document.getElementById("reservationSection").style.display = "block";
-      };
+  cell.classList.toggle("selected"); // ← トグルで選択/非選択を切り替え
+
+  const selectedCells = document.querySelectorAll("td.available.selected");
+  if (selectedCells.length > 0) {
+    document.getElementById("reservationSection").style.display = "block";
+  } else {
+    document.getElementById("reservationSection").style.display = "none";
+  }
+
+  // 表示用情報をまとめて表示（任意）
+  const info = Array.from(selectedCells).map(c => {
+    const room = c.dataset.room;
+    const time = c.dataset.time;
+    return `${time} - ${room}`;
+  });
+  document.getElementById("selectedInfo").textContent = `選択済: \n${info.join('\n')}`;
+};
       cell.addEventListener("click", cell._clickHandler);
     } else {
       cell._clickHandler = null;

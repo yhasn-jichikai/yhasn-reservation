@@ -323,8 +323,13 @@ document.getElementById("scheduleTableRooms").innerHTML = "";
 
 Promise.all(promises)
   .then(() => {
-    renderSchedule(roomTimeStatus);
-    loading.style.display = "none";
+    try {
+      renderSchedule(roomTimeStatus);
+    } catch (e) {
+      console.error("描画中エラー:", e);
+    } finally {
+      loading.style.display = "none";
+    }
   })
   .catch(error => {
     console.error("読み込みエラー:", error);
@@ -350,11 +355,11 @@ html += "</tr></thead><tbody>";
   html += `<tr><th>${time}</th>`;
   roomsSubset.forEach(room => {
     if (status[time] && status[time][room] !== undefined) {
-      const info = status[time][room];
-      if (info) {
-  if (info) {
-  html += `<td class="available reserved" data-room="${room}" data-time="${time}" data-name="${info.name}">
-    <span title="既に予約あり：${info.name}">${info.name}</span>
+      const cellData = status?.[time]?.[room];
+
+if (cellData && cellData.name) {
+  html += `<td class="available reserved" data-room="${room}" data-time="${time}" data-name="${cellData.name}">
+    <span title="既に予約あり：${cellData.name}">${cellData.name}</span>
   </td>`;
 } else {
   html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;

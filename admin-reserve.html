@@ -409,36 +409,36 @@ if (selectAllBtn) {
     document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
   }
 
-  document.querySelectorAll("td.available").forEach(cell => {
-    cell.classList.remove("clickable");
-    cell.removeEventListener("click", cell._clickHandler);
+// 🔁 テーブル生成のあとにイベント設定
+document.querySelectorAll("td.available").forEach(cell => {
+  cell.classList.remove("clickable");
+  cell.removeEventListener("click", cell._clickHandler);
 
-    if (firebase.auth().currentUser) {
-      cell.classList.add("clickable");
-      cell._clickHandler = () => {
-  cell.classList.toggle("selected"); // ← トグルで選択/非選択を切り替え
+  if (firebase.auth().currentUser) {
+    cell.classList.add("clickable");
+    cell._clickHandler = () => {
+      cell.classList.toggle("selected");
 
-  const selectedCells = document.querySelectorAll("td.available.selected");
-  if (selectedCells.length > 0) {
-    document.getElementById("reservationSection").style.display = "block";
+      const selectedCells = document.querySelectorAll("td.available.selected");
+      if (selectedCells.length > 0) {
+        document.getElementById("reservationSection").style.display = "block";
+      } else {
+        document.getElementById("reservationSection").style.display = "none";
+      }
+
+      const info = Array.from(selectedCells).map(c => {
+        const room = c.dataset.room;
+        const time = c.dataset.time;
+        return `${time} - ${room}`;
+      });
+      document.getElementById("selectedInfo").textContent = `選択済: \n${info.join('\n')}`;
+    };
+    cell.addEventListener("click", cell._clickHandler);
   } else {
-    document.getElementById("reservationSection").style.display = "none";
+    cell._clickHandler = null;
+    cell.style.pointerEvents = "none";
   }
-
-  // 表示用情報をまとめて表示（任意）
-  const info = Array.from(selectedCells).map(c => {
-    const room = c.dataset.room;
-    const time = c.dataset.time;
-    return `${time} - ${room}`;
-  });
-  document.getElementById("selectedInfo").textContent = `選択済: \n${info.join('\n')}`;
-};
-      cell.addEventListener("click", cell._clickHandler);
-    } else {
-      cell._clickHandler = null;
-      cell.style.pointerEvents = "none";
-    }
-  });
+});
 }
 
   document.addEventListener("DOMContentLoaded", () => {

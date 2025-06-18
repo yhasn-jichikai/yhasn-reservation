@@ -457,52 +457,71 @@ document.getElementById("logoutButton").addEventListener("click", () => {
   });
 });
 
-  document.getElementById("loginAndReserveButton").addEventListener("click", function () {
-    const name = document.getElementById("name").value.trim();
+  document.getElementById("loginAndReserveButton").addEventListener("click", async function () {
+  const name = document.getElementById("name").value.trim();
+  const selectedCells = document.querySelectorAll("td.available.selected");
+  const notes = document.getElementById("notes").value.trim();
 
-
-const selectedCells = document.querySelectorAll("td.available.selected");
-if (!selectedDate || selectedCells.length === 0 || !name) {
-      document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
-      return;
-    }
-
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-   firebase.auth().signInWithPopup(provider).then(result => {
-  const user = result.user;
-  if (!user.email.endsWith("@yhasn.ed.jp")) {
-    alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-    firebase.auth().signOut();
+  if (!selectedDate || selectedCells.length === 0 || !name) {
+    document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
     return;
   }
 
-  // ✅ ログイン後に再描画（クリック可能に）
-  if (selectedDate) {
-    loadSchedule(selectedDate);
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+
+    if (!user.email.endsWith("@yhasn.ed.jp")) {
+      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+      await firebase.auth().signOut();
+      return;
+    }
+
+    const batch = db.batch();
+    const deletePromises = [];
+
+    for (const cell of selectedCells) {
+      const room = cell.dataset.room;
+      const time = cell.dataset.time;
+
+      const query = await db.collection("reservations")
+        .where("date", "==", selectedDate)
+        .where("room", "==", room)
+        .where("time", "==", time)
+        .get();
+
+      if (!query.empty) {
+        const confirmed = confirm(`「${time} - ${room}」は既に予約があります。\n上書き（キャンセル→再予約）してもよろしいですか？`);
+        if (!confirmed) {
+          document.getElementById("errorMsg").textContent = "一部の予約がキャンセルされました。";
+          return;
+        }
+        query.forEach(doc => batch.delete(doc.ref));
+      }
+
+      const newRef = db.collection("reservations").doc();
+      batch.set(newRef, {
+        room,
+        date: selectedDate,
+        time,
+        name,
+        email: user.email,
+        notes,
+        createdAt: new Date()
+      });
+    }
+
+    await batch.commit();
+
+    document.getElementById("reservationSection").style.display = "none";
+    document.getElementById("dateControls").style.display = "none";
+    document.getElementById("completeSection").style.display = "block";
+    loadSchedule(selectedDate);  // 表を最新状態に更新
+  } catch (error) {
+    console.error("予約エラー:", error);
+    document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
   }
-
-const notes = document.getElementById("notes").value.trim();
-
-const reservations = Array.from(selectedCells).map(cell => {
-  return db.collection("reservations").add({
-    room: cell.dataset.room,
-    date: selectedDate,
-    time: cell.dataset.time,
-    name,
-    email: user.email,
-    notes,
-    createdAt: new Date()
-  });
-});
-
-Promise.all(reservations).then(() => {
-  document.getElementById("reservationSection").style.display = "none";
-  document.getElementById("dateControls").style.display = "none";
-  document.getElementById("completeSection").style.display = "block";
-}).catch(error => {
-  console.error("予約エラー:", error);
-  document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
 });
 
 

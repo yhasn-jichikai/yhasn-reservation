@@ -354,23 +354,20 @@ html += "</tr></thead><tbody>";
     times.forEach(time => {
   html += `<tr><th>${time}</th>`;
   roomsSubset.forEach(room => {
-    if (status[time] && status[time][room] !== undefined) {
-      const cellData = status?.[time]?.[room];
+  if (status[time]) {
+    const cellData = status[time][room];
 
-if (cellData && cellData.name) {
-  html += `<td class="available reserved" data-room="${room}" data-time="${time}" data-name="${cellData.name}">
-    <span title="既に予約あり：${cellData.name}">${cellData.name}</span>
-  </td>`;
-} else {
-  html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
-}
-      } else {
-        html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
-      }
+    if (cellData && cellData.name) {
+      html += `<td class="available reserved" data-room="${room}" data-time="${time}" data-name="${cellData.name}">
+        <span title="既に予約あり：${cellData.name}">${cellData.name}</span>
+      </td>`;
     } else {
-      html += `<td class="disabled">-</td>`;
+      html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
     }
-  });
+  } else {
+    html += `<td class="disabled">-</td>`;  // ←ここが status[time] が null の場合の処理
+  }
+});
 
   // 👇 一括選択ボタン（右端）を追加
 html += `<td><button class="selectAllRowBtn" data-time="${time}" data-state="off">全選択</button></td>`;

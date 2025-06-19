@@ -199,50 +199,12 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-let allHolidays = {};
-
-async function fetchHolidays(year) {
-  try {
-    const res = await fetch(`https://holidays-jp.github.io/api/v1/${year}/date.json`);
-    const data = await res.json();
-    Object.keys(data).forEach(date => {
-      allHolidays[date] = true;
-    });
-    console.log("✅ APIから祝日取得完了", allHolidays);
-
-    // 振替休日を追加（旧処理踏襲）
-    const holidayDates = Object.keys(allHolidays).sort();
-    holidayDates.forEach(dateStr => {
-      const date = new Date(dateStr);
-      if (date.getDay() === 0) {
-        let offset = 1;
-        while (true) {
-          const substitute = new Date(date);
-          substitute.setDate(date.getDate() + offset);
-          const y = substitute.getFullYear();
-          const m = String(substitute.getMonth() + 1).padStart(2, "0");
-          const d = String(substitute.getDate()).padStart(2, "0");
-          const formatted = `${y}-${m}-${d}`;
-          if (!allHolidays[formatted]) {
-            allHolidays[formatted] = true;
-            break;
-          }
-          offset++;
-        }
-      }
-    });
-
-  } catch (err) {
-    console.error("❌ 祝日取得エラー:", err);
-  }
-}
-
-// DOMContentLoaded の最初で呼び出す（datePicker 初期化前）
-document.addEventListener("DOMContentLoaded", async () => {
-  const year = new Date().getFullYear();
-  await fetchHolidays(year);  // ← この行を追加
-
-  // ...すぐ下に datePicker = flatpickr(...) が続く
+  const holidays = {
+    "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
+    "2025-04-29": true, "2025-05-03": true, "2025-05-04": true, "2025-05-05": true,
+    "2025-07-21": true, "2025-08-11": true, "2025-09-15": true, "2025-09-23": true,
+    "2025-10-13": true, "2025-11-03": true, "2025-11-23": true, "2025-12-23": true
+  };
 
   function addSubstituteHolidays(holidays) {
     const holidayDates = Object.keys(holidays).sort();
@@ -626,3 +588,5 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
+

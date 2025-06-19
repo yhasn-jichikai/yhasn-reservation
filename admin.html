@@ -275,15 +275,16 @@ firebase.auth().onAuthStateChanged(user => {
   const todayStr = `${yyyy}-${mm}-${dd}`;
 
 db.collection("reservations")
-  .where("date", ">=", todayStr)  // ← 本日以降の予約だけ取得
-  .orderBy("date", "asc")
-  .orderBy("time", "asc")
-  .orderBy("grade", "asc")
+  .where("date", ">=", firebase.firestore.Timestamp.fromDate(new Date(new Date().setHours(0,0,0,0))))
+  .orderBy("date")
+  .orderBy("time")
+  .orderBy("grade")
   .get()
   .then(snapshot => {
     if (snapshot.empty) {
       tbody.innerHTML = "<tr><td colspan='8'>本日以降の予約はありません</td></tr>";
       return;
+      
     }
 
     // 並べ替え追加処理（grade が同じ場合、studentId でソート）

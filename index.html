@@ -104,6 +104,30 @@ td.available.selected {
       color: #0277bd;
       margin: 20px 0;
     }
+    /* モーダルスタイル */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+  border: 2px solid white;
+}
+
+.modal:target {
+  display: flex;
+}
   </style>
 </head>
 
@@ -515,13 +539,24 @@ document.getElementById("logoutButton").addEventListener("click", () => {
   });
 </script>
 
-<!-- ▼ 教室レイアウト画像表示（縦並び） -->
+<!-- ▼ 教室レイアウト画像表示（モーダル対応） -->
 <div style="margin-top: 40px; text-align: center;">
   <h2>演習室・交流室レイアウト</h2>
-  <img src="ensyuusitu2.jpg" alt="演習室レイアウト" style="max-width:100%; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 30px;">
+  <a href="#modalEnsyuu"><img src="ensyuusitu2.jpg" alt="演習室レイアウト" style="max-width:100%; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 30px; cursor: zoom-in;"></a>
 
   <h2>基礎看護実習室（ベッド1〜12）</h2>
-  <img src="bed2.jpg" alt="ベッド配置図" style="max-width:100%; border: 1px solid #ccc; border-radius: 8px;">
+  <a href="#modalBed"><img src="bed2.jpg" alt="ベッド配置図" style="max-width:100%; border: 1px solid #ccc; border-radius: 8px; cursor: zoom-in;"></a>
 </div>
-<!-- ▲ 教室レイアウト画像表示ここまで --></body>
+
+<!-- モーダル本体 -->
+<div id="modalEnsyuu" class="modal" onclick="location.href='#'">
+  <img src="ensyuusitu2.jpg" alt="演習室拡大">
+</div>
+
+<div id="modalBed" class="modal" onclick="location.href='#'">
+  <img src="bed2.jpg" alt="ベッド配置拡大">
+</div>
+<!-- ▲ 教室レイアウト画像表示ここまで -->
+
+</body>
 </html>

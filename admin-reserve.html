@@ -138,8 +138,6 @@ td.available.reserved {
         <p id="selectedInfo"></p>
        
         <label>名前: <input type="text" id="name" required></label><br><br>
-          <label>備考:</label><br>
-<textarea id="notes" placeholder="利用目的・特記事項などを記入してください" rows="4" style="width: 100%; padding: 10px; font-size: 14px; resize: vertical;"></textarea><br><br>
         <button type="button" id="loginAndReserveButton">予約する</button>
       </div>
     </form>
@@ -524,14 +522,13 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 });
 
   document.getElementById("loginAndReserveButton").addEventListener("click", async function () {
-  const name = document.getElementById("name").value.trim();
-  const selectedCells = document.querySelectorAll("td.available.selected");
-  const notes = document.getElementById("notes").value.trim();
+const name = document.getElementById("name").value.trim();
+const selectedCells = document.querySelectorAll("td.available.selected");
 
-  if (!selectedDate || selectedCells.length === 0 || !name) {
-    document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
-    return;
-  }
+if (!selectedDate || selectedCells.length === 0 || !name) {
+  document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
+  return;
+}
 
   const provider = new firebase.auth.GoogleAuthProvider();
   try {
@@ -568,14 +565,13 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
       const newRef = db.collection("reservations").doc();
       batch.set(newRef, {
-        room,
-        date: selectedDate,
-        time,
-        name,
-        email: user.email,
-        notes,
-        createdAt: new Date()
-      });
+  room,
+  date: selectedDate,
+  time,
+  name,
+  email: user.email,
+  createdAt: new Date()
+});
     }
 
     await batch.commit();

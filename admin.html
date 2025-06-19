@@ -480,12 +480,14 @@ onChange: ([selectedDate]) => {
 setTimeout(() => {
   const fp = document.getElementById("datePicker")._flatpickr;
   fp.setDate(currentDate, true);
+fp.input.value = formatDate(currentDate); // ← これ追加！
 }, 0);
 document.getElementById("prevDayBtn").addEventListener("click", () => {
   const fp = document.getElementById("datePicker")._flatpickr;
   const newDate = getNextValidDate(currentDate, -1);
 currentDate = newDate;
 fp.setDate(newDate, true);
+fp.input.value = formatDate(newDate); // ← これ追加！
 loadSchedule(newDate);
 updatePrevButtonVisibility(currentDate);
 });
@@ -495,6 +497,7 @@ document.getElementById("nextDayBtn").addEventListener("click", () => {
 const newDate = getNextValidDate(currentDate, 1);
 currentDate = newDate;
 fp.setDate(newDate, true);
+fp.input.value = formatDate(newDate); // ← これ追加！
 loadSchedule(newDate);
 updatePrevButtonVisibility(currentDate);
 });

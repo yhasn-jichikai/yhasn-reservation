@@ -293,8 +293,8 @@ firebase.auth().onAuthStateChanged(user => {
           <td>${data.time}</td>
           <td>${data.room}</td>
           <td>${data.name}</td>
-          <td>${data.studentId}</td>
-          <td>${data.grade}</td>
+          <td>${data.studentId || ""}</td>
+          <td>${data.grade || ""}</td>
           <td>${data.email}</td>
           <td><button data-id="${doc.id}">キャンセル</button></td>
         `;
@@ -515,6 +515,3 @@ updatePrevButtonVisibility(currentDate);
   </script>
 </body>
 </html>
-
-
-これの、予約一覧の部分で、並べ替えできるようにしたい。

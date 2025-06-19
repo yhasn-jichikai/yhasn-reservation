@@ -268,48 +268,38 @@ firebase.auth().onAuthStateChanged(user => {
   const tbody = document.querySelector("#reservationsTable tbody");
   tbody.innerHTML = "";
 
-const today = new Date();
-const yyyy = today.getFullYear();
-const mm = String(today.getMonth() + 1).padStart(2, '0');
-const dd = String(today.getDate()).padStart(2, '0');
-const todayStr = `${yyyy}-${mm}-${dd}`;
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
 
-db.collection("reservations")
-  .where("date", ">=", todayStr)
-  .orderBy("date")
-  .orderBy("time")
-  .orderBy("grade")
-  .get()
-  .then(snapshot => {
-    if (snapshot.empty) {
-      tbody.innerHTML = "<tr><td colspan='8'>本日以降の予約はありません</td></tr>";
-      return;
-      
-    }
+  db.collection("reservations")
+    .where("date", ">=", todayStr)
+    .orderBy("date", "asc")
+    .orderBy("time", "asc")
+    .get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        tbody.innerHTML = "<tr><td colspan='8'>本日以降の予約はありません</td></tr>";
+        return;
+      }
 
-    // 並べ替え追加処理（grade が同じ場合、studentId でソート）
-    const rows = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    rows.sort((a, b) => {
-      if (a.date !== b.date) return a.date.localeCompare(b.date);
-      if (a.time !== b.time) return a.time.localeCompare(b.time);
-      if (a.grade !== b.grade) return a.grade.localeCompare(b.grade);
-      return a.studentId.localeCompare(b.studentId);
-    });
-
-    rows.forEach(data => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${data.date}</td>
-        <td>${data.time}</td>
-        <td>${data.room}</td>
-        <td>${data.name}</td>
-        <td>${data.studentId}</td>
-        <td>${data.grade}</td>
-        <td>${data.email}</td>
-        <td><button data-id="${data.id}">キャンセル</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.date}</td>
+          <td>${data.time}</td>
+          <td>${data.room}</td>
+          <td>${data.name}</td>
+          <td>${data.studentId}</td>
+          <td>${data.grade}</td>
+          <td>${data.email}</td>
+          <td><button data-id="${doc.id}">キャンセル</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
 
       tbody.querySelectorAll("button").forEach(btn => {
       
@@ -525,3 +515,6 @@ updatePrevButtonVisibility(currentDate);
   </script>
 </body>
 </html>
+
+
+これの、予約一覧の部分で、並べ替えできるようにしたい。

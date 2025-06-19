@@ -371,6 +371,15 @@ async function addSubstituteHolidays() {
     await fetchHolidays(thisYear);
     await fetchHolidays(thisYear + 1);
     await addSubstituteHolidays();  // あれば
+
+    // ✅ 祝日取得完了後に初めて初期化
+    const fp = document.getElementById("datePicker")._flatpickr;
+    const selected = fp.selectedDates[0] || fp.latestSelectedDateObj || fp.parseDate(fp.input.value);
+    if (selected) {
+      currentDate = selected;
+    }
+    setupFlatpickrAndButtons();  // ← これをここに移動
+
   } catch (e) {
     console.error("祝日の取得に失敗しました", e);
   }

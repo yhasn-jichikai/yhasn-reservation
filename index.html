@@ -539,18 +539,21 @@ document.getElementById("logoutButton").addEventListener("click", () => {
   });
 </script>
 
-<!-- ▼ 教室レイアウト画像表示（モーダル対応） -->
-<div style="margin-top: 40px; text-align: center;">
-  <h2>演習室・交流室レイアウト</h2>
-  <a href="#modalEnsyuu">
-    <img src="ensyuusitu2.jpg" alt="演習室レイアウト" style="width: 180px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 30px; cursor: zoom-in;">
-  </a>
+  <!-- ▼ 教室レイアウト画像表示（モーダル対応） -->
+  <div style="margin-top: 40px; text-align: center;">
+    <h2>演習室・交流室レイアウト</h2>
+    <a href="#modalEnsyuu">
+      <img src="ensyuusitu2.jpg" alt="演習室レイアウト" style="width: 180px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 30px; cursor: zoom-in;">
+    </a>
 
-  <h2>基礎看護実習室（ベッド1〜12）</h2>
-  <a href="#modalBed">
-    <img src="bed2.jpg" alt="ベッド配置図" style="width: 120px; border: 1px solid #ccc; border-radius: 8px; cursor: zoom-in;">
-  </a>
-</div>
+    <h2>基礎看護実習室（ベッド1〜12）</h2>
+    <a href="#modalBed">
+      <img src="bed2.jpg" alt="ベッド配置図" style="width: 120px; border: 1px solid #ccc; border-radius: 8px; cursor: zoom-in;">
+    </a>
+  </div>
+  <!-- ▲ 教室レイアウト画像表示ここまで -->
+
+</div> <!-- ← これが .container の閉じタグ（この位置を最後に） -->
 
 <!-- モーダル本体 -->
 <div id="modalEnsyuu" class="modal" onclick="location.href='#'">

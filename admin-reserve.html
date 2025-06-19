@@ -239,11 +239,8 @@ async function fetchHolidays(year) {
 
 // DOMContentLoaded の最初で呼び出す（datePicker 初期化前）
 document.addEventListener("DOMContentLoaded", async () => {
-const thisYear = new Date().getFullYear();
-await fetchHolidays(thisYear);
-await fetchHolidays(thisYear + 1);
-
-allHolidays = addSubstituteHolidays(allHolidays);  // ← これが抜けていた！
+  const year = new Date().getFullYear();
+  await fetchHolidays(year);  // ← この行を追加
 
   // ...すぐ下に datePicker = flatpickr(...) が続く
 
@@ -274,7 +271,7 @@ allHolidays = addSubstituteHolidays(allHolidays);  // ← これが抜けてい�
     return { ...holidays, ...substituteHolidays };
   }
 
-  
+  const allHolidays = addSubstituteHolidays(holidays);
 
   const rooms = [
     "学生演習室1", "学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5",
@@ -517,17 +514,9 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
       }
     });
 
-const todayDateObj = new Date();
-let selectedDateObj = todayDateObj;
-
-// 土日祝ならスキップ
-const todayStr = formatDate(todayDateObj);
-if (todayDateObj.getDay() === 0 || todayDateObj.getDay() === 6 || allHolidays[todayStr]) {
-  selectedDateObj = new Date(getNextValidDate(todayDateObj, 1));
-}
-
-selectedDate = formatDate(selectedDateObj);
-loadSchedule(selectedDate);
+    const today = formatDate(new Date());
+    selectedDate = getNextValidDate(new Date(), 0);
+    loadSchedule(selectedDate);
 
     document.getElementById("prevDayBtn").addEventListener("click", () => {
       const date = new Date(selectedDate);
@@ -637,5 +626,3 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
-

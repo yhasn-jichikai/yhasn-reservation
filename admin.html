@@ -275,10 +275,9 @@ firebase.auth().onAuthStateChanged(user => {
   const todayStr = `${yyyy}-${mm}-${dd}`;
 
 db.collection("reservations")
-  .where("date", ">=", todayStr)
   .orderBy("date", "asc")
   .orderBy("time", "asc")
-  .orderBy("grade", "asc")  // ← 3つ目までOK
+  .orderBy("grade", "asc")
   .get()
   .then(snapshot => {
     if (snapshot.empty) {

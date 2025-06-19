@@ -516,8 +516,15 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
     });
 
     const today = formatDate(new Date());
-    selectedDate = getNextValidDate(new Date(), 0);
-    loadSchedule(selectedDate);
+const today = new Date();
+selectedDate = formatDate(today);  // 今日をそのまま設定
+
+// 土日祝ならスキップして次の有効日へ
+if (today.getDay() === 0 || today.getDay() === 6 || allHolidays[selectedDate]) {
+  selectedDate = getNextValidDate(today, 1);
+}
+
+loadSchedule(selectedDate);
 
     document.getElementById("prevDayBtn").addEventListener("click", () => {
       const date = new Date(selectedDate);

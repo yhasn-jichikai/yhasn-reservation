@@ -25,13 +25,11 @@
       color: #0277bd;
     }
     .container {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      padding: 30px;
-      width: 100%;
-      max-width: 900px;
-    }
+  display: block; /* もしくは flex のままでOKだが */
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+}
     label, p {
       font-size: 16px;
       color: #333;
@@ -132,6 +130,7 @@ td.available.selected {
 .image-section {
   margin-top: 60px;
   text-align: center;
+  width: 100%;
 }
 
 .image-section img {
@@ -139,10 +138,10 @@ td.available.selected {
   max-width: 100%;
   border: 1px solid #ccc;
   border-radius: 8px;
-  margin: 20px;
+  margin: 20px auto;
   cursor: zoom-in;
+  display: block;
 }
-
   </style>
 </head>
 
@@ -573,7 +572,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 </div>
 
 <div id="modalBed" class="modal" onclick="location.href='#'">
-  <img src="bed2.jpg" alt="ベッド配置拡大">
+  <img src="bed2.jpg" al.cont="ベッド配置拡大">
 </div>  <!-- ▲ 教室レイアウト画像表示ここまで -->
 
 

@@ -517,17 +517,16 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
       }
     });
 
-    const today = formatDate(new Date());
-const today = new Date();
-selectedDate = formatDate(today);  // 今日をそのまま設定
+const todayDateObj = new Date();
+let selectedDateObj = todayDateObj;
 
-// 土日祝ならスキップして次の有効日へ
-if (today.getDay() === 0 || today.getDay() === 6 || allHolidays[selectedDate]) {
-  selectedDate = getNextValidDate(today, 1);  // 祝日や休日ならスキップ
-  selectedDate = new Date(selectedDate);      // ← 🔧 ここを追加して型を Date に戻す
+// 土日祝ならスキップ
+const todayStr = formatDate(todayDateObj);
+if (todayDateObj.getDay() === 0 || todayDateObj.getDay() === 6 || allHolidays[todayStr]) {
+  selectedDateObj = new Date(getNextValidDate(todayDateObj, 1));
 }
 
-
+selectedDate = formatDate(selectedDateObj);
 loadSchedule(selectedDate);
 
     document.getElementById("prevDayBtn").addEventListener("click", () => {

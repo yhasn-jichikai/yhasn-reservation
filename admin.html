@@ -275,6 +275,7 @@ firebase.auth().onAuthStateChanged(user => {
   const todayStr = `${yyyy}-${mm}-${dd}`;
 
 db.collection("reservations")
+  .where("date", ">=", todayStr)  // ← 本日以降の予約だけ取得
   .orderBy("date", "asc")
   .orderBy("time", "asc")
   .orderBy("grade", "asc")

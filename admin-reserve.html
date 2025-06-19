@@ -481,9 +481,15 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
       }
     });
 
-    const today = formatDate(new Date());
-    selectedDate = getNextValidDate(new Date(), 0);
-    loadSchedule(selectedDate);
+    const todayDateObj = new Date();
+const todayStr = formatDate(todayDateObj);
+let selectedDateObj = todayDateObj;
+
+if (todayDateObj.getDay() === 0 || todayDateObj.getDay() === 6 || allHolidays[todayStr]) {
+  selectedDateObj = new Date(getNextValidDate(todayDateObj, 1));
+}
+selectedDate = formatDate(selectedDateObj);
+loadSchedule(selectedDate);
 
     document.getElementById("prevDayBtn").addEventListener("click", () => {
       const date = new Date(selectedDate);

@@ -523,8 +523,10 @@ selectedDate = formatDate(today);  // 今日をそのまま設定
 
 // 土日祝ならスキップして次の有効日へ
 if (today.getDay() === 0 || today.getDay() === 6 || allHolidays[selectedDate]) {
-  selectedDate = getNextValidDate(today, 1);
+  selectedDate = getNextValidDate(today, 1);  // 祝日や休日ならスキップ
+  selectedDate = new Date(selectedDate);      // ← 🔧 ここを追加して型を Date に戻す
 }
+
 
 loadSchedule(selectedDate);
 

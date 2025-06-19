@@ -309,22 +309,19 @@ document.getElementById("scheduleTableRooms").innerHTML = "";
           .where("time", "==", time)
           .where("room", "==", room);
         promises.push(
-  query.get()
-    .then(snapshot => {
-      if (!snapshot.empty) {
-        const data = snapshot.docs[0].data();
-        roomTimeStatus[time][room] = {
-          name: data.name || ""
-        };
-      } else {
-        roomTimeStatus[time][room] = null;
-      }
-    })
-    .catch(err => {
-      console.warn(`読み込み失敗: ${time} - ${room}`, err);
-      roomTimeStatus[time][room] = null;
-    })
-    .finally(() => true)  // ← エラーでも「成功扱い」にする
+  query.get().then(snapshot => {
+    if (!snapshot.empty) {
+      const data = snapshot.docs[0].data();
+      roomTimeStatus[time][room] = {
+        name: data.name || ""
+      };
+    } else {
+      roomTimeStatus[time][room] = null;  // ← 追加：空でもnullを入れる
+    }
+  }).catch(err => {
+    console.warn(`読み込み失敗: ${time} - ${room}`, err);
+    roomTimeStatus[time][room] = null;  // ← 失敗してもnullで塞ぐ
+  })
 );
       });
     });
@@ -378,7 +375,7 @@ html += "</tr></thead><tbody>";
 });
 
   // 👇 一括選択ボタン（右端）を追加
-html += `<td><button type="button" class="selectAllRowBtn" data-time="${time}" data-state="off">全選択</button></td>`;
+html += `<td><button class="selectAllRowBtn" data-time="${time}" data-state="off">全選択</button></td>`;
 
   html += "</tr>";
 });
@@ -484,15 +481,9 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
       }
     });
 
-    const todayDateObj = new Date();
-const todayStr = formatDate(todayDateObj);
-let selectedDateObj = todayDateObj;
-
-if (todayDateObj.getDay() === 0 || todayDateObj.getDay() === 6 || allHolidays[todayStr]) {
-  selectedDateObj = new Date(getNextValidDate(todayDateObj, 1));
-}
-selectedDate = formatDate(selectedDateObj);
-loadSchedule(selectedDate);
+    const today = formatDate(new Date());
+    selectedDate = getNextValidDate(new Date(), 0);
+    loadSchedule(selectedDate);
 
     document.getElementById("prevDayBtn").addEventListener("click", () => {
       const date = new Date(selectedDate);
@@ -602,4 +593,3 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 </script>
 </body>
 </html>
-

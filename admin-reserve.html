@@ -241,7 +241,9 @@ async function fetchHolidays(year) {
 document.addEventListener("DOMContentLoaded", async () => {
 const thisYear = new Date().getFullYear();
 await fetchHolidays(thisYear);
-await fetchHolidays(thisYear + 1);  // ← 来年の祝日も取得！
+await fetchHolidays(thisYear + 1);
+
+allHolidays = addSubstituteHolidays(allHolidays);  // ← これが抜けていた！
 
   // ...すぐ下に datePicker = flatpickr(...) が続く
 

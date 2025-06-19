@@ -309,19 +309,22 @@ document.getElementById("scheduleTableRooms").innerHTML = "";
           .where("time", "==", time)
           .where("room", "==", room);
         promises.push(
-  query.get().then(snapshot => {
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
-      roomTimeStatus[time][room] = {
-        name: data.name || ""
-      };
-    } else {
-      roomTimeStatus[time][room] = null;  // ← 追加：空でもnullを入れる
-    }
-  }).catch(err => {
-    console.warn(`読み込み失敗: ${time} - ${room}`, err);
-    roomTimeStatus[time][room] = null;  // ← 失敗してもnullで塞ぐ
-  })
+  query.get()
+    .then(snapshot => {
+      if (!snapshot.empty) {
+        const data = snapshot.docs[0].data();
+        roomTimeStatus[time][room] = {
+          name: data.name || ""
+        };
+      } else {
+        roomTimeStatus[time][room] = null;
+      }
+    })
+    .catch(err => {
+      console.warn(`読み込み失敗: ${time} - ${room}`, err);
+      roomTimeStatus[time][room] = null;
+    })
+    .finally(() => true)  // ← エラーでも「成功扱い」にする
 );
       });
     });

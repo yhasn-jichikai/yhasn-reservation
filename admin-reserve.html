@@ -199,41 +199,59 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-  const holidays = {
-    "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
-    "2025-04-29": true, "2025-05-03": true, "2025-05-04": true, "2025-05-05": true,
-    "2025-07-21": true, "2025-08-11": true, "2025-09-15": true, "2025-09-23": true,
-    "2025-10-13": true, "2025-11-03": true, "2025-11-23": true, "2025-12-23": true
-  };
+let allHolidays = {};
 
-  function addSubstituteHolidays(holidays) {
-    const holidayDates = Object.keys(holidays).sort();
-    const substituteHolidays = {};
+function addSubstituteHolidays(holidays) {
+  const holidayDates = Object.keys(holidays).sort();
+  const substituteHolidays = {};
 
-    holidayDates.forEach(dateStr => {
-      const date = new Date(dateStr);
-      if (date.getDay() === 0) {
-        let offset = 1;
-        while (true) {
-          const substitute = new Date(date);
-          substitute.setDate(date.getDate() + offset);
-          const y = substitute.getFullYear();
-          const m = String(substitute.getMonth() + 1).padStart(2, "0");
-          const d = String(substitute.getDate()).padStart(2, "0");
-          const formatted = `${y}-${m}-${d}`;
-          if (!holidays[formatted] && !substituteHolidays[formatted]) {
-            substituteHolidays[formatted] = true;
-            break;
-          }
-          offset++;
+  holidayDates.forEach(dateStr => {
+    const date = new Date(dateStr);
+    if (date.getDay() === 0) {
+      let offset = 1;
+      while (true) {
+        const substitute = new Date(date);
+        substitute.setDate(date.getDate() + offset);
+        const y = substitute.getFullYear();
+        const m = String(substitute.getMonth() + 1).padStart(2, "0");
+        const d = String(substitute.getDate()).padStart(2, "0");
+        const formatted = `${y}-${m}-${d}`;
+        if (!holidays[formatted] && !substituteHolidays[formatted]) {
+          substituteHolidays[formatted] = true;
+          break;
         }
+        offset++;
       }
+    }
+  });
+
+  return { ...holidays, ...substituteHolidays };
+}
+
+function fetchHolidays() {
+  const currentYear = new Date().getFullYear();
+  const nextYear = currentYear + 1;
+  const urls = [
+    `https://holidays-jp.github.io/api/v1/${currentYear}/date.json`,
+    `https://holidays-jp.github.io/api/v1/${nextYear}/date.json`
+  ];
+
+  Promise.all(urls.map(url => fetch(url).then(res => res.json())))
+    .then(results => {
+      const merged = Object.assign({}, ...results);
+      const rawHolidays = {};
+      for (const date in merged) {
+        rawHolidays[date] = true;
+      }
+      allHolidays = addSubstituteHolidays(rawHolidays);
+
+      initFlatpickrAndSchedule(); // 祝日取得後にflatpickrと表初期化
+    })
+    .catch(error => {
+      console.error("祝日取得エラー:", error);
+      allHolidays = {};  // エラー時も空として動かす
+      initFlatpickrAndSchedule();
     });
-
-    return { ...holidays, ...substituteHolidays };
-  }
-
-  const allHolidays = addSubstituteHolidays(holidays);
 
   const rooms = [
     "学生演習室1", "学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5",
@@ -456,50 +474,51 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
 });
 }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    datePicker = flatpickr("#date", {
-      dateFormat: "Y-m-d",
-      minDate: "today",
-      disable: [
-        date => {
-          const formatted = formatDate(date);
-          return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
-        }
-      ],
-      locale: "ja",
-      allowInput: false,
-      onChange: (selectedDates) => {
-        if (selectedDates.length > 0) {
-          const date = formatDate(selectedDates[0]);
-          loadSchedule(date);
-        }
+document.addEventListener("DOMContentLoaded", fetchHolidays);
+
+function initFlatpickrAndSchedule() {
+  datePicker = flatpickr("#date", {
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    disable: [
+      date => {
+        const formatted = formatDate(date);
+        return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
       }
-    });
-
-    const today = formatDate(new Date());
-    selectedDate = getNextValidDate(new Date(), 0);
-    loadSchedule(selectedDate);
-
-    document.getElementById("prevDayBtn").addEventListener("click", () => {
-      const date = new Date(selectedDate);
-      const prev = getNextValidDate(date, -1);
-      loadSchedule(prev);
-    });
-
-    document.getElementById("nextDayBtn").addEventListener("click", () => {
-      const date = new Date(selectedDate);
-      const next = getNextValidDate(date, 1);
-      loadSchedule(next);
-    });
-
-   document.getElementById("backButton").addEventListener("click", () => {
-  document.getElementById("completeSection").style.display = "none";
-  document.getElementById("scheduleTableRooms").style.display = "block";
-  document.getElementById("scheduleTableBeds").style.display = "block";
-  document.getElementById("dateControls").style.display = "flex";
-  loadSchedule(selectedDate);
-});
+    ],
+    locale: "ja",
+    allowInput: false,
+    onChange: (selectedDates) => {
+      if (selectedDates.length > 0) {
+        const date = formatDate(selectedDates[0]);
+        loadSchedule(date);
+      }
+    }
   });
+
+  selectedDate = getNextValidDate(new Date(), 0);
+  loadSchedule(selectedDate);
+
+  document.getElementById("prevDayBtn").addEventListener("click", () => {
+    const date = new Date(selectedDate);
+    const prev = getNextValidDate(date, -1);
+    loadSchedule(prev);
+  });
+
+  document.getElementById("nextDayBtn").addEventListener("click", () => {
+    const date = new Date(selectedDate);
+    const next = getNextValidDate(date, 1);
+    loadSchedule(next);
+  });
+
+  document.getElementById("backButton").addEventListener("click", () => {
+    document.getElementById("completeSection").style.display = "none";
+    document.getElementById("scheduleTableRooms").style.display = "block";
+    document.getElementById("scheduleTableBeds").style.display = "block";
+    document.getElementById("dateControls").style.display = "flex";
+    loadSchedule(selectedDate);
+  });
+}
 
   document.getElementById("loginButton").addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();

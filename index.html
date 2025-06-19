@@ -181,6 +181,20 @@ td.available.selected {
     </form>
 
     <div style="text-align:center; margin-top:20px;">
+      
+      <!-- ▼ 教室レイアウト画像表示（モーダル対応） -->
+<div class="image-section">
+  <h2>演習室・交流室レイアウト</h2>
+  <a href="#modalEnsyuu">
+    <img src="ensyuusitu2.jpg" alt="演習室レイアウト">
+  </a>
+
+  <h2>基礎看護実習室（ベッド1〜12）</h2>
+  <a href="#modalBed">
+    <img src="bed2.jpg" alt="ベッド配置図">
+  </a>
+</div>
+      
   <button type="button" id="loginButton">ログインして予約する</button>
   <button type="button" id="logoutButton" style="display:none;">ログアウト</button>
   <p id="userEmail" style="margin-top:10px;"></p>
@@ -553,18 +567,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
   });
 </script>
 
-<!-- ▼ 教室レイアウト画像表示（モーダル対応） -->
-<div class="image-section">
-  <h2>演習室・交流室レイアウト</h2>
-  <a href="#modalEnsyuu">
-    <img src="ensyuusitu2.jpg" alt="演習室レイアウト">
-  </a>
 
-  <h2>基礎看護実習室（ベッド1〜12）</h2>
-  <a href="#modalBed">
-    <img src="bed2.jpg" alt="ベッド配置図">
-  </a>
-</div>
 
 <!-- モーダル本体 -->
 <div id="modalEnsyuu" class="modal" onclick="location.href='#'">

@@ -308,7 +308,16 @@ firebase.auth().onAuthStateChanged(user => {
     "ベッド7", "ベッド8", "ベッド9", "ベッド10", "ベッド11", "ベッド12"
   ];
    
-  const times = ["08:30-09:00", "09:00-10:40<br>（１限）", "10:40-12:10<br>（２限）", "12:10-13:20<br>（昼休み）", "13:20-15:00<br>（３限）", "15:00-16:30<br>（４限）", "16:30-18:00", "18:00-20:00"];
+  const times = [
+    { label: "08:30-09:00", value: "08:30-09:00"},
+    { label: "09:00-10:40<br>（１限）", value: 09:00-10:40（１限）},
+    { label: "10:40-12:10<br>（２限）", value: "10:40-12:10（２限）},
+    { label: "12:10-13:20<br>（昼休み）", value: "12:10-13:20（昼休み）},
+    { label: "13:20-15:00<br>（３限）", value: "13:20-15:00（３限）},
+    { label: "15:00-16:30<br>（４限）", value: "15:00-16:30（４限）},
+    { label: "16:30-18:00", value: "16:30-18:00"},
+    { label: "18:00-20:00", value: "18:00-20:00"},
+    ];
 
   let selectedDate = "";
   let selectedRoom = "";
@@ -415,18 +424,20 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
     });
     html += "</tr></thead><tbody>";
 
-    times.forEach(time => {
-      html += `<tr><th>${time}</th>`;
-      roomsSubset.forEach(room => {
-        if (status[time][room]) {
-          const info = status[time][room];
-          html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
-        } else {
-          html += `<td class="available" data-room="${room}" data-time="${time}"><i class="fas fa-circle"></i></td>`;
-        }
-      });
-      html += "</tr>";
-    });
+    // テーブルの生成部分
+times.forEach(timeObj => {
+  html += `<tr><th>${timeObj.label}</th>`;
+  roomsSubset.forEach(room => {
+    const timeVal = timeObj.value;
+    if (status[timeVal][room]) {
+      const info = status[timeVal][room];
+      html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+    } else {
+      html += `<td class="available" data-room="${room}" data-time="${timeVal}"><i class="fas fa-circle"></i></td>`;
+    }
+  });
+  html += "</tr>";
+});
 
     html += "</tbody></table>";
     return html;
@@ -441,10 +452,10 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
   });
 
   function handleSelection(cell) {
-    selectedRoom = cell.dataset.room;
-    selectedTime = cell.dataset.time;
-    document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
-  }
+  selectedRoom = cell.dataset.room;
+  selectedTime = cell.dataset.time;
+  document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
+}
 
   document.querySelectorAll("td.available").forEach(cell => {
     cell.classList.remove("clickable");

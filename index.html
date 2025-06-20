@@ -11,7 +11,6 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: 'Noto Sans JP', sans-serif;
       background-color: #e8f5e9;
       min-height: 100vh;
@@ -30,6 +29,18 @@
   max-width: 1400px;
   margin: auto;
 }
+
+#topButtons {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  z-index: 999;
+}
+
+#topButtons button {
+	margin-left: 10px;
+}
+
     label, p {
       font-size: 16px;
       color: #333;
@@ -149,6 +160,8 @@ td.available.selected {
   cursor: zoom-in;
   display: block;
 }
+
+
   </style>
 </head>
 
@@ -156,14 +169,20 @@ td.available.selected {
   <div class="container">
     <h1>教室予約フォーム</h1>
 
+  <button type="button" id="loginButton">ログインして予約する</button>
+  <button type="button" id="logoutButton" style="display:none;">ログアウト</button>
+
     <div id="dateControls">
       <button type="button" id="prevDayBtn">＜ 前の日</button>
       <label id="dateLabel">日付を選択してください: <input type="text" id="date" required></label>
       <button type="button" id="nextDayBtn">次の日 ＞</button>
     </div>
 
+
+
     <form id="reserveForm">
   <div id="selectedDateDisplay" style="text-align:center; font-size:22px; font-weight:bold; margin:20px 0;"></div>
+
       <div id="loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>
   <h3>学生演習室・交流室</h3>
 <div id="scheduleTableRooms"></div>
@@ -208,8 +227,8 @@ td.available.selected {
   
 </div>
       
-  <button type="button" id="loginButton">ログインして予約する</button>
-  <button type="button" id="logoutButton" style="display:none;">ログアウト</button>
+  
+
   <p id="userEmail" style="margin-top:10px;"></p>
 </div>
 
@@ -615,7 +634,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 </div>
 
 <div id="modalBed" class="modal" onclick="location.href='#'">
-  <img src="bed2.jpg" al.cont="ベッド配置拡大">
+  <img src="bed2.jpg" alt="ベッド配置拡大">
 </div>  <!-- ▲ 教室レイアウト画像表示ここまで -->
 
 

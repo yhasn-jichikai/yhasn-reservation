@@ -595,10 +595,10 @@ document.getElementById("logoutButton").addEventListener("click", () => {
     .where("studentId", "==", studentId)
     .get()
     .then(snapshot => {
-      if (!snapshot.empty) {
-        document.getElementById("errorMsg").textContent = "同じ日には1件のみ予約できます。";
-        return;
-      }
+if (!snapshot.empty) {
+  alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
+  return;
+}
 
       // ✅ 重複がなければ予約を追加
       db.collection("reservations").add({

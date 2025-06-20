@@ -53,7 +53,9 @@
       padding: 12px;
       text-align: center;
       height: 40px;
-      white-space: nowrap;
+      th:first-child,
+      td:first-child,{
+        white-space: nowrap;
     }
     td.disabled {
       background-color: #c8e6c9;
@@ -182,6 +184,7 @@ td.available.selected {
         <label>名前: <input type="text" id="name" required></label><br><br>
         <button type="button" id="loginAndReserveButton">予約する</button>
       </div>
+      <div id="errorMsg"></div>
     </form>
 
     <div style="text-align:center; margin-top:20px;">
@@ -213,7 +216,7 @@ td.available.selected {
       <button id="backButton">予約ページへ戻る</button>
     </div>
 
-    <div id="errorMsg"></div>
+    
     <div id="loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>
   </div>
 

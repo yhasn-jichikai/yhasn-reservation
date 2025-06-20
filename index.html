@@ -576,13 +576,22 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
     const provider = new firebase.auth.GoogleAuthProvider();
 
-   firebase.auth().signInWithPopup(provider).then(result => {
+  firebase.auth().signInWithPopup(provider).then(result => {
   const user = result.user;
   if (!user.email.endsWith("@yhasn.ed.jp")) {
     alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
     firebase.auth().signOut();
     return;
   }
+
+  // ✅ 入力学籍番号とメールアドレスの学籍番号が一致するか確認
+  const emailStudentId = user.email.split("@")[0].slice(0, 6);
+  if (emailStudentId !== studentId) {
+    alert("メールアドレスと学籍番号が一致しません。\n正しい学籍番号を入力してください。");
+    return;
+  }
+
+  // ✅ ログイン後に再描画（クリック可能に）
 
   // ✅ ログイン後に再描画（クリック可能に）
   if (selectedDate) {

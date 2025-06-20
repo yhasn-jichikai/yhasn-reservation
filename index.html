@@ -214,9 +214,8 @@ td.available.selected {
 <div class="image-section">
   <h2>演習室・交流室レイアウト</h2>
   <p style="font-size: 14px; color: #555;">※クリックで拡大</p>
-  <a href="#modalEnsyuu">
-    <img src="ensyuusitu2.jpg" alt="演習室レイアウト">
-  </a>
+
+<img src="ensyuusitu2.jpg" alt="演習室レイアウト" onclick="openModal('modalEnsyuu')">
   
 
   <h2>基礎看護実習室（ベッド1〜12）</h2>
@@ -623,12 +622,22 @@ document.getElementById("logoutButton").addEventListener("click", () => {
       });
     });
 });
+
+function openModal(id) {
+  document.getElementById(id).style.display = "flex";
+}
+
+function closeModal(event, id) {
+  // 画像をクリックしたときは閉じないようにする
+  if (event.target.tagName.toLowerCase() === 'img') return;
+  document.getElementById(id).style.display = "none";
+}
 </script>
 
 
 
 <!-- モーダル本体 -->
-<div id="modalEnsyuu" class="modal" onclick="location.href='#'">
+<div id="modalEnsyuu" class="modal" onclick="closeModal(event, 'modalEnsyuu')">
   <img src="ensyuusitu2.jpg" alt="演習室拡大">
 </div>
 

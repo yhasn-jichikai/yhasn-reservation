@@ -565,37 +565,31 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 });
 
   document.getElementById("loginAndReserveButton").addEventListener("click", function () {
-    const name = document.getElementById("name").value.trim();
-    const studentId = document.getElementById("studentId").value.trim();
-    const grade = document.getElementById("grade").value;
+  const name = document.getElementById("name").value.trim();
+  const studentId = document.getElementById("studentId").value.trim();
+  const grade = document.getElementById("grade").value;
 
-    if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
-      document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
-      return;
-    }
-
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-  firebase.auth().signInWithPopup(provider).then(result => {
-  const user = result.user;
-  if (!user.email.endsWith("@yhasn.ed.jp")) {
-    alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-    firebase.auth().signOut();
+  if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
+    document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
     return;
   }
 
-  // ✅ 入力学籍番号とメールアドレスの学籍番号が一致するか確認
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    alert("ログインしてください。");
+    return;
+  }
+
+  if (!user.email.endsWith("@yhasn.ed.jp")) {
+    alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+    return;
+  }
+
   const emailStudentId = user.email.split("@")[0].slice(0, 6);
   if (emailStudentId !== studentId) {
     alert("メールアドレスと学籍番号が一致しません。\n正しい学籍番号を入力してください。");
     return;
-  }
-
-  // ✅ ログイン後に再描画（クリック可能に）
-
-  // ✅ ログイン後に再描画（クリック可能に）
-  if (selectedDate) {
-    loadSchedule(selectedDate);
   }
 
   // 🔍 同日・同学籍番号の予約が既にあるか確認
@@ -604,10 +598,10 @@ document.getElementById("logoutButton").addEventListener("click", () => {
     .where("studentId", "==", studentId)
     .get()
     .then(snapshot => {
-if (!snapshot.empty) {
-  alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
-  return;
-}
+      if (!snapshot.empty) {
+        alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
+        return;
+      }
 
       // ✅ 重複がなければ予約を追加
       db.collection("reservations").add({
@@ -628,11 +622,7 @@ if (!snapshot.empty) {
         document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
       });
     });
-}).catch(error => {
-  console.error("ログインエラー:", error);
-  document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
 });
-  });
 </script>
 
 

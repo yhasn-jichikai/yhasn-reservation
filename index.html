@@ -588,7 +588,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 
   const emailStudentId = user.email.split("@")[0].slice(0, 6);
   if (emailStudentId !== studentId) {
-    alert("メールアドレスと学籍番号が一致しません。\n正しい学籍番号を入力してください。");
+    alert("不正な学籍番号です。\n正しい学籍番号を入力してください。");
     return;
   }
 

@@ -550,6 +550,18 @@ document.getElementById("logoutButton").addEventListener("click", () => {
     loadSchedule(selectedDate);
   }
 
+  // 🔍 同日・同学籍番号の予約が既にあるか確認
+  db.collection("reservations")
+    .where("date", "==", selectedDate)
+    .where("studentId", "==", studentId)
+    .get()
+    .then(snapshot => {
+      if (!snapshot.empty) {
+        document.getElementById("errorMsg").textContent = "同じ日には1件のみ予約できます。";
+        return;
+      }
+
+      // ✅ 重複がなければ予約を追加
       db.collection("reservations").add({
         room: selectedRoom,
         date: selectedDate,
@@ -561,17 +573,17 @@ document.getElementById("logoutButton").addEventListener("click", () => {
         createdAt: new Date()
       }).then(() => {
         document.getElementById("reservationSection").style.display = "none";
-       
         document.getElementById("dateControls").style.display = "none";
         document.getElementById("completeSection").style.display = "block";
       }).catch(error => {
         console.error("予約エラー:", error);
         document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
       });
-    }).catch(error => {
-      console.error("ログインエラー:", error);
-      document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
     });
+}).catch(error => {
+  console.error("ログインエラー:", error);
+  document.getElementById("errorMsg").textContent = "ログインに失敗しました。もう一度試してください。";
+});
   });
 </script>
 

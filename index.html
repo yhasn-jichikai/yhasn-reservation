@@ -384,23 +384,27 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
     const promises = [];
 
     times.forEach(time => {
-      roomTimeStatus[time] = {};
-      rooms.forEach(room => {
-        roomTimeStatus[time][room] = null;
-        const query = db.collection("reservations")
-          .where("date", "==", date)
-          .where("time", "==", time)
-          .where("room", "==", room);
-        promises.push(query.get().then(snapshot => {
-         if (!snapshot.empty) {
-  const data = snapshot.docs[0].data();
-  roomTimeStatus[time][room] = {
-    name: data.name || ""
-  };
-}
-        }));
-      });
-    });
+  const timeVal = time.value;  // ← 修正ポイント
+  roomTimeStatus[timeVal] = {};  // ← オブジェクトではなく文字列キーを使用
+
+  rooms.forEach(room => {
+    roomTimeStatus[timeVal][room] = null;
+
+    const query = db.collection("reservations")
+      .where("date", "==", date)
+      .where("time", "==", timeVal)  // ← ここも time.value を使うべき
+      .where("room", "==", room);
+
+    promises.push(query.get().then(snapshot => {
+      if (!snapshot.empty) {
+        const data = snapshot.docs[0].data();
+        roomTimeStatus[timeVal][room] = {
+          name: data.name || ""
+        };
+      }
+    }));
+  });
+});
 
     Promise.all(promises).then(() => {
       renderSchedule(roomTimeStatus);

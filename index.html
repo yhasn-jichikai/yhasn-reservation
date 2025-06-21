@@ -231,7 +231,6 @@ td.available.selected {
   <h2>基礎看護実習室（ベッド1〜12）</h2>
   <p style="font-size: 14px; color: #555;">※クリックで拡大</p>
     <img src="bed2.jpg" alt="ベッド配置図" onclick="openModal('modalBed')">
-  </a>
   
 </div>
       
@@ -582,6 +581,18 @@ document.getElementById("logoutButton").addEventListener("click", () => {
     return;
   }
 
+  // 🔍 ダイアログ追加
+  const confirmMsg = `以下の内容で予約しますか？\n\n` +
+    `日付：${formatDisplayDate(selectedDate)}\n` +
+    `時間帯：${selectedTime}\n` +
+    `部屋：${selectedRoom}\n` +
+    `学籍番号：${studentId}\n` +
+    `学年：${grade}\n` +
+    `名前：${name}`;
+
+  if (!confirm(confirmMsg)) {
+    return; // キャンセルしたら何もしない
+  }
   const user = firebase.auth().currentUser;
 
   if (!user) {

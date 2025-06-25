@@ -202,6 +202,10 @@ th, td {
 
 
 
+<!-- ▼ これを追加：予約情報一覧タブ -->
+<div id="reservationsTab" class="tab-content">
+  <div id="adminInfo"></div>
+
   <table id="reservationsTable">
     <thead>
       <tr>
@@ -340,11 +344,17 @@ firebase.auth().onAuthStateChanged(user => {
 function switchTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(div => div.style.display = "none");
   document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+
   document.getElementById(tabId).style.display = "block";
-  event.target.classList.add("active");
+
+  // 呼び出し元イベントが使えないので、class追加は tabId に応じて明示的に書く
+  if (tabId === "reservationsTab") {
+    document.querySelector("button[onclick*='reservationsTab']").classList.add("active");
+  } else if (tabId === "emptyTab") {
+    document.querySelector("button[onclick*='emptyTab']").classList.add("active");
+  }
 
   if (tabId === "emptyTab") {
-    // flatpickrから正確な値を取得して currentDate に再代入
     const fp = document.getElementById("datePicker")._flatpickr;
     const selected = fp.selectedDates[0] || fp.latestSelectedDateObj || fp.parseDate(fp.input.value);
     if (selected) {
@@ -354,6 +364,7 @@ function switchTab(tabId) {
     }
   }
 }
+
 // 祝日リスト
 const allHolidays = {
   "2025-01-01": "元日",

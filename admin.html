@@ -187,15 +187,22 @@ th, td {
 <body>
 <h1>管理者用画面</h1>
 
+<!-- h1のすぐ下に追加：常に表示される位置 -->
+<div style="text-align: right; margin-bottom: 10px;">
+  <button id="logoutButton">ログアウト</button>
+</div>
+
+<!-- これはそのまま -->
+<h1>管理者用画面</h1>
+
+<!-- タブ切り替えボタン -->
 <div style="margin-bottom: 20px;">
   <button class="tab-button active" onclick="switchTab('reservationsTab')">予約情報一覧</button>
   <button class="tab-button" onclick="switchTab('emptyTab')">空室表</button>
 </div>
 
-<div id="reservationsTab" class="tab-content">
-  <div id="adminInfo"></div>
-  
-  <button id="logoutButton">ログアウト</button>
+
+
 
   <table id="reservationsTable">
     <thead>

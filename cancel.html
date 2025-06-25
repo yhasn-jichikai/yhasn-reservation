@@ -86,10 +86,13 @@ function loadReservations(order) {
   const listDiv = document.getElementById("reservationList");
   if (!currentUser) return;
 
-db.collection("reservations")
-  .where("email", "==", currentUser.email)
-  .orderBy("date", order)
-  .orderBy("time", order)  // 時間も同じ方向にソート
+  const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"形式で今日
+
+  db.collection("reservations")
+    .where("email", "==", currentUser.email)
+    .where("date", ">=", today)  // ここで日付フィルタ
+    .orderBy("date", order)
+    .orderBy("time", order)
   .get()
     .then(snapshot => {
       if (snapshot.empty) {

@@ -46,7 +46,7 @@
   </style>
 </head>
 <body>
-  <h1>予約キャンセルフォーム5
+  <h1>予約キャンセルフォーム
   </h1>
   <p id="userEmail">ログイン状態を確認中...</p>
   <div id="reservationList"></div>
@@ -88,6 +88,7 @@ function loadReservations(order) {
 
   db.collection("reservations")
     .where("email", "==", currentUser.email)
+    .orderBy(“date”, order)
     .get()
     .then(snapshot => {
       if (snapshot.empty) {

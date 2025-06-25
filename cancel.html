@@ -46,7 +46,7 @@
   </style>
 </head>
 <body>
-  <h1>予約キャンセルフォーム
+  <h1>予約キャンセルフォーム＠
   </h1>
   <p id="userEmail">ログイン状態を確認中...</p>
   <div id="reservationList"></div>
@@ -86,9 +86,11 @@ function loadReservations(order) {
   const listDiv = document.getElementById("reservationList");
   if (!currentUser) return;
 
-  db.collection("reservations")
-    .where("email", "==", currentUser.email)
-    .get()
+db.collection("reservations")
+  .where("email", "==", currentUser.email)
+  .orderBy("date", order)
+  .orderBy("time", order)  // 時間も同じ方向にソート
+  .get()
     .then(snapshot => {
       if (snapshot.empty) {
         listDiv.innerHTML = "<p>現在、予約はありません。</p>";

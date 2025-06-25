@@ -46,57 +46,77 @@
   </style>
 </head>
 <body>
-  <h1>予約キャンセルフォーム1
+  <h1>予約キャンセルフォーム2
   </h1>
   <p id="userEmail">ログイン状態を確認中...</p>
   <div id="reservationList"></div>
+<div style="margin: 20px;">
+  <button onclick="loadReservations('asc')">昇順</button>
+  <button onclick="loadReservations('desc')">降順</button>
+</div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
-      authDomain: "yhasn-reserve.firebaseapp.com",
-      projectId: "yhasn-reserve",
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+const firebaseConfig = {
+  apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+  authDomain: "yhasn-reserve.firebaseapp.com",
+  projectId: "yhasn-reserve",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    firebase.auth().onAuthStateChanged(user => {
-      const userEmailElem = document.getElementById("userEmail");
-      const listDiv = document.getElementById("reservationList");
+let currentUser = null;
 
-      if (user) {
-        userEmailElem.textContent = "ログイン中：" + user.email;
+firebase.auth().onAuthStateChanged(user => {
+  const userEmailElem = document.getElementById("userEmail");
+  if (user) {
+    currentUser = user;
+    userEmailElem.textContent = "ログイン中：" + user.email;
+    loadReservations("asc"); // 初期は昇順
+  } else {
+    userEmailElem.textContent = "ログインしてください。";
+  }
+});
 
-        db.collection("reservations")
-          .where("email", "==", user.email)
-          .get()
-          .then(snapshot => {
-            if (snapshot.empty) {
-              listDiv.innerHTML = "<p>現在、予約はありません。</p>";
-              return;
-            }
+function loadReservations(order) {
+  const listDiv = document.getElementById("reservationList");
+  if (!currentUser) return;
 
-            let html = "<table><thead><tr><th>日付</th><th>時間</th><th>部屋</th><th>学籍番号</th><th>学年</th><th>名前</th><th>操作</th></tr></thead><tbody>";
-            snapshot.forEach(doc => {
-              const data = doc.data();
-              html += `<tr>
-                <td>${data.date}</td>
-                <td>${data.time}</td>
-                <td>${data.room}</td>
-                <td>${data.studentId || ""}</td>
-                <td>${data.grade || ""}</td>
-                <td>${data.name}</td>
-                <td><button disabled>キャンセル</button></td>
-              </tr>`;
-            });
-            html += "</tbody></table>";
-            listDiv.innerHTML = html;
-          });
-      } else {
+  db.collection("reservations")
+    .where("email", "==", currentUser.email)
+    .orderBy("date", order)
+    .orderBy("time") // 時間は昇順固定
+    .get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        listDiv.innerHTML = "<p>現在、予約はありません。</p>";
+        return;
+      }
+
+      let html = "<table><thead><tr><th>日付</th><th>時間</th><th>部屋</th><th>学籍番号</th><th>学年</th><th>名前</th><th>操作</th></tr></thead><tbody>";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        html += `<tr>
+          <td>${data.date}</td>
+          <td>${data.time}</td>
+          <td>${data.room}</td>
+          <td>${data.studentId || ""}</td>
+          <td>${data.grade || ""}</td>
+          <td>${data.name}</td>
+          <td><button disabled>キャンセル</button></td>
+        </tr>`;
+      });
+      html += "</tbody></table>";
+      listDiv.innerHTML = html;
+    })
+    .catch(error => {
+      listDiv.innerHTML = "<p>予約の取得中にエラーが発生しました。</p>";
+      console.error(error);
+    });
+} else {
         userEmailElem.textContent = "ログインしてください。";
       }
     });

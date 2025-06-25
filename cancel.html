@@ -72,7 +72,6 @@
 
         db.collection("reservations")
           .where("email", "==", user.email)
-          .orderBy("date")
           .get()
           .then(snapshot => {
             if (snapshot.empty) {

@@ -46,7 +46,7 @@
   </style>
 </head>
 <body>
-  <h1>予約キャンセルフォーム2
+  <h1>予約キャンセルフォーム3
   </h1>
   <p id="userEmail">ログイン状態を確認中...</p>
   <div id="reservationList"></div>
@@ -71,13 +71,14 @@ const db = firebase.firestore();
 let currentUser = null;
 
 firebase.auth().onAuthStateChanged(user => {
-  const userEmailElem = document.getElementById("userEmail");
   if (user) {
     currentUser = user;
-    userEmailElem.textContent = "ログイン中：" + user.email;
-    loadReservations("asc"); // 初期は昇順
+    document.getElementById("userEmail").textContent = "ログイン中：" + user.email;
+    loadReservations("asc"); // 初期表示
   } else {
-    userEmailElem.textContent = "ログインしてください。";
+    // 自動でGoogleログインへ
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithRedirect(provider);
   }
 });
 

@@ -88,7 +88,6 @@ function loadReservations(order) {
 
   db.collection("reservations")
     .where("email", "==", currentUser.email)
-    .orderBy("date", order)
     .orderBy("time") // 時間は昇順固定
     .get()
     .then(snapshot => {

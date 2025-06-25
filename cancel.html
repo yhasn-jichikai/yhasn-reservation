@@ -1,1 +1,105 @@
 <!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>予約キャンセル</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #e8f5e9;
+      padding: 30px;
+      text-align: center;
+    }
+    h1 {
+      color: #43a047;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #a5d6a7;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #a5d6a7;
+      color: #fff;
+    }
+    td {
+      background-color: #ffffff;
+    }
+    button {
+      background-color: #66bb6a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+  <h1>予約キャンセルフォーム</h1>
+  <p id="userEmail">ログイン状態を確認中...</p>
+  <div id="reservationList"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+      authDomain: "yhasn-reserve.firebaseapp.com",
+      projectId: "yhasn-reserve",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    firebase.auth().onAuthStateChanged(user => {
+      const userEmailElem = document.getElementById("userEmail");
+      const listDiv = document.getElementById("reservationList");
+
+      if (user) {
+        userEmailElem.textContent = "ログイン中：" + user.email;
+
+        db.collection("reservations")
+          .where("email", "==", user.email)
+          .orderBy("date")
+          .get()
+          .then(snapshot => {
+            if (snapshot.empty) {
+              listDiv.innerHTML = "<p>現在、予約はありません。</p>";
+              return;
+            }
+
+            let html = "<table><thead><tr><th>日付</th><th>時間</th><th>部屋</th><th>学籍番号</th><th>学年</th><th>名前</th><th>操作</th></tr></thead><tbody>";
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              html += `<tr>
+                <td>${data.date}</td>
+                <td>${data.time}</td>
+                <td>${data.room}</td>
+                <td>${data.studentId || ""}</td>
+                <td>${data.grade || ""}</td>
+                <td>${data.name}</td>
+                <td><button disabled>キャンセル</button></td>
+              </tr>`;
+            });
+            html += "</tbody></table>";
+            listDiv.innerHTML = html;
+          });
+      } else {
+        userEmailElem.textContent = "ログインしてください。";
+      }
+    });
+  </script>
+</body>
+</html>

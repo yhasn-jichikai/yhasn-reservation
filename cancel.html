@@ -125,7 +125,11 @@ function loadReservations(order) {
           <td>${formatJapaneseDate(data.date)}</td>
           <td>${data.time}</td>
           <td>${data.room}</td>
-          <td><button disabled>キャンセル</button></td>
+          <td>
+  <button onclick="confirmCancel('${doc.id}', '${formatJapaneseDate(data.date)}', '${data.time}', '${data.room}')">
+    キャンセル
+  </button>
+</td>
         </tr>`;
       });
       html += "</tbody></table>";
@@ -136,6 +140,25 @@ function loadReservations(order) {
       console.error(error);
     });
 }
-  </script>
-</body>
+
+function confirmCancel(docId, date, time, room) {
+const message = `以下の予約を削除してもよろしいですか？\n\n日付：${date}\n時間：${time}\n教室：${room}`;
+  if (confirm(message)) {
+    db.collection("reservations").doc(docId).delete()
+      .then(() => {
+        alert("キャンセルが完了しました。");
+        loadReservations(document.getElementById("ascBtn").classList.contains("active") ? "asc" : "desc");
+      })
+      .catch(error => {
+        alert("キャンセル処理中にエラーが発生しました。");
+        console.error(error);
+      });
+  }
+}
+</script></body>
 </html>
+
+
+
+
+

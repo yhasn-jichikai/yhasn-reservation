@@ -185,7 +185,7 @@ th, td {
 
 </head>
 <body>
-<h1>管理者用画面</h1>
+<h1>管理者用画面1</h1>
 
 
 
@@ -244,7 +244,17 @@ th, td {
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
-
+  
+function showLog(message) {
+  const logArea = document.getElementById("debugLog");
+  if (logArea) {
+    const p = document.createElement("p");
+    p.textContent = message;
+    p.style.color = "red";
+    p.style.fontSize = "14px";
+    logArea.appendChild(p);
+  }
+}
     
     // Firebase 初期化
     const firebaseConfig = {
@@ -285,7 +295,10 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-    function loadReservations() {
+function loadReservations() {
+  console.log("✅ loadReservations 実行されたよ！");
+  showLog("✅ loadReservations 実行された！");  // ←ここ追加
+
   const tbody = document.querySelector("#reservationsTable tbody");
   tbody.innerHTML = "";
 
@@ -301,6 +314,8 @@ firebase.auth().onAuthStateChanged(user => {
     .orderBy("time", "asc")
     .get()
     .then(snapshot => {
+      showLog("📦 予約データ取得中...件数: " + snapshot.size); // ←ここ追加
+
       if (snapshot.empty) {
         tbody.innerHTML = "<tr><td colspan='8'>本日以降の予約はありません</td></tr>";
         return;
@@ -308,6 +323,8 @@ firebase.auth().onAuthStateChanged(user => {
 
       snapshot.forEach(doc => {
         const data = doc.data();
+        showLog("▶︎ " + JSON.stringify(data)); // ←ここ追加
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${data.date}</td>
@@ -318,23 +335,20 @@ firebase.auth().onAuthStateChanged(user => {
           <td>${data.grade || ""}</td>
           <td>${data.email}</td>
           <td>
-  ${
-    multiSelectMode
-      ? `<input type="checkbox" value="${doc.id}" onchange="toggleSelect('${doc.id}', this.checked)">`
-      : `<button data-id="${doc.id}" onclick="cancelSingle('${doc.id}')">キャンセル</button>`
-  }
-</td>
+            ${
+              multiSelectMode
+                ? `<input type="checkbox" value="${doc.id}" onchange="toggleSelect('${doc.id}', this.checked)">`
+                : `<button data-id="${doc.id}" onclick="cancelSingle('${doc.id}')">キャンセル</button>`
+            }
+          </td>
         `;
         tbody.appendChild(tr);
-});
-
-// ←この下に追加（loadReservationsの最後）
-document.getElementById("reservationsTable").classList.remove("multi-mode");
-document.getElementById("cancelSelectedBtn").style.display = "none";
       });
 
+      document.getElementById("reservationsTable").classList.remove("multi-mode");
+      document.getElementById("cancelSelectedBtn").style.display = "none";
+
       tbody.querySelectorAll("button").forEach(btn => {
-      
         btn.addEventListener("click", () => {
           const id = btn.dataset.id;
           if (confirm("この予約をキャンセルしますか？")) {
@@ -350,6 +364,7 @@ document.getElementById("cancelSelectedBtn").style.display = "none";
       });
     })
     .catch(err => {
+      showLog("❌ 読み込みエラー: " + err.message);  // ←ここ追加
       console.error("読み込みエラー:", err);
       tbody.innerHTML = "<tr><td colspan='8'>読み込みに失敗しました</td></tr>";
       document.body.innerHTML += `<p style="color:red;">読み込みエラー: ${err.message}</p>`;
@@ -594,6 +609,7 @@ document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
   });
 });
   </script>
+  <div id="debugLog" style="margin-top: 30px; padding: 10px; border: 2px dashed red;"></div>
 </body>
 </html>
 

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約管理b</title>
+  <title>YHASN施設予約管理</title>
 
   <style>
 body {
@@ -532,29 +532,14 @@ function switchTab(tabId) {
   }
 
   if (tabId === "emptyTab") {
-  const datePickerElem = document.getElementById("datePicker");
-const fp = datePickerElem._flatpickr;
-
-let selected = null;
-
-if (fp && fp.selectedDates && fp.selectedDates.length > 0) {
-  selected = fp.selectedDates[0];
-}
-
-if (!selected && fp && fp.input && fp.input.value) {
-  selected = fp.parseDate(fp.input.value);
-}
-
-if (!selected) {
-  selected = currentDate;
-}
-
-if (selected) {
-  currentDate = selected;
-  loadSchedule(currentDate);
-  updatePrevButtonVisibility(currentDate);
-}
-}
+    const fp = document.getElementById("datePicker")._flatpickr;
+    const selected = fp.selectedDates[0] || fp.latestSelectedDateObj || fp.parseDate(fp.input.value);
+    if (selected) {
+      currentDate = selected;
+      loadSchedule(currentDate);
+      updatePrevButtonVisibility(currentDate);
+    }
+  }
 }
 
 // 祝日リスト
@@ -678,11 +663,11 @@ onChange: ([selectedDate]) => {
     updatePrevButtonVisibility(currentDate);
   }
 },
- setTimeout(() => {
-  const fp = document.getElementById("datePicker")._flatpickr;
-  fp.setDate(currentDate, true);
-  fp.input.value = formatDate(currentDate); // ←追加で安心！
-}, 0);
+ onReady: ([selectedDate]) => {
+  currentDate = selectedDate || currentDate;
+  loadSchedule(currentDate);
+  updatePrevButtonVisibility(currentDate);
+}
     
 });
 setTimeout(() => {
@@ -787,10 +772,6 @@ function logout() {
   <div id="debugLog" style="margin-top: 30px; padding: 10px; border: 2px dashed red;"></div>
 </body>
 </html>
-
-
-
-
 
 
 

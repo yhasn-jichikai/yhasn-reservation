@@ -82,6 +82,11 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
+function formatJapaneseDate(isoDate) {
+  const [year, month, day] = isoDate.split("-");
+  return `${year}年${Number(month)}月${Number(day)}日`;
+}
+
 function loadReservations(order) {
   const listDiv = document.getElementById("reservationList");
   if (!currentUser) return;
@@ -104,7 +109,7 @@ function loadReservations(order) {
       snapshot.forEach(doc => {
         const data = doc.data();
         html += `<tr>
-          <td>${data.date}</td>
+          <td>${formatJapaneseDate(data.date)}</td>
           <td>${data.time}</td>
           <td>${data.room}</td>
           <td><button disabled>キャンセル</button></td>

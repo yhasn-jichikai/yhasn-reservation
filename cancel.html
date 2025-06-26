@@ -100,7 +100,7 @@ function loadReservations(order) {
         return;
       }
 
-      let html = "<table><thead><tr><th>日付</th><th>時間</th><th>部屋</th><th>学籍番号</th><th>学年</th><th>名前</th><th>操作</th></tr></thead><tbody>";
+      let html = "<table><thead><tr><th>日付</th><th>時間</th><th>部屋</th><th>操作</th></tr></thead><tbody>";
       snapshot.forEach(doc => {
         const data = doc.data();
         html += `<tr>

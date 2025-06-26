@@ -3,12 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>YHASN施設予約管理</title>
-  <!-- 管理者用予約入力画面への遷移ボタン -->
-<div style="text-align: right; margin-bottom: 20px;">
-  <button onclick="location.href='admin-reserve.html'" style="background-color: #00796b; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
-    教員用予約ページへ
-  </button>
-</div>
+
   <style>
 body {
   font-family: 'Noto Sans JP', sans-serif;
@@ -196,6 +191,74 @@ button.cancel-btn:hover {
   color: #006064;
   border: 1px solid #bbb;
 }
+
+#hamburgerMenu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+}
+.menu-toggle {
+  font-size: 26px;
+  cursor: pointer;
+  background-color: #0288d1;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.menu-content {
+  display: none;
+  position: absolute;
+  top: 50px;
+  left: 0;
+  width: 240px;
+  background-color: white;
+  border: 2px solid #0288d1;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.menu-content .menu-header {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0288d1;
+  margin-bottom: 8px;
+}
+.menu-content .account-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #006064;
+}
+.menu-content .account-email {
+  font-size: 14px;
+  color: #555;
+}
+.menu-content .account-status {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 10px;
+}
+.menu-content .menu-title {
+  font-size: 16px;
+  margin: 10px 0;
+  font-weight: bold;
+  color: #0277bd;
+}
+.menu-content button {
+  width: 100%;
+  margin: 6px 0;
+  padding: 10px;
+  font-size: 14px;
+  background-color: #0288d1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.menu-content button:hover {
+  background-color: #0277bd;
+}
     
   </style>
   
@@ -210,15 +273,26 @@ button.cancel-btn:hover {
 
 </head>
 <body>
+  <!-- ハンバーガーメニュー -->
+<div id="hamburgerMenu">
+  <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+  <div id="menuContent" class="menu-content">
+    <div class="menu-header">アカウント情報</div>
+    <div class="account-name" id="accountName">YHASN教員</div>
+    <div class="account-email" id="accountEmail">example@yhasn.ed.jp</div>
+    <div class="account-status">でログイン中</div>
+    <hr>
+    <div class="menu-title">YHASN施設予約管理</div>
+    <button onclick="location.href='admin-reserve.html'">教員用予約ページへ</button>
+    <button onclick="logout()">ログアウト</button>
+  </div>
+</div>
 <h1>管理者用画面</h1>
 
 
 
 
-<!-- h1のすぐ下に追加：常に表示される位置 -->
-<div style="text-align: right; margin-bottom: 10px;">
-  <button id="logoutButton">ログアウト</button>
-</div>
+
 
 
 <!-- タブ切り替えボタン -->
@@ -670,6 +744,28 @@ function toggleMultiSelectMode() {
   multiSelectMode = !multiSelectMode;
   document.getElementById("cancelSelectedBtn").style.display = multiSelectMode ? "inline-block" : "none";
   loadReservations(); // ← これで表示をチェックボックスに切り替える
+}
+
+function toggleMenu() {
+  const content = document.getElementById("menuContent");
+  content.style.display = (content.style.display === "block") ? "none" : "block";
+}
+
+// ログインユーザー情報をハンバーガーメニューに反映
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("accountName").textContent = user.displayName || "YHASN教員";
+    document.getElementById("accountEmail").textContent = user.email;
+  }
+});
+
+// 既存のログアウト処理を関数化
+function logout() {
+  sessionStorage.setItem("justLoggedOut", "1");
+  firebase.auth().signOut().then(() => {
+    alert("ログアウトしました。画面遷移します");
+    location.href = "admin-login.html";
+  });
 }
 
   </script>

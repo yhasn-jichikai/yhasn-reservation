@@ -185,7 +185,10 @@ th, td {
 
 </head>
 <body>
-<h1>管理者用画面１</h1>
+<h1>管理者用画面</h1>
+
+
+
 
 <!-- h1のすぐ下に追加：常に表示される位置 -->
 <div style="text-align: right; margin-bottom: 10px;">
@@ -199,7 +202,11 @@ th, td {
   <button class="tab-button" onclick="switchTab('emptyTab')">空室表</button>
 </div>
 
-
+<!-- 複数選択・一括キャンセルボタン -->
+<div style="text-align: right; margin-bottom: 10px;">
+  <button onclick="toggleMultiSelectMode()" id="multiSelectBtn">複数選択</button>
+  <button onclick="cancelSelected()" id="cancelSelectedBtn" style="display:none;">一括キャンセル</button>
+</div>
 
 
 <!-- ▼ これを追加：予約情報一覧タブ -->
@@ -248,8 +255,13 @@ th, td {
       messagingSenderId: "406712332925",
       appId: "1:406712332925:web:fb9253a313e4c76cfcb714"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // Firebase初期化
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ▼ 追記：複数選択モード制御用
+let multiSelectMode = false;
+let selectedIds = [];
 
 
 
@@ -305,9 +317,20 @@ firebase.auth().onAuthStateChanged(user => {
           <td>${data.studentId || ""}</td>
           <td>${data.grade || ""}</td>
           <td>${data.email}</td>
-          <td><button data-id="${doc.id}">キャンセル</button></td>
+          <td>
+  ${
+    multiSelectMode
+      ? `<input type="checkbox" value="${doc.id}" onchange="toggleSelect('${doc.id}', this.checked)">`
+      : `<button data-id="${doc.id}" onclick="cancelSingle('${doc.id}')">キャンセル</button>`
+  }
+</td>
         `;
         tbody.appendChild(tr);
+});
+
+// ←この下に追加（loadReservationsの最後）
+document.getElementById("reservationsTable").classList.remove("multi-mode");
+document.getElementById("cancelSelectedBtn").style.display = "none";
       });
 
       tbody.querySelectorAll("button").forEach(btn => {
@@ -346,6 +369,21 @@ function switchTab(tabId) {
   document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
 
   document.getElementById(tabId).style.display = "block";
+  
+    // ▼ 追加：複数選択ボタンの表示切り替え
+  const multiBtn = document.getElementById("multiSelectBtn");
+  const cancelBtn = document.getElementById("cancelSelectedBtn");
+  if (multiBtn && cancelBtn) {
+    if (tabId === "reservationsTab") {
+      multiBtn.style.display = "inline-block";
+      if (multiSelectMode) {
+        cancelBtn.style.display = "inline-block";
+      }
+    } else {
+      multiBtn.style.display = "none";
+      cancelBtn.style.display = "none";
+    }
+  }
 
   // 呼び出し元イベントが使えないので、class追加は tabId に応じて明示的に書く
   if (tabId === "reservationsTab") {
@@ -530,7 +568,37 @@ updatePrevButtonVisibility(currentDate);
   document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
 }
 }
-    
+    // ▼ 一括キャンセル処理
+document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
+  const checkboxes = document.querySelectorAll(".multi-cancel-checkbox:checked");
+  if (checkboxes.length === 0) {
+    alert("キャンセルする予約を選択してください。");
+    return;
+  }
+
+  if (!confirm(`${checkboxes.length}件の予約を一括キャンセルしますか？`)) return;
+
+  const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
+  let successCount = 0;
+  let errorCount = 0;
+
+  const promises = idsToDelete.map(id =>
+    db.collection("reservations").doc(id).delete()
+      .then(() => successCount++)
+      .catch(() => errorCount++)
+  );
+
+  Promise.all(promises).then(() => {
+    alert(`キャンセル完了：${successCount}件、失敗：${errorCount}件`);
+    loadReservations(); // 再読み込み
+  });
+});
   </script>
 </body>
 </html>
+
+
+
+
+
+

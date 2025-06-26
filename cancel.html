@@ -43,15 +43,19 @@
     button:hover {
       background-color: #388e3c;
     }
+  button.active {
+    background-color: #1b5e20 !important;
+    font-weight: bold;
+  }
   </style>
 </head>
 <body>
   <h1>予約キャンセルフォーム
   </h1>
   <p id="userEmail">ログイン状態を確認中...</p>
-  <div style="text-align: left; margin-bottom: 10px;">
-  <button onclick="loadReservations('asc')">昇順</button>
-  <button onclick="loadReservations('desc')">降順</button>
+<div style="text-align: left; margin-bottom: 10px;">
+  <button id="ascBtn" onclick="loadReservations('asc')">昇順</button>
+  <button id="descBtn" onclick="loadReservations('desc')">降順</button>
 </div>
   <div id="reservationList"></div>
 
@@ -92,14 +96,22 @@ function loadReservations(order) {
   const listDiv = document.getElementById("reservationList");
   if (!currentUser) return;
 
-  const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"形式で今日
+  // ここでボタンの見た目切り替え
+  document.getElementById("ascBtn").classList.remove("active");
+  document.getElementById("descBtn").classList.remove("active");
+  if (order === "asc") {
+    document.getElementById("ascBtn").classList.add("active");
+  } else {
+    document.getElementById("descBtn").classList.add("active");
+  }
 
+  const today = new Date().toISOString().split('T')[0];
   db.collection("reservations")
     .where("email", "==", currentUser.email)
-    .where("date", ">=", today)  // ここで日付フィルタ
+    .where("date", ">=", today)
     .orderBy("date", order)
     .orderBy("time", order)
-  .get()
+    .get()
     .then(snapshot => {
       if (snapshot.empty) {
         listDiv.innerHTML = "<p>現在、予約はありません。</p>";

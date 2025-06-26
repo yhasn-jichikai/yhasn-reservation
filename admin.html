@@ -238,7 +238,13 @@ button.cancel-btn:hover {
 <div id="reservationsTab" class="tab-content">
   <div id="adminInfo"></div>
 
-  <table id="reservationsTable">
+<!-- ▼ 昇順・降順の切り替えボタン -->
+<div style="text-align: right; margin-bottom: 10px;">
+  <button onclick="changeSortOrder('asc')">昇順</button>
+  <button onclick="changeSortOrder('desc')">降順</button>
+</div>
+
+<table id="reservationsTable">
     <thead>
       <tr>
         <th>日付</th>
@@ -294,6 +300,14 @@ function showLog(message) {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// ▼ 並べ替え制御用
+let currentSortOrder = "asc";  // 初期は昇順
+
+function changeSortOrder(order) {
+  currentSortOrder = order;
+  loadReservations(); // 並べ替え再実行
+}
+
 // ▼ 追記：複数選択モード制御用
 let multiSelectMode = false;
 let selectedIds = [];
@@ -334,9 +348,14 @@ function loadReservations() {
   const todayStr = `${yyyy}-${mm}-${dd}`;
 
   db.collection("reservations")
-    .where("date", ">=", todayStr)
-    .orderBy("date", "asc")
-    .orderBy("time", "asc")
+  .where("date", ">=", todayStr)
+  .orderBy("date", currentSortOrder)
+  .orderBy("time", currentSortOrder)
+  .orderBy("room", currentSortOrder)
+  .orderBy("studentId", currentSortOrder)
+  .orderBy("name", currentSortOrder)
+  .orderBy("grade", currentSortOrder)
+  .orderBy("email", currentSortOrder)
     .get()
     .then(snapshot => {
       showLog("📦 予約データ取得中...件数: " + snapshot.size); // ←ここ追加

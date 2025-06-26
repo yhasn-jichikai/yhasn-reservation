@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約管理a</title>
+  <title>YHASN施設予約管理b</title>
 
   <style>
 body {
@@ -678,11 +678,11 @@ onChange: ([selectedDate]) => {
     updatePrevButtonVisibility(currentDate);
   }
 },
- onReady: ([selectedDate]) => {
-  currentDate = selectedDate || currentDate;
-  loadSchedule(currentDate);
-  updatePrevButtonVisibility(currentDate);
-}
+ setTimeout(() => {
+  const fp = document.getElementById("datePicker")._flatpickr;
+  fp.setDate(currentDate, true);
+  fp.input.value = formatDate(currentDate); // ←追加で安心！
+}, 0);
     
 });
 setTimeout(() => {

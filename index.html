@@ -99,6 +99,27 @@ td.available.selected {
     button:hover {
       background-color: #4caf50;
     }
+    
+    #topRightLinks {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+}
+#topRightLinks a {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 10px 16px;
+  background-color: #43a047;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 14px;
+}
+#topRightLinks a:hover {
+  background-color: #2e7d32;
+}
+    
     #dateControls {
       display: flex;
       justify-content: center;
@@ -176,6 +197,9 @@ td.available.selected {
 </head>
 
 <body>
+  <div id="topRightLinks">
+  <a href="cancel.html">予約一覧／キャンセル</a>
+</div>
   <div class="container">
     <h1>YHASN施設予約</h1>
 
@@ -239,10 +263,11 @@ td.available.selected {
   <p id="userEmail" style="margin-top:10px;"></p>
 </div>
 
-    <div id="completeSection" style="display:none;">
-      <h2>予約が完了しました！</h2>
-      <button id="backButton">予約ページへ戻る</button>
-    </div>
+<div id="completeSection" style="display:none; text-align:center; margin-top: 40px;">
+  <h2>予約が完了しました！</h2>
+  <p id="completeInfo" style="font-size: 18px; margin: 10px 0;"></p>
+  <button id="backButton">予約ページへ戻る</button>
+</div>
 
     
 
@@ -633,9 +658,18 @@ document.getElementById("logoutButton").addEventListener("click", () => {
         email: user.email,
         createdAt: new Date()
       }).then(() => {
-        document.getElementById("reservationSection").style.display = "none";
-        document.getElementById("dateControls").style.display = "none";
-        document.getElementById("completeSection").style.display = "block";
+// 予約成功後の画面切り替え
+document.getElementById("reservationSection").style.display = "none";
+document.getElementById("dateControls").style.display = "none";
+document.getElementById("scheduleTableRooms").style.display = "none";
+document.getElementById("scheduleTableBeds").style.display = "none";
+
+// 予約内容の表示
+document.getElementById("completeInfo").textContent =
+  `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
+
+// 完了画面を表示
+document.getElementById("completeSection").style.display = "block";
       }).catch(error => {
         console.error("予約エラー:", error);
         document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";

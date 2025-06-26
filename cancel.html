@@ -46,7 +46,7 @@
   </style>
 </head>
 <body>
-  <h1>予約キャンセルフォーム＠
+  <h1>予約キャンセルフォーム
   </h1>
   <p id="userEmail">ログイン状態を確認中...</p>
   <div id="reservationList"></div>
@@ -107,9 +107,6 @@ function loadReservations(order) {
           <td>${data.date}</td>
           <td>${data.time}</td>
           <td>${data.room}</td>
-          <td>${data.studentId || ""}</td>
-          <td>${data.grade || ""}</td>
-          <td>${data.name}</td>
           <td><button disabled>キャンセル</button></td>
         </tr>`;
       });

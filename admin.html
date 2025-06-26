@@ -532,14 +532,30 @@ function switchTab(tabId) {
   }
 
   if (tabId === "emptyTab") {
-    const fp = document.getElementById("datePicker")._flatpickr;
-    const selected = fp.selectedDates[0] || fp.latestSelectedDateObj || fp.parseDate(fp.input.value);
-    if (selected) {
-      currentDate = selected;
-      loadSchedule(currentDate);
-      updatePrevButtonVisibility(currentDate);
-    }
+  const fp = document.getElementById("datePicker")._flatpickr;
+  let selected = null;
+
+  // 候補① selectedDates
+  if (fp.selectedDates && fp.selectedDates.length > 0) {
+    selected = fp.selectedDates[0];
   }
+
+  // 候補② input の value から取得
+  if (!selected && fp.input && fp.input.value) {
+    selected = fp.parseDate(fp.input.value);
+  }
+
+  // fallback：currentDate
+  if (!selected) {
+    selected = currentDate;
+  }
+
+  if (selected) {
+    currentDate = selected;
+    loadSchedule(currentDate);
+    updatePrevButtonVisibility(currentDate);
+  }
+}
 }
 
 // 祝日リスト

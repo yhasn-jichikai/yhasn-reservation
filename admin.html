@@ -57,14 +57,39 @@ th, td {
   vertical-align: middle;
   font-size: 14px;
 }
-    button {
-      padding: 6px 12px;
-      background-color: #0288d1;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+   button {
+  padding: 6px 12px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* 通常の青ボタン（例：複数選択ボタン） */
+button:not(.cancel-btn):not(#cancelSelectedBtn) {
+  background-color: #0288d1;
+}
+button:not(.cancel-btn):not(#cancelSelectedBtn):hover {
+  background-color: #0277bd;
+}
+
+/* 通常のキャンセルボタン */
+button.cancel-btn {
+  background-color: #f44336;
+}
+button.cancel-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* 一括キャンセルボタン */
+#cancelSelectedBtn {
+  background-color: #c62828;
+  font-weight: bold;
+}
+#cancelSelectedBtn:hover {
+  background-color: #b71c1c;
+}
     button:hover {
       background-color: #0277bd;
     }
@@ -205,7 +230,7 @@ th, td {
 <!-- 複数選択・一括キャンセルボタン -->
 <div style="text-align: right; margin-bottom: 10px;">
   <button onclick="toggleMultiSelectMode()" id="multiSelectBtn">複数選択</button>
-  <button onclick="cancelSelected()" id="cancelSelectedBtn" style="display:none;">一括キャンセル</button>
+  <button onclick="cancelSelected()" id="cancelSelectedBtn" class="cancel-btn" style="display:none;">一括キャンセル</button>
 </div>
 
 
@@ -338,7 +363,7 @@ function loadReservations() {
             ${
               multiSelectMode
                 ? `<input type="checkbox" class="multi-cancel-checkbox" data-id="${doc.id}" onchange="toggleSelect('${doc.id}', this.checked)">`
-                : `<button data-id="${doc.id}" onclick="cancelSingle('${doc.id}')">キャンセル</button>`
+                : `<button class="cancel-btn" data-id="${doc.id}" onclick="cancelSingle('${doc.id}')">キャンセル</button>`
             }
           </td>
         `;
@@ -362,6 +387,12 @@ function loadReservations() {
           }
         });
       });
+            // ▼ 追加：複数選択中ならキャンセルボタン表示
+      if (multiSelectMode) {
+        document.getElementById("cancelSelectedBtn").style.display = "inline-block";
+      } else {
+        document.getElementById("cancelSelectedBtn").style.display = "none";
+      }
     })
     .catch(err => {
       showLog("❌ 読み込みエラー: " + err.message);  // ←ここ追加

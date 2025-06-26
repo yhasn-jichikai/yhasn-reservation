@@ -128,7 +128,7 @@ td.available.reserved {
 
   <div class="container">
     
-    <h1>教室予約フォーム(管理者用)
+    <h1>YHASN施設予約(教員専用)
     </h1>
 
     <div id="dateControls">
@@ -577,11 +577,16 @@ if (!selectedDate || selectedCells.length === 0 || !name) {
       }
 
       const newRef = db.collection("reservations").doc();
-      batch.set(newRef, {
+			const studentId = "-";
+			const grade = "-";
+
+batch.set(newRef, {
   room,
   date: selectedDate,
   time,
   name,
+  studentId,  // ← "-" で登録
+  grade,      // ← "-" で登録
   email: user.email,
   createdAt: new Date()
 });

@@ -337,7 +337,7 @@ function loadReservations() {
           <td>
             ${
               multiSelectMode
-                ? `<input type="checkbox" value="${doc.id}" onchange="toggleSelect('${doc.id}', this.checked)">`
+                ? `<input type="checkbox" class="multi-cancel-checkbox" data-id="${doc.id}" onchange="toggleSelect('${doc.id}', this.checked)">`
                 : `<button data-id="${doc.id}" onclick="cancelSingle('${doc.id}')">キャンセル</button>`
             }
           </td>
@@ -608,10 +608,27 @@ document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
     loadReservations(); // 再読み込み
   });
 });
+function toggleSelect(id, checked) {
+  if (checked) {
+    selectedIds.push(id);
+  } else {
+    selectedIds = selectedIds.filter(i => i !== id);
+  }
+}
+
+function toggleMultiSelectMode() {
+  multiSelectMode = !multiSelectMode;
+  document.getElementById("cancelSelectedBtn").style.display = multiSelectMode ? "inline-block" : "none";
+  loadReservations(); // ← これで表示をチェックボックスに切り替える
+}
+
   </script>
   <div id="debugLog" style="margin-top: 30px; padding: 10px; border: 2px dashed red;"></div>
 </body>
 </html>
+
+
+
 
 
 

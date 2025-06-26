@@ -571,11 +571,17 @@ datePicker = flatpickr("#date", {
     });
 
    document.getElementById("backButton").addEventListener("click", () => {
-  document.getElementById("completeSection").style.display = "none";
-  document.getElementById("scheduleTableRooms").style.display = "block";
-  document.getElementById("scheduleTableBeds").style.display = "block";
-  document.getElementById("dateControls").style.display = "flex";
-  loadSchedule(selectedDate);
+document.getElementById("completeSection").style.display = "none";
+document.getElementById("scheduleTableRooms").style.display = "block";
+document.getElementById("scheduleTableBeds").style.display = "block";
+document.getElementById("dateControls").style.display = "flex";
+
+// 🎯予約表見出しと画像も復活
+document.querySelector(".image-section").style.display = "block";
+document.querySelector("h3").style.display = "block";
+document.querySelectorAll("h3")[1].style.display = "block";
+
+loadSchedule(selectedDate);
 });
   });
 
@@ -664,13 +670,17 @@ document.getElementById("dateControls").style.display = "none";
 document.getElementById("scheduleTableRooms").style.display = "none";
 document.getElementById("scheduleTableBeds").style.display = "none";
 
+// 🎯画像と見出しを非表示にする（完了画面用）
+document.querySelector(".image-section").style.display = "none";
+document.querySelector("h3").style.display = "none"; // 演習室・交流室見出し
+document.querySelectorAll("h3")[1].style.display = "none"; // ベッド見出し
+
 // 予約内容の表示
 document.getElementById("completeInfo").textContent =
   `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
 
 // 完了画面を表示
-document.getElementById("completeSection").style.display = "block";
-      }).catch(error => {
+document.getElementById("completeSection").style.display = "block";      }).catch(error => {
         console.error("予約エラー:", error);
         document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
       });

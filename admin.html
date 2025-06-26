@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約管理</title>
+  <title>YHASN施設予約管理a</title>
 
   <style>
 body {
@@ -532,29 +532,28 @@ function switchTab(tabId) {
   }
 
   if (tabId === "emptyTab") {
-  const fp = document.getElementById("datePicker")._flatpickr;
-  let selected = null;
+  const datePickerElem = document.getElementById("datePicker");
+const fp = datePickerElem._flatpickr;
 
-  // 候補① selectedDates
-  if (fp.selectedDates && fp.selectedDates.length > 0) {
-    selected = fp.selectedDates[0];
-  }
+let selected = null;
 
-  // 候補② input の value から取得
-  if (!selected && fp.input && fp.input.value) {
-    selected = fp.parseDate(fp.input.value);
-  }
+if (fp && fp.selectedDates && fp.selectedDates.length > 0) {
+  selected = fp.selectedDates[0];
+}
 
-  // fallback：currentDate
-  if (!selected) {
-    selected = currentDate;
-  }
+if (!selected && fp && fp.input && fp.input.value) {
+  selected = fp.parseDate(fp.input.value);
+}
 
-  if (selected) {
-    currentDate = selected;
-    loadSchedule(currentDate);
-    updatePrevButtonVisibility(currentDate);
-  }
+if (!selected) {
+  selected = currentDate;
+}
+
+if (selected) {
+  currentDate = selected;
+  loadSchedule(currentDate);
+  updatePrevButtonVisibility(currentDate);
+}
 }
 }
 

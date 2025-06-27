@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約管理</title>
+  <title>YHASN施設予約管理＠</title>
 
   <style>
 body {
@@ -626,6 +626,14 @@ function loadSchedule(date) {
       scheduleTable.innerHTML = `<p style="color:red;">読み込み失敗: ${err.message}</p>`;
     });
 }
+function updatePrevButtonVisibility(selectedDate) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selected = new Date(selectedDate);
+  selected.setHours(0, 0, 0, 0);
+  const isBeforeOrSame = selected <= today;
+  document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
+}
 
 function setupFlatpickrAndButtons() {
   flatpickr("#datePicker", {
@@ -681,15 +689,7 @@ updatePrevButtonVisibility(currentDate);
 
 
  
-  function updatePrevButtonVisibility(selectedDate) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // 時間部分を無視するためクリア
-  const selected = new Date(selectedDate);
-  selected.setHours(0, 0, 0, 0);
   
-  const isBeforeOrSame = selected <= today;
-  document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
-}
 }
 // ▼ firebase.auth().onAuthStateChanged の中に追記
 firebase.auth().onAuthStateChanged(user => {

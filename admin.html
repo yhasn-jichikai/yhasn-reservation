@@ -223,7 +223,7 @@ button.cancel-btn:hover {
   padding: 20px;
   box-shadow: 2px 0 6px rgba(0,0,0,0.2);
   transition: left 0.3s ease;
-  z-index: 1000;
+  z-index: 1500;
 }
 
 #sideMenu.visible {
@@ -267,7 +267,7 @@ button.cancel-btn:hover {
   width: 100vw;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.3); /* 透明な黒背景 */
-  z-index: 1500; /* sideMenu(1000)より低く、他より高く */
+  z-index: 1000; /* sideMenu(1000)より低く、他より高く */
   transition: opacity 0.3s ease;
 }
 
@@ -291,7 +291,10 @@ button.cancel-btn:hover {
 </head>
 <body>
 
-<!-- ▼ ハンバーガーメニュー本体 -->
+
+<div id="menuOverlay" class="hidden"></div>
+
+
 <div id="hamburgerMenu">
   <button id="menuToggle">&#9776;</button> <!-- 三本線マーク -->
 
@@ -301,8 +304,7 @@ button.cancel-btn:hover {
       <div id="menuUserEmail">ログイン中</div>
     </div>
     
-<!-- ▼ サイドメニューの後に追加 -->
-<div id="menuOverlay" class="hidden"></div>
+
     
     <hr>
     <button onclick="location.href='admin-reserve.html'">教員用予約ページへ</button>

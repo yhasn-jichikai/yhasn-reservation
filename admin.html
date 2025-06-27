@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>YHASN施設予約管理</title>
-
+  <!-- 管理者用予約入力画面への遷移ボタン -->
+<div style="text-align: right; margin-bottom: 20px;">
+  <button onclick="location.href='admin-reserve.html'" style="background-color: #00796b; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
+    管理者用予約フォームへ
+  </button>
+</div>
   <style>
 body {
   font-family: 'Noto Sans JP', sans-serif;
@@ -191,74 +196,6 @@ button.cancel-btn:hover {
   color: #006064;
   border: 1px solid #bbb;
 }
-
-#hamburgerMenu {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 1000;
-}
-.menu-toggle {
-  font-size: 26px;
-  cursor: pointer;
-  background-color: #0288d1;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-.menu-content {
-  display: none;
-  position: absolute;
-  top: 50px;
-  left: 0;
-  width: 240px;
-  background-color: white;
-  border: 2px solid #0288d1;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-.menu-content .menu-header {
-  font-size: 16px;
-  font-weight: bold;
-  color: #0288d1;
-  margin-bottom: 8px;
-}
-.menu-content .account-name {
-  font-size: 18px;
-  font-weight: bold;
-  color: #006064;
-}
-.menu-content .account-email {
-  font-size: 14px;
-  color: #555;
-}
-.menu-content .account-status {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 10px;
-}
-.menu-content .menu-title {
-  font-size: 16px;
-  margin: 10px 0;
-  font-weight: bold;
-  color: #0277bd;
-}
-.menu-content button {
-  width: 100%;
-  margin: 6px 0;
-  padding: 10px;
-  font-size: 14px;
-  background-color: #0288d1;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.menu-content button:hover {
-  background-color: #0277bd;
-}
     
   </style>
   
@@ -266,30 +203,22 @@ button.cancel-btn:hover {
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
+<!-- flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
 
 </head>
 <body>
-  <!-- ハンバーガーメニュー -->
-<div id="hamburgerMenu">
-  <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-  <div id="menuContent" class="menu-content">
-    <div class="menu-header">アカウント情報</div>
-    <div class="account-name" id="accountName">YHASN教員</div>
-    <div class="account-email" id="accountEmail">example@yhasn.ed.jp</div>
-    <div class="account-status">でログイン中</div>
-    <hr>
-    <div class="menu-title">YHASN施設予約管理</div>
-    <button onclick="location.href='admin-reserve.html'">教員用予約ページへ</button>
-    <button onclick="logout()">ログアウト</button>
-  </div>
-</div>
 <h1>管理者用画面</h1>
 
 
 
 
-
+<!-- h1のすぐ下に追加：常に表示される位置 -->
+<div style="text-align: right; margin-bottom: 10px;">
+  <button id="logoutButton">ログアウト</button>
+</div>
 
 
 <!-- タブ切り替えボタン -->
@@ -385,7 +314,25 @@ let selectedIds = [];
 
 
 
+firebase.auth().onAuthStateChanged(user => {
+  const redirectedFromLogout = sessionStorage.getItem("justLoggedOut");
 
+  if (!user) {
+    if (!redirectedFromLogout) {
+      alert("ログインしてください");
+    }
+    window.location.href = "admin-login.html";
+  } else {
+    sessionStorage.removeItem("justLoggedOut"); // ログイン状態なら不要
+    document.getElementById("adminInfo").innerHTML = `
+      <div style="color:#0277bd; font-weight:bold; font-size:15px;">
+        ${user.email} でログイン中
+      </div>
+    `;
+    loadReservations();
+    setupFlatpickrAndButtons();
+  }
+});
 
 function loadReservations() {
   console.log("✅ loadReservations 実行されたよ！");
@@ -510,17 +457,14 @@ function switchTab(tabId) {
     document.querySelector("button[onclick*='emptyTab']").classList.add("active");
   }
 
-if (tabId === "emptyTab") {
-  const fp = document.getElementById("datePicker")._flatpickr;
-  if (fp) {
+  if (tabId === "emptyTab") {
+    const fp = document.getElementById("datePicker")._flatpickr;
     const selected = fp.selectedDates[0] || fp.latestSelectedDateObj || fp.parseDate(fp.input.value);
     if (selected) {
       currentDate = selected;
       loadSchedule(currentDate);
       updatePrevButtonVisibility(currentDate);
     }
-  } else {
-    console.warn("⚠️ flatpickr未初期化のため空室表を描画できません");
   }
 }
 
@@ -543,6 +487,7 @@ const allHolidays = {
   "2025-10-13": "スポーツの日",
   "2025-11-03": "文化の日",
   "2025-11-23": "勤労感謝の日",
+  "2025-12-23": "天皇誕生日"
 };
 
 let currentDate = getNextValidDate(new Date()); // ← グローバル日付管理用
@@ -623,14 +568,6 @@ function loadSchedule(date) {
       scheduleTable.innerHTML = `<p style="color:red;">読み込み失敗: ${err.message}</p>`;
     });
 }
-function updatePrevButtonVisibility(selectedDate) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const selected = new Date(selectedDate);
-  selected.setHours(0, 0, 0, 0);
-  const isBeforeOrSame = selected <= today;
-  document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
-}
 
 function setupFlatpickrAndButtons() {
   flatpickr("#datePicker", {
@@ -686,60 +623,41 @@ updatePrevButtonVisibility(currentDate);
 
 
  
+  function updatePrevButtonVisibility(selectedDate) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 時間部分を無視するためクリア
+  const selected = new Date(selectedDate);
+  selected.setHours(0, 0, 0, 0);
   
+  const isBeforeOrSame = selected <= today;
+  document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
 }
-// ▼ firebase.auth().onAuthStateChanged の中に追記
-firebase.auth().onAuthStateChanged(user => {
-  const redirectedFromLogout = sessionStorage.getItem("justLoggedOut");
-
-  if (!user) {
-    if (!redirectedFromLogout) {
-      alert("ログインしてください");
-    }
-    window.location.href = "admin-login.html";
-  } else {
-    sessionStorage.removeItem("justLoggedOut");
-
-    document.getElementById("adminInfo").innerHTML = `
-      <div style="color:#0277bd; font-weight:bold; font-size:15px;">
-        ${user.email} でログイン中
-      </div>
-    `;
-    
-    document.getElementById("accountName").textContent = user.displayName || "YHASN教員";
-    document.getElementById("accountEmail").textContent = user.email;
-    
-    loadReservations();
-    setupFlatpickrAndButtons();
-
-    // ▼ ここに移動：一括キャンセルボタンのイベント登録
-    document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
-      const checkboxes = document.querySelectorAll(".multi-cancel-checkbox:checked");
-      if (checkboxes.length === 0) {
-        alert("キャンセルする予約を選択してください。");
-        return;
-      }
-
-      if (!confirm(`${checkboxes.length}件の予約を一括キャンセルしますか？`)) return;
-
-      const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
-      let successCount = 0;
-      let errorCount = 0;
-
-      const promises = idsToDelete.map(id =>
-        db.collection("reservations").doc(id).delete()
-          .then(() => successCount++)
-          .catch(() => errorCount++)
-      );
-
-      Promise.all(promises).then(() => {
-        alert(`キャンセル完了：${successCount}件、失敗：${errorCount}件`);
-        loadReservations();
-      });
-    });
+}
+    // ▼ 一括キャンセル処理
+document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
+  const checkboxes = document.querySelectorAll(".multi-cancel-checkbox:checked");
+  if (checkboxes.length === 0) {
+    alert("キャンセルする予約を選択してください。");
+    return;
   }
-});
 
+  if (!confirm(`${checkboxes.length}件の予約を一括キャンセルしますか？`)) return;
+
+  const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
+  let successCount = 0;
+  let errorCount = 0;
+
+  const promises = idsToDelete.map(id =>
+    db.collection("reservations").doc(id).delete()
+      .then(() => successCount++)
+      .catch(() => errorCount++)
+  );
+
+  Promise.all(promises).then(() => {
+    alert(`キャンセル完了：${successCount}件、失敗：${errorCount}件`);
+    loadReservations(); // 再読み込み
+  });
+});
 function toggleSelect(id, checked) {
   if (checked) {
     selectedIds.push(id);
@@ -754,28 +672,10 @@ function toggleMultiSelectMode() {
   loadReservations(); // ← これで表示をチェックボックスに切り替える
 }
 
-function toggleMenu() {
-  const content = document.getElementById("menuContent");
-  content.style.display = (content.style.display === "block") ? "none" : "block";
-}
-
-
-
-// 既存のログアウト処理を関数化
-function logout() {
-  sessionStorage.setItem("justLoggedOut", "1");
-  firebase.auth().signOut().then(() => {
-    alert("ログアウトしました。画面遷移します");
-    location.href = "admin-login.html";
-  });
-}
-
   </script>
   <div id="debugLog" style="margin-top: 30px; padding: 10px; border: 2px dashed red;"></div>
 </body>
 </html>
-
-
 
 
 

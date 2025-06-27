@@ -259,7 +259,23 @@ button.cancel-btn:hover {
 #sideMenu button:hover {
   background-color: #0277bd;
 }  
+
+#menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3); /* 透明な黒背景 */
+  z-index: 998; /* sideMenu(1000)より低く、他より高く */
+  transition: opacity 0.3s ease;
+}
+
+#menuOverlay.hidden {
+  display: none;
+}
     
+            
     
   </style>
   
@@ -284,6 +300,10 @@ button.cancel-btn:hover {
     <div class="menu-user">
       <div id="menuUserEmail">ログイン中</div>
     </div>
+    
+<!-- ▼ サイドメニューの後に追加 -->
+<div id="menuOverlay" class="hidden"></div>
+    
     <hr>
     <button onclick="location.href='admin-reserve.html'">教員用予約ページへ</button>
     <button id="logoutButtonSide">ログアウト</button>
@@ -755,7 +775,19 @@ function toggleMultiSelectMode() {
 // ハンバーガーメニューの表示切り替え
 document.getElementById("menuToggle").addEventListener("click", () => {
   const sideMenu = document.getElementById("sideMenu");
-  sideMenu.classList.toggle("visible");
+  const overlay = document.getElementById("menuOverlay");
+  const isVisible = sideMenu.classList.toggle("visible");
+
+  if (isVisible) {
+    overlay.classList.remove("hidden");
+  } else {
+    overlay.classList.add("hidden");
+  }
+});
+
+document.getElementById("menuOverlay").addEventListener("click", () => {
+  document.getElementById("sideMenu").classList.remove("visible");
+  document.getElementById("menuOverlay").classList.add("hidden");
 });
 
 // メニュー内ログアウトボタン処理

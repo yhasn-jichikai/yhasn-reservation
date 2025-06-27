@@ -785,8 +785,20 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   const isVisible = sideMenu.classList.toggle("visible");
 
 if (isVisible) {
-  overlay.classList.remove("hidden"); // 表示：opacity 0 → 1（CSSがやる）
+  overlay.classList.remove("hidden"); // 一旦表示（opacity: 0）
+
+  // 1フレーム遅らせて opacity を 1 にして「もわっと」出す
+  requestAnimationFrame(() => {
+    overlay.style.opacity = "1";
+  });
+
 } else {
+  overlay.style.opacity = "0"; // まずフェードアウト
+  setTimeout(() => {
+    overlay.classList.add("hidden"); // 完全に非表示
+    overlay.style.opacity = ""; // 元に戻す
+  }, 300); // 0.3秒後に hidden クラス追加
+}
   overlay.style.opacity = "0"; // まずフェードアウト
   setTimeout(() => {
     overlay.classList.add("hidden"); // 完全に非表示
@@ -820,9 +832,9 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
   </script>
+  <div id="menuOverlay" class="hidden"></div>
   <div id="debugLog" style="margin-top: 30px; padding: 10px; border: 2px dashed red;"></div>
   
-      <div id="menuOverlay" class="hidden"></div>
 </body>
 </html>
 

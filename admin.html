@@ -388,25 +388,7 @@ let selectedIds = [];
 
 
 
-firebase.auth().onAuthStateChanged(user => {
-  const redirectedFromLogout = sessionStorage.getItem("justLoggedOut");
 
-  if (!user) {
-    if (!redirectedFromLogout) {
-      alert("ログインしてください");
-    }
-    window.location.href = "admin-login.html";
-  } else {
-    sessionStorage.removeItem("justLoggedOut"); // ログイン状態なら不要
-    document.getElementById("adminInfo").innerHTML = `
-      <div style="color:#0277bd; font-weight:bold; font-size:15px;">
-        ${user.email} でログイン中
-      </div>
-    `;
-    loadReservations();
-    setupFlatpickrAndButtons();
-  }
-});
 
 function loadReservations() {
   console.log("✅ loadReservations 実行されたよ！");
@@ -531,14 +513,17 @@ function switchTab(tabId) {
     document.querySelector("button[onclick*='emptyTab']").classList.add("active");
   }
 
-  if (tabId === "emptyTab") {
-    const fp = document.getElementById("datePicker")._flatpickr;
+if (tabId === "emptyTab") {
+  const fp = document.getElementById("datePicker")._flatpickr;
+  if (fp) {
     const selected = fp.selectedDates[0] || fp.latestSelectedDateObj || fp.parseDate(fp.input.value);
     if (selected) {
       currentDate = selected;
       loadSchedule(currentDate);
       updatePrevButtonVisibility(currentDate);
     }
+  } else {
+    console.warn("⚠️ flatpickr未初期化のため空室表を描画できません");
   }
 }
 
@@ -561,7 +546,6 @@ const allHolidays = {
   "2025-10-13": "スポーツの日",
   "2025-11-03": "文化の日",
   "2025-11-23": "勤労感謝の日",
-  "2025-12-23": "天皇誕生日"
 };
 
 let currentDate = getNextValidDate(new Date()); // ← グローバル日付管理用
@@ -707,31 +691,58 @@ updatePrevButtonVisibility(currentDate);
   document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
 }
 }
-    // ▼ 一括キャンセル処理
-document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
-  const checkboxes = document.querySelectorAll(".multi-cancel-checkbox:checked");
-  if (checkboxes.length === 0) {
-    alert("キャンセルする予約を選択してください。");
-    return;
+// ▼ firebase.auth().onAuthStateChanged の中に追記
+firebase.auth().onAuthStateChanged(user => {
+  const redirectedFromLogout = sessionStorage.getItem("justLoggedOut");
+
+  if (!user) {
+    if (!redirectedFromLogout) {
+      alert("ログインしてください");
+    }
+    window.location.href = "admin-login.html";
+  } else {
+    sessionStorage.removeItem("justLoggedOut");
+
+    document.getElementById("adminInfo").innerHTML = `
+      <div style="color:#0277bd; font-weight:bold; font-size:15px;">
+        ${user.email} でログイン中
+      </div>
+    `;
+    
+    document.getElementById("accountName").textContent = user.displayName || "YHASN教員";
+    document.getElementById("accountEmail").textContent = user.email;
+    
+    loadReservations();
+    setupFlatpickrAndButtons();
+
+    // ▼ ここに移動：一括キャンセルボタンのイベント登録
+    document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
+      const checkboxes = document.querySelectorAll(".multi-cancel-checkbox:checked");
+      if (checkboxes.length === 0) {
+        alert("キャンセルする予約を選択してください。");
+        return;
+      }
+
+      if (!confirm(`${checkboxes.length}件の予約を一括キャンセルしますか？`)) return;
+
+      const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
+      let successCount = 0;
+      let errorCount = 0;
+
+      const promises = idsToDelete.map(id =>
+        db.collection("reservations").doc(id).delete()
+          .then(() => successCount++)
+          .catch(() => errorCount++)
+      );
+
+      Promise.all(promises).then(() => {
+        alert(`キャンセル完了：${successCount}件、失敗：${errorCount}件`);
+        loadReservations();
+      });
+    });
   }
-
-  if (!confirm(`${checkboxes.length}件の予約を一括キャンセルしますか？`)) return;
-
-  const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
-  let successCount = 0;
-  let errorCount = 0;
-
-  const promises = idsToDelete.map(id =>
-    db.collection("reservations").doc(id).delete()
-      .then(() => successCount++)
-      .catch(() => errorCount++)
-  );
-
-  Promise.all(promises).then(() => {
-    alert(`キャンセル完了：${successCount}件、失敗：${errorCount}件`);
-    loadReservations(); // 再読み込み
-  });
 });
+
 function toggleSelect(id, checked) {
   if (checked) {
     selectedIds.push(id);
@@ -751,13 +762,7 @@ function toggleMenu() {
   content.style.display = (content.style.display === "block") ? "none" : "block";
 }
 
-// ログインユーザー情報をハンバーガーメニューに反映
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    document.getElementById("accountName").textContent = user.displayName || "YHASN教員";
-    document.getElementById("accountEmail").textContent = user.email;
-  }
-});
+
 
 // 既存のログアウト処理を関数化
 function logout() {

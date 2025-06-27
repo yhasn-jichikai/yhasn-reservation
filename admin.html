@@ -267,7 +267,7 @@ button.cancel-btn:hover {
   width: calc(100vw - 280px);
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.3); /* 透明な黒背景 */
-  z-index: 1000; /* sideMenu(1000)より低く、他より高く */
+  z-index: 1400; 
 		opacity: 1;
     transition: opacity 0.3s ease;
 }
@@ -313,7 +313,7 @@ button.cancel-btn:hover {
     <button id="logoutButtonSide">ログアウト</button>
   </div>
 </div>
-    <div id="menuOverlay" class="hidden"></div>
+
 
 
 <h1>管理者用画面</h1>
@@ -821,6 +821,8 @@ firebase.auth().onAuthStateChanged(user => {
 
   </script>
   <div id="debugLog" style="margin-top: 30px; padding: 10px; border: 2px dashed red;"></div>
+  
+      <div id="menuOverlay" class="hidden"></div>
 </body>
 </html>
 

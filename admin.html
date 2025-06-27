@@ -268,11 +268,13 @@ button.cancel-btn:hover {
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.3); /* 透明な黒背景 */
   z-index: 1000; /* sideMenu(1000)より低く、他より高く */
-  transition: opacity 0.3s ease;
+		opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 #menuOverlay.hidden {
-  display: none;
+		opacity: 0;
+    display: none;
 }
     
             
@@ -782,11 +784,15 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   const overlay = document.getElementById("menuOverlay");
   const isVisible = sideMenu.classList.toggle("visible");
 
-  if (isVisible) {
-    overlay.classList.remove("hidden");
-  } else {
-    overlay.classList.add("hidden");
-  }
+if (isVisible) {
+  overlay.classList.remove("hidden"); // 表示：opacity 0 → 1（CSSがやる）
+} else {
+  overlay.style.opacity = "0"; // まずフェードアウト
+  setTimeout(() => {
+    overlay.classList.add("hidden"); // 完全に非表示
+    overlay.style.opacity = ""; // 元に戻す
+  }, 300); // 0.3秒後に hidden クラス追加
+}
 });
 
 document.getElementById("menuOverlay").addEventListener("click", () => {

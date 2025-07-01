@@ -427,7 +427,6 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loadReservations() {
   console.log("✅ loadReservations 実行されたよ！");
-  showLog("✅ loadReservations 実行された！");  // ←ここ追加
 
   const tbody = document.querySelector("#reservationsTable tbody");
   tbody.innerHTML = "";
@@ -449,7 +448,7 @@ function loadReservations() {
 	.orderBy("email", "asc")
     .get()
     .then(snapshot => {
-      showLog("📦 予約データ取得中...件数: " + snapshot.size); // ←ここ追加
+
 
       if (snapshot.empty) {
         tbody.innerHTML = "<tr><td colspan='8'>本日以降の予約はありません</td></tr>";
@@ -458,7 +457,7 @@ function loadReservations() {
 
       snapshot.forEach(doc => {
         const data = doc.data();
-        showLog("▶︎ " + JSON.stringify(data)); // ←ここ追加
+
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -505,7 +504,6 @@ function loadReservations() {
       }
     })
     .catch(err => {
-      showLog("❌ 読み込みエラー: " + err.message);  // ←ここ追加
       console.error("読み込みエラー:", err);
       tbody.innerHTML = "<tr><td colspan='8'>読み込みに失敗しました</td></tr>";
       document.body.innerHTML += `<p style="color:red;">読み込みエラー: ${err.message}</p>`;

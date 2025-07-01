@@ -670,8 +670,15 @@ document.getElementById("logoutButton").addEventListener("click", () => {
       }
 
       // ✅ 重複がなければ予約を追加
+            let roomToSave = selectedRoom;
+      if (roomToSave.startsWith("ベッド")) {
+        const bedNum = roomToSave.replace("ベッド", "");
+        const padded = bedNum.padStart(2, "0");
+        roomToSave = `ベッド${padded}`;
+      }
+
       db.collection("reservations").add({
-        room: selectedRoom,
+        room: roomToSave,
         date: selectedDate,
         time: selectedTime,
         name,

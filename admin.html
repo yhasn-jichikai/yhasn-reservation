@@ -521,13 +521,7 @@ function loadReservations() {
     });
 }
 
-   document.getElementById("logoutButton").addEventListener("click", () => {
-  sessionStorage.setItem("justLoggedOut", "1"); // ← ログアウト直後の判定用
-  firebase.auth().signOut().then(() => {
-    alert("ログアウトしました。画面遷移します");
-    location.href = "admin-login.html";
-  });
-});
+   
     
 function switchTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(div => div.style.display = "none");

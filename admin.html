@@ -804,8 +804,11 @@ document.getElementById("logoutButtonSide").addEventListener("click", () => {
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     const emailDiv = document.getElementById("menuUserEmail");
-    if (emailDiv) {
-      emailDiv.textContent = `${user.email} でログイン中`;
+        if (emailDiv) {
+      const name = user.displayName || "";
+      const nameParts = name.trim().split(" ");
+      const reversedName = nameParts.length === 2 ? `${nameParts[1]} ${nameParts[0]}` : name;
+      emailDiv.textContent = `${reversedName}（${user.email}）でログイン中`;
     }
     if (user.photoURL) {
   const profileImg = document.getElementById("profileImage");

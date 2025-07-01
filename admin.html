@@ -266,13 +266,21 @@ button.cancel-btn:hover {
   left: 280px;
   width: calc(100vw - 280px);
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3); /* 透明な黒背景 */
-  z-index: 1000; /* sideMenu(1000)より低く、他より高く */
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease;
 }
 
+#menuOverlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 #menuOverlay.hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
 }
     
             
@@ -299,7 +307,7 @@ button.cancel-btn:hover {
   <button id="menuToggle">&#9776;</button> <!-- 三本線マーク -->
 
   <div id="sideMenu">
-    <div class="menu-header">YHASN施設予約管理</div>
+    <div class="menu-header">YHASN施設予約管理＠</div>
     <div class="menu-user">
       <div id="menuUserEmail">ログイン中</div>
     </div>
@@ -783,14 +791,17 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   const isVisible = sideMenu.classList.toggle("visible");
 
   if (isVisible) {
-    overlay.classList.remove("hidden");
-  } else {
-    overlay.classList.add("hidden");
-  }
+  overlay.classList.remove("hidden");
+  overlay.classList.add("visible");
+} else {
+  overlay.classList.remove("visible");
+  overlay.classList.add("hidden");
+}
 });
 
 document.getElementById("menuOverlay").addEventListener("click", () => {
   document.getElementById("sideMenu").classList.remove("visible");
+  document.getElementById("menuOverlay").classList.remove("visible");
   document.getElementById("menuOverlay").classList.add("hidden");
 });
 

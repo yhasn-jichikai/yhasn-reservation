@@ -200,13 +200,18 @@ button.cancel-btn:hover {
 }
 
 #menuToggle {
-  background-color: #4fc3f7;
+  background-color: #00bcd4;  /* 通常時：青緑 */
   color: white;
   border: none;
   padding: 10px 14px;
-  font-size: 18px;
+  font-size: 24px;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#menuToggle:hover {
+  background-color: #0097a7;  /* ホバー時：濃いめの青緑 */
 }
 
 #sideMenu {

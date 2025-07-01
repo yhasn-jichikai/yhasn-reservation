@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約管理</title>
+  <title>YHASN施設予約管理＠</title>
 
   <style>
 body {
@@ -807,7 +807,7 @@ firebase.auth().onAuthStateChanged(user => {
         if (emailDiv) {
       const name = user.displayName || "";
       const nameParts = name.trim().split(" ");
-      const reversedName = nameParts.length === 2 ? `${nameParts[1]} ${nameParts[0]}` : name;
+      const reversedName = nameParts.length === 2 ? `${nameParts[0]} ${nameParts[1]}` : name;
       emailDiv.textContent = `${reversedName}（${user.email}）でログイン中`;
     }
     if (user.photoURL) {

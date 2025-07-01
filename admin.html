@@ -410,6 +410,15 @@ button.cancel-btn:hover {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// 0埋めされたベッド名（ベッド01など）をベッド1形式で表示する
+function formatRoomName(room) {
+  if (room.startsWith("ベッド")) {
+    const num = room.replace("ベッド", "").replace(/^0+/, ""); // 先頭の0を削除
+    return "ベッド" + num;
+  }
+  return room;
+}
+
 // ▼ 並べ替え制御用
 let currentSortOrder = "asc";  // 初期は昇順
 
@@ -478,7 +487,7 @@ function loadReservations() {
         tr.innerHTML = `
           <td>${data.date}</td>
           <td>${data.time}</td>
-          <td>${data.room}</td>
+          <td>${formatRoomName(data.room)}</td>
           <td>${data.name}</td>
           <td>${data.studentId || ""}</td>
           <td>${data.grade || ""}</td>

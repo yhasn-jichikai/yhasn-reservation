@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>YHASN施設予約管理</title>
 
-</div>
   <style>
 body {
   font-family: 'Noto Sans JP', sans-serif;
@@ -429,11 +428,7 @@ firebase.auth().onAuthStateChanged(user => {
     window.location.href = "admin-login.html";
   } else {
     sessionStorage.removeItem("justLoggedOut"); // ログイン状態なら不要
-    document.getElementById("adminInfo").innerHTML = `
-      <div style="color:#0277bd; font-weight:bold; font-size:15px;">
-        ${user.email} でログイン中
-      </div>
-    `;
+
     loadReservations();
     setupFlatpickrAndButtons();
   }

@@ -380,16 +380,7 @@ button.cancel-btn:hover {
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
   
-function showLog(message) {
-  const logArea = document.getElementById("debugLog");
-  if (logArea) {
-    const p = document.createElement("p");
-    p.textContent = message;
-    p.style.color = "red";
-    p.style.fontSize = "14px";
-    logArea.appendChild(p);
-  }
-}
+
     
     // Firebase 初期化
     const firebaseConfig = {
@@ -807,7 +798,6 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
   </script>
-  <div id="debugLog" style="margin-top: 30px; padding: 10px; border: 2px dashed red;"></div>
 </body>
 </html>
 

@@ -283,6 +283,15 @@ button.cancel-btn:hover {
   opacity: 0;
   pointer-events: none;
 }
+
+#profileImage {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
     
             
     
@@ -310,6 +319,7 @@ button.cancel-btn:hover {
   <div id="sideMenu">
     <div class="menu-header">YHASN施設予約管理</div>
     <div class="menu-user">
+      <img id="profileImage" src="" alt="プロフィール画像" style="display:none;">
       <div id="menuUserEmail">ログイン中</div>
     </div>
 
@@ -797,6 +807,11 @@ firebase.auth().onAuthStateChanged(user => {
     if (emailDiv) {
       emailDiv.textContent = `${user.email} でログイン中`;
     }
+    if (user.photoURL) {
+  const profileImg = document.getElementById("profileImage");
+  profileImg.src = user.photoURL;
+  profileImg.style.display = "block";
+}
   }
 });
 

@@ -2,14 +2,6 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約@</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
   <title>YHASN施設予約9</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -322,6 +314,10 @@ td.available.selected {
   <hr style="margin: 12px 0;">
   <button onclick="location.href='index.html'">予約ページへ</button>
   <button onclick="location.href='cancel.html'">キャンセルページへ</button>
+  <button id="sideLoginButton" onclick="handleLogin()" style="display: none;">ログイン</button>
+  <button id="sideLogoutButton" onclick="handleLogout()" style="display: none;">ログアウト</button>
+
+  
 </div>
   
       <div id="topRightLinks">
@@ -449,6 +445,18 @@ firebase.auth().onAuthStateChanged(user => {
       img.style.display = "block";
     }
   }
+
+  const sideLoginBtn = document.getElementById("sideLoginButton");
+  const sideLogoutBtn = document.getElementById("sideLogoutButton");
+
+  if (user) {
+    if (sideLoginBtn) sideLoginBtn.style.display = "none";
+    if (sideLogoutBtn) sideLogoutBtn.style.display = "inline-block";
+  } else {
+    if (sideLoginBtn) sideLoginBtn.style.display = "inline-block";
+    if (sideLogoutBtn) sideLogoutBtn.style.display = "none";
+  }
+
 
 
   const loginBtn = document.getElementById("loginButton");
@@ -910,6 +918,23 @@ function closeModal(event, id) {
 }
 
 
+function handleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).then(result => {
+    if (!result.user.email.endsWith("@yhasn.ed.jp")) {
+      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+      firebase.auth().signOut();
+    }
+  });
+}
+
+function handleLogout() {
+  firebase.auth().signOut().then(() => {
+    alert("ログアウトしました");
+    document.getElementById("errorMsg").textContent = "";
+    if (selectedDate) loadSchedule(selectedDate);
+  });
+}
 
 
 

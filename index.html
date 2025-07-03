@@ -6,6 +6,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>YHASN施設予約9</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
   <style>
@@ -220,12 +228,7 @@ td.available.selected {
   cursor: pointer;
 }
 
-#menuOverlay.hidden {
-  display: none;
-}
-#menuOverlay:not(.hidden) {
-  display: block;
-}
+
 
 #sideMenu {
   position: fixed;
@@ -262,16 +265,26 @@ td.available.selected {
 }
 
 /* オーバーレイを右にずらして表示 */
+/* 既存の #menuOverlay に追記修正 */
 #menuOverlay {
   position: fixed;
   top: 0;
-  left: 240px; /* サイドメニューと重ならないよう右へずらす */
-  width: calc(100vw - 240px); /* サイドメニューを除いた幅 */
+  left: 240px;
+  width: calc(100vw - 240px);
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3); /* 半透明の黒 */
+  background-color: rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  display: none;
+  opacity: 0; /* ← 初期は透明 */
+  pointer-events: none;
+  transition: opacity 0.3s ease; /* ← フェード用 */
 }
+
+/* 表示時のクラス */
+#menuOverlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 
 
   </style>
@@ -854,14 +867,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   menuBtn.addEventListener("click", () => {
     sideMenu.classList.add("visible");
-    menuOverlay.classList.remove("hidden");
+    menuOverlay.classList.add("show"); // ← 修正
   });
 
   menuOverlay.addEventListener("click", () => {
     sideMenu.classList.remove("visible");
-    menuOverlay.classList.add("hidden");
+    menuOverlay.classList.remove("show"); // ← 修正
   });
 });
+
 
 
 </script>

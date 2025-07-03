@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約＃</title>
+  <title>YHASN施設予約</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -761,28 +761,32 @@ function closeModal(event, id) {
   document.getElementById(id).style.display = "none";
 }
 
+</script>
 
-  // ハンバーガーメニューの開閉処理
-  document.getElementById("menuButton").addEventListener("click", () => {
-    document.getElementById("sideMenu").classList.add("visible");
-    document.getElementById("menuOverlay").classList.remove("hidden");
-  });
+<script>
+// ハンバーガーメニューを開く
+document.getElementById("menuButton").addEventListener("click", () => {
+  document.getElementById("sideMenu").classList.add("visible");
+  document.getElementById("menuOverlay").classList.remove("hidden");
+});
 
-  document.getElementById("menuOverlay").addEventListener("click", () => {
-    document.getElementById("sideMenu").classList.remove("visible");
-    document.getElementById("menuOverlay").classList.add("hidden");
-  });
+// オーバーレイ（外側）をクリックしたら閉じる
+document.getElementById("menuOverlay").addEventListener("click", () => {
+  document.getElementById("sideMenu").classList.remove("visible");
+  document.getElementById("menuOverlay").classList.add("hidden");
+});
 
-  // アカウント情報をサイドメニューに表示
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById("displayEmail").textContent = user.email;
-      document.getElementById("displayName").textContent = user.displayName || "";
-    } else {
-      document.getElementById("displayEmail").textContent = "";
-      document.getElementById("displayName").textContent = "";
-    }
-  });
+// Googleログイン中なら名前・メールを表示
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("displayEmail").textContent = user.email;
+    document.getElementById("displayName").textContent = user.displayName || "";
+  } else {
+    document.getElementById("displayEmail").textContent = "";
+    document.getElementById("displayName").textContent = "";
+  }
+});
+
 
 </script>
 

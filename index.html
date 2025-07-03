@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約＄</title>
+  <title>YHASN施設予約</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -939,19 +939,33 @@ function closeModal(event, id) {
 function handleLogin() {
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).then(result => {
-    if (!result.user.email.endsWith("@yhasn.ed.jp")) {
+    const user = result.user;
+    if (!user.email.endsWith("@yhasn.ed.jp")) {
       alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
       firebase.auth().signOut();
     } else {
-      // ✅ サイドメニューを閉じる
+      // サイドメニューを閉じる
       document.getElementById("sideMenu").classList.remove("visible");
       document.getElementById("menuOverlay").classList.remove("show");
 
-      // ✅ 表を再描画（ログイン後にマスがクリック可能になる）
-      if (selectedDate) loadSchedule(selectedDate);
+     // ✅ ログイン状態の反映後に再描画（少し待ってから）
+    setTimeout(() => {
+      if (firebase.auth().currentUser && selectedDate) {
+        loadSchedule(selectedDate);
+      }
+    }, 1000); 
+
+      // 🔁 認証状態の変化を1回だけ監視して再描画（←ここがポイント！）
+      const unsubscribe = firebase.auth().onAuthStateChanged(newUser => {
+        if (newUser) {
+          if (selectedDate) loadSchedule(selectedDate);
+          unsubscribe(); // 一度だけ動かす
+        }
+      });
     }
   });
 }
+
 
 function handleLogout() {
   firebase.auth().signOut().then(() => {

@@ -647,6 +647,8 @@ firebase.auth().signOut().then(() => {
 });
 
   document.getElementById("loginAndReserveButton").addEventListener("click", function () {
+  document.getElementById("errorMsg").textContent = ""; // ← ここを追加
+
   const name = document.getElementById("name").value.trim();
   const studentId = document.getElementById("studentId").value.trim();
   const grade = document.getElementById("grade").value;

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約@</title>
+  <title>YHASN施設予約#</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -805,16 +805,24 @@ loadSchedule(selectedDate);
     menuOverlay.classList.remove("show");
   });
 
-// 🔑 ログインボタン処理（DOMContentLoaded内に移動）
-document.getElementById("loginButton").addEventListener("click", () => {
+
+  document.getElementById("loginButton").addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).then(result => {
     if (!result.user.email.endsWith("@yhasn.ed.jp")) {
       alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
       firebase.auth().signOut();
+    } else {
+      // ✅ 初期化再描画（クリックできるように）
+      setTimeout(() => {
+        if (firebase.auth().currentUser && selectedDate) {
+          loadSchedule(selectedDate);
+        }
+      }, 100);
     }
   });
 });
+
 
 // 🔑 ログアウトボタン処理
 document.getElementById("logoutButton").addEventListener("click", () => {

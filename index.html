@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約＠</title>
+  <title>YHASN施設予約</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -208,6 +208,50 @@ td.available.selected {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+#menuButton {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #43a047;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+#sideMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background-color: #ffffff;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  z-index: 1002;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+#sideMenu.visible {
+  transform: translateX(0);
+}
+
+#menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 240px;
+  width: calc(100vw - 240px);
+  height: 100vh;
+  background-color: rgba(0,0,0,0.3);
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+#menuOverlay.hidden {
+  display: none;
 }
 
   </style>
@@ -750,7 +794,31 @@ function closeModal(event, id) {
   if (event.target.tagName.toLowerCase() === 'img') return;
   document.getElementById(id).style.display = "none";
 }
+
+
+// ハンバーガーメニューの表示制御
+document.getElementById("menuButton").addEventListener("click", () => {
+  document.getElementById("sideMenu").classList.add("visible");
+  document.getElementById("menuOverlay").classList.remove("hidden");
+});
+
+document.getElementById("menuOverlay").addEventListener("click", () => {
+  document.getElementById("sideMenu").classList.remove("visible");
+  document.getElementById("menuOverlay").classList.add("hidden");
+});
+
+// 表示名とメールをメニューに反映
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("displayEmail").textContent = user.email;
+    document.getElementById("displayName").textContent = user.displayName || "";
+  } else {
+    document.getElementById("displayEmail").textContent = "";
+    document.getElementById("displayName").textContent = "";
+  }
+});
 </script>
+
 
 
 
@@ -762,6 +830,27 @@ function closeModal(event, id) {
 <div id="modalBed" class="modal" onclick="closeModal(event,'modalBed')">
   <img src="bed2.jpg" alt="ベッド配置拡大">
 </div>  <!-- ▲ 教室レイアウト画像表示ここまで -->
+
+<!-- ▼ ハンバーガーメニュー＆オーバーレイ -->
+<div id="menuOverlay" class="hidden"></div>
+
+<div id="sideMenu">
+  <div style="padding: 20px;">
+    <h2 style="margin-top: 0;">メニュー</h2>
+    <p id="displayName" style="font-size: 16px; margin-bottom: 5px;"></p>
+    <p id="displayEmail" style="font-size: 12px; color: #666;"></p>
+    <hr>
+    <a href="index.html" style="display:block; margin: 10px 0;">予約ページ</a>
+    <a href="cancel.html" style="display:block; margin: 10px 0;">予約キャンセル</a>
+    <button onclick="firebase.auth().signOut()" style="margin-top: 20px;">ログアウト</button>
+  </div>
+</div>
+
+<div id="menuButton">
+  <i class="fas fa-bars"></i>
+</div>
+<!-- ▲ ハンバーガーメニューここまで -->
+
 
 
 </body>

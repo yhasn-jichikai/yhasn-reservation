@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約</title>
+  <title>YHASN施設予約！</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -313,19 +313,23 @@ firebase.auth().onAuthStateChanged(user => {
   const loginBtn = document.getElementById("loginButton");
   const logoutBtn = document.getElementById("logoutButton");
   const userEmail = document.getElementById("userEmail");
-  if (user) {
-  // displayNameから姓と名を取得（姓：B231103阿部、名：智之丞）
-  const fullName = user.displayName || "";
-  const [sei, mei] = [fullName.slice(0, -1), fullName.slice(-1)];
-  const familyNameMatch = fullName.match(/[AB]\d{6}(.+)/);
-  const familyName = familyNameMatch ? familyNameMatch[1] : "";
-  const firstName = user.displayName ? user.displayName.replace(/^.+\d{6}/, "").replace(familyName, "") : "";
-
-  const combinedName = `${familyName} ${firstName || mei}`.trim();
-
-  // メールアドレスから学籍番号を取得
+if (user) {
+  const fullName = user.displayName || ""; // 例: B231103阿部 智之丞
   const email = user.email || "";
-  const studentIdFromEmail = email.split("@")[0];
+  const studentIdFromEmail = email.split("@")[0]; // 231103
+
+  let combinedName = fullName;
+
+  // 「姓 名」の区切りがスペースありの場合（例: "B231103阿部 智之丞"）
+  if (fullName.includes(" ")) {
+    const parts = fullName.split(" ");
+    const familyPart = parts[0]; // B231103阿部
+    const firstName = parts[1];  // 智之丞
+
+    const nameWithoutStudentId = familyPart.replace(/[AB]\d{6}/, ""); // 阿部
+
+    combinedName = `${nameWithoutStudentId} ${firstName}`;
+  }
 
   // 入力欄に自動入力
   const studentIdInput = document.getElementById("studentId");

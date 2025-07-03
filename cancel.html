@@ -47,16 +47,74 @@
     background-color: #1b5e20 !important;
     font-weight: bold;
   }
+
+#menuButton {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1100;
+  cursor: pointer;
+}
+#sideMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background-color: #4caf50;
+  color: white;
+  padding: 20px;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1101;
+}
+#sideMenu.visible {
+  transform: translateX(0);
+}
+#sideMenu button {
+  width: 100%;
+  margin-bottom: 10px;
+  background-color: white;
+  color: #4caf50;
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#menuOverlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.menu-user {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+  
   </style>
 </head>
 <body>
-  <body>
+  
   <div style="text-align: left; margin-bottom: 10px;">
     <button onclick="location.href='index.html'" style="background-color: #43a047; color: white; padding: 6px 12px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
       ← 予約ページへ戻る
     </button>
   </div>
-  <h1>予約確認／キャンセル
+  <h1>あなたの予約／キャンセル
   </h1>
   <p id="userEmail">ログイン状態を確認中...</p>
 <div style="text-align: left; margin-bottom: 10px;">
@@ -64,6 +122,31 @@
   <button id="descBtn" onclick="loadReservations('desc')">降順</button>
 </div>
   <div id="reservationList"></div>
+
+<!-- ハンバーガーメニューのボタン -->
+<div id="menuButton">
+  <i class="fas fa-bars fa-2x"></i>
+</div>
+
+<!-- オーバーレイ（メニュー外クリックで閉じる） -->
+<div id="menuOverlay"></div>
+
+<!-- サイドメニュー本体 -->
+<div id="sideMenu">
+  <div style="margin-bottom: 20px; font-weight: bold; font-size: 18px;">YHASN施設予約</div>
+
+  <div class="menu-user">
+    <img id="profileImage" src="" alt="プロフィール画像" style="display:none; width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+    <div id="menuUserName" style="font-size: 14px; font-weight: bold;"></div>
+    <div id="menuUserEmail" style="font-size: 12px;"></div>
+  </div>
+
+  <hr style="margin: 12px 0;">
+  <button onclick="location.href='index.html'">予約ページへ</button>
+  <button id="sideLoginButton" onclick="handleLogin()" style="display: none;">ログイン</button>
+  <button id="sideLogoutButton" onclick="handleLogout()" style="display: none;">ログアウト</button>
+</div>
+
 
 
   <!-- Firebase SDK -->
@@ -161,6 +244,52 @@ const message = `以下の予約を削除してもよろしいですか？\n\n�
       });
   }
 }
+
+// サイドメニュー開閉処理
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("menuButton");
+  const sideMenu = document.getElementById("sideMenu");
+  const menuOverlay = document.getElementById("menuOverlay");
+
+  menuBtn.addEventListener("click", () => {
+    sideMenu.classList.add("visible");
+    menuOverlay.classList.add("show");
+  });
+
+  menuOverlay.addEventListener("click", () => {
+    sideMenu.classList.remove("visible");
+    menuOverlay.classList.remove("show");
+  });
+});
+
+// ログイン状態の反映（onAuthStateChangedの中に追記可）
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    const name = user.displayName || "";
+    const email = user.email || "";
+    const photoURL = user.photoURL || "";
+
+    const nameDiv = document.getElementById("menuUserName");
+    const emailDiv = document.getElementById("menuUserEmail");
+    const img = document.getElementById("profileImage");
+
+    if (nameDiv) nameDiv.textContent = name;
+    if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
+    if (img && photoURL) {
+      img.src = photoURL;
+      img.style.display = "block";
+    }
+
+    document.getElementById("sideLoginButton").style.display = "none";
+    document.getElementById("sideLogoutButton").style.display = "inline-block";
+  } else {
+    document.getElementById("sideLoginButton").style.display = "inline-block";
+    document.getElementById("sideLogoutButton").style.display = "none";
+  }
+});
+
+
+
 </script></body>
 </html>
 

@@ -286,6 +286,11 @@ td.available.selected {
 }
 
 
+.menu-user {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
 
   </style>
 </head>
@@ -304,6 +309,14 @@ td.available.selected {
 <!-- サイドメニュー本体 -->
 <div id="sideMenu">
   <div style="margin-bottom: 20px; font-weight: bold; font-size: 18px;">YHASN施設予約</div>
+
+    <div class="menu-user">
+    <img id="profileImage" src="" alt="プロフィール画像" style="display:none; width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+    <div id="menuUserName" style="font-size: 14px; font-weight: bold;"></div>
+    <div id="menuUserEmail" style="font-size: 12px;"></div>
+  </div>
+
+
   <div id="displayName" style="font-size: 16px;"></div>
   <div id="displayEmail" style="font-size: 12px;"></div>
   <hr style="margin: 12px 0;">
@@ -418,6 +431,26 @@ td.available.selected {
 
 firebase.auth().onAuthStateChanged(user => {
   currentUser = user;
+
+      if (user) {
+    const name = user.displayName || "";
+    const email = user.email || "";
+    const photoURL = user.photoURL || "";
+
+    // 名前表示処理
+    const nameDiv = document.getElementById("menuUserName");
+    const emailDiv = document.getElementById("menuUserEmail");
+    const img = document.getElementById("profileImage");
+
+    if (nameDiv) nameDiv.textContent = name;
+    if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
+    if (img && photoURL) {
+      img.src = photoURL;
+      img.style.display = "block";
+    }
+  }
+
+
   const loginBtn = document.getElementById("loginButton");
   const logoutBtn = document.getElementById("logoutButton");
   const userEmail = document.getElementById("userEmail");

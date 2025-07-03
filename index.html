@@ -791,10 +791,8 @@ loadSchedule(selectedDate);
     menuOverlay.classList.remove("show");
   });
 
-
-  });
-
-  document.getElementById("loginButton").addEventListener("click", () => {
+// 🔑 ログインボタン処理（DOMContentLoaded内に移動）
+document.getElementById("loginButton").addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).then(result => {
     if (!result.user.email.endsWith("@yhasn.ed.jp")) {
@@ -804,13 +802,19 @@ loadSchedule(selectedDate);
   });
 });
 
+// 🔑 ログアウトボタン処理
 document.getElementById("logoutButton").addEventListener("click", () => {
-firebase.auth().signOut().then(() => {
-  alert("ログアウトしました");
-  document.getElementById("errorMsg").textContent = ""; // エラー消去
-  if (selectedDate) loadSchedule(selectedDate);
+  firebase.auth().signOut().then(() => {
+    alert("ログアウトしました");
+    document.getElementById("errorMsg").textContent = "";
+    if (selectedDate) loadSchedule(selectedDate);
+  });
 });
-});
+
+
+  });
+
+  
 
   document.getElementById("loginAndReserveButton").addEventListener("click", function () {
   document.getElementById("errorMsg").textContent = ""; // ← ここを追加

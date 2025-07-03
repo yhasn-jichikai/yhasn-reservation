@@ -947,12 +947,11 @@ function handleLogin() {
   document.getElementById("sideMenu").classList.remove("visible");
   document.getElementById("menuOverlay").classList.remove("show");
 
-  // ✅ 表を再描画してクリック可能にする
- if (selectedDate) {
-  setTimeout(() => {
-    loadSchedule(selectedDate);
-  }, 100);
+ 
+if (selectedDate) {
+  location.reload(); // ← これに置き換えるだけ
 }
+
 
 }
 

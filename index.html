@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約＠</title>
+  <title>YHASN施設予約！</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -266,7 +266,35 @@ td.available.selected {
 </head>
 
 <body>
-  <div id="topRightLinks">
+
+<!-- ハンバーガーメニューのボタン -->
+<div id="menuButton">
+  <i class="fas fa-bars fa-2x"></i>
+</div>
+
+<!-- オーバーレイ（メニュー外クリックで閉じる） -->
+<div id="menuOverlay" class="hidden" style="
+  position: fixed;
+  top: 0;
+  left: 240px;
+  width: calc(100vw - 240px);
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: none;
+"></div>
+
+<!-- サイドメニュー本体 -->
+<div id="sideMenu">
+  <div style="margin-bottom: 20px; font-weight: bold; font-size: 18px;">YHASN施設予約</div>
+  <div id="displayName" style="font-size: 16px;"></div>
+  <div id="displayEmail" style="font-size: 12px;"></div>
+  <hr style="margin: 12px 0;">
+  <button onclick="location.href='index.html'">予約ページへ</button>
+  <button onclick="location.href='cancel.html'">キャンセルページへ</button>
+</div>
+  
+      <div id="topRightLinks">
   <a href="cancel.html">予約一覧／キャンセル</a>
 </div>
   <div class="container">
@@ -340,6 +368,17 @@ td.available.selected {
     
 
   </div>
+
+<!-- モーダル本体 -->
+<div id="modalEnsyuu" class="modal" onclick="closeModal(event, 'modalEnsyuu')">
+  <img src="ensyuusitu2.jpg" alt="演習室拡大">
+</div>
+
+<div id="modalBed" class="modal" onclick="closeModal(event,'modalBed')">
+  <img src="bed2.jpg" alt="ベッド配置拡大">
+</div>  <!-- ▲ 教室レイアウト画像表示ここまで -->
+
+
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -802,26 +841,31 @@ function closeModal(event, id) {
   if (event.target.tagName.toLowerCase() === 'img') return;
   document.getElementById(id).style.display = "none";
 }
+
+// ハンバーガーメニュー開閉処理
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("menuButton");
+  const sideMenu = document.getElementById("sideMenu");
+  const menuOverlay = document.getElementById("menuOverlay");
+
+  menuBtn.addEventListener("click", () => {
+    sideMenu.classList.add("visible");
+    menuOverlay.classList.remove("hidden");
+  });
+
+  menuOverlay.addEventListener("click", () => {
+    sideMenu.classList.remove("visible");
+    menuOverlay.classList.add("hidden");
+  });
+});
+
+
 </script>
 
 
 
-<!-- モーダル本体 -->
-<div id="modalEnsyuu" class="modal" onclick="closeModal(event, 'modalEnsyuu')">
-  <img src="ensyuusitu2.jpg" alt="演習室拡大">
-</div>
-
-<div id="modalBed" class="modal" onclick="closeModal(event,'modalBed')">
-  <img src="bed2.jpg" alt="ベッド配置拡大">
-</div>  <!-- ▲ 教室レイアウト画像表示ここまで -->
 
 
 </body>
 </html>
-
-
-
-
-
-
 

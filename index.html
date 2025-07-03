@@ -6,6 +6,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>YHASN施設予約9</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
   <style>
@@ -277,15 +285,6 @@ td.available.selected {
   pointer-events: auto;
 }
 
-#userPhoto {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: none;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
 
 
   </style>
@@ -303,13 +302,10 @@ td.available.selected {
 <div id="menuOverlay" class="hidden"></div>
 
 <!-- サイドメニュー本体 -->
-<div id="sideMenu"> 
-<div class="menu-user">
-  <img id="userPhoto" src="" alt="プロフィール画像" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; display: none; margin-bottom: 10px;">
+<div id="sideMenu">
+  <div style="margin-bottom: 20px; font-weight: bold; font-size: 18px;">YHASN施設予約</div>
   <div id="displayName" style="font-size: 16px;"></div>
   <div id="displayEmail" style="font-size: 12px;"></div>
-</div>
-
   <hr style="margin: 12px 0;">
   <button onclick="location.href='index.html'">予約ページへ</button>
   <button onclick="location.href='cancel.html'">キャンセルページへ</button>
@@ -425,24 +421,9 @@ firebase.auth().onAuthStateChanged(user => {
   const loginBtn = document.getElementById("loginButton");
   const logoutBtn = document.getElementById("logoutButton");
   const userEmail = document.getElementById("userEmail");
-
 if (user) {
-  const fullName = user.displayName || "";
+  const fullName = user.displayName || ""; // 例: B231103阿部 智之丞
   const email = user.email || "";
-
-  
-  const displayNameElem = document.getElementById("displayName");
-  const emailElem = document.getElementById("displayEmail");
-  const photoElem = document.getElementById("userPhoto");
-
-  if (displayNameElem) displayNameElem.textContent = fullName;
-  if (emailElem) emailElem.textContent = email;
-  if (photoElem && user.photoURL) {
-    photoElem.src = user.photoURL;
-    photoElem.style.display = "block";
-  }
- 
-
   const studentIdFromEmail = email.split("@")[0]; // 231103
 
   let combinedName = fullName;
@@ -907,4 +888,5 @@ document.addEventListener("DOMContentLoaded", () => {
 </html>
 
 
-では、これであってる？
+index.htmlです。これに、admin.htmlと同様に、ログイン中のgoogleアカウントのアイコン・アカウント名・メアドを表示してほしい。
+必要なら、今のadmin.htmlを再送しますよ。

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約!</title>
+  <title>YHASN施設予約</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -422,7 +422,73 @@ td.available.selected {
 
   let currentUser = null;
 
+firebase.auth().onAuthStateChanged(user => {
+  currentUser = user;
+  const loginBtn = document.getElementById("loginButton");
+  const logoutBtn = document.getElementById("logoutButton");
+  const userEmail = document.getElementById("userEmail");
 
+if (user) {
+  const fullName = user.displayName || "";
+  const email = user.email || "";
+
+  
+  const displayNameElem = document.getElementById("displayName");
+  const emailElem = document.getElementById("displayEmail");
+  const photoElem = document.getElementById("userPhoto");
+
+  if (displayNameElem) displayNameElem.textContent = fullName;
+  if (emailElem) emailElem.textContent = email;
+  if (photoElem && user.photoURL) {
+    photoElem.src = user.photoURL;
+    photoElem.style.display = "block";
+  }
+ 
+
+  const studentIdFromEmail = email.split("@")[0]; // 231103
+
+  let combinedName = fullName;
+
+  // 「姓 名」の区切りがスペースありの場合（例: "B231103阿部 智之丞"）
+  if (fullName.includes(" ")) {
+    const parts = fullName.split(" ");
+    const familyPart = parts[0]; // B231103阿部
+    const firstName = parts[1];  // 智之丞
+
+    const nameWithoutStudentId = familyPart.replace(/[AB]\d{6}/, ""); // 阿部
+
+    combinedName = `${nameWithoutStudentId} ${firstName}`;
+  }
+
+  // 入力欄に自動入力
+  const studentIdInput = document.getElementById("studentId");
+  const nameInput = document.getElementById("name");
+
+  if (studentIdInput && nameInput) {
+    studentIdInput.value = studentIdFromEmail;
+    nameInput.value = combinedName;
+  }
+}
+  const reserveSection = document.getElementById("reservationSection");
+
+  // UI切り替え
+  if (user) {
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    userEmail.textContent = "ログイン中: " + user.email;
+    reserveSection.style.display = "block";
+  } else {
+    loginBtn.style.display = "inline-block";
+    logoutBtn.style.display = "none";
+    userEmail.textContent = "";
+    reserveSection.style.display = "none";
+  }
+
+  // 🔁 状態変化に応じて表を再描画
+  if (selectedDate) {
+    loadSchedule(selectedDate);
+  }
+});
 
   const holidays = {
     "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
@@ -687,72 +753,7 @@ document.querySelector(".image-section").style.display = "block";
 document.querySelector("h3").style.display = "block";
 document.querySelectorAll("h3")[1].style.display = "block";
 
-firebase.auth().onAuthStateChanged(user => {
-  currentUser = user;
-  const loginBtn = document.getElementById("loginButton");
-  const logoutBtn = document.getElementById("logoutButton");
-  const userEmail = document.getElementById("userEmail");
-
-if (user) {
-  const fullName = user.displayName || "";
-  const email = user.email || "";
-
-  
-  const displayNameElem = document.getElementById("displayName");
-  const emailElem = document.getElementById("displayEmail");
-  const photoElem = document.getElementById("userPhoto");
-
-  if (displayNameElem) displayNameElem.textContent = fullName;
-  if (emailElem) emailElem.textContent = email;
-  if (photoElem && user.photoURL) {
-    photoElem.src = user.photoURL;
-    photoElem.style.display = "block";
-  }
- 
-
-  const studentIdFromEmail = email.split("@")[0]; // 231103
-
-  let combinedName = fullName;
-
-  // 「姓 名」の区切りがスペースありの場合（例: "B231103阿部 智之丞"）
-  if (fullName.includes(" ")) {
-    const parts = fullName.split(" ");
-    const familyPart = parts[0]; // B231103阿部
-    const firstName = parts[1];  // 智之丞
-
-    const nameWithoutStudentId = familyPart.replace(/[AB]\d{6}/, ""); // 阿部
-
-    combinedName = `${nameWithoutStudentId} ${firstName}`;
-  }
-
-  // 入力欄に自動入力
-  const studentIdInput = document.getElementById("studentId");
-  const nameInput = document.getElementById("name");
-
-  if (studentIdInput && nameInput) {
-    studentIdInput.value = studentIdFromEmail;
-    nameInput.value = combinedName;
-  }
-}
-  const reserveSection = document.getElementById("reservationSection");
-
-  // UI切り替え
-  if (user) {
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-    userEmail.textContent = "ログイン中: " + user.email;
-    reserveSection.style.display = "block";
-  } else {
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
-    userEmail.textContent = "";
-    reserveSection.style.display = "none";
-  }
-
-  // 🔁 状態変化に応じて表を再描画
-  if (selectedDate) {
-    loadSchedule(selectedDate);
-  }
+loadSchedule(selectedDate);
 });
   });
 
@@ -915,4 +916,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
-

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約</title>
+  <title>YHASN施設予約@</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -953,7 +953,7 @@ function handleLogin() {
       if (firebase.auth().currentUser && selectedDate) {
         loadSchedule(selectedDate);
       }
-    }, 1000); 
+    }, 100); 
 
       // 🔁 認証状態の変化を1回だけ監視して再描画（←ここがポイント！）
       const unsubscribe = firebase.auth().onAuthStateChanged(newUser => {

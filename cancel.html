@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>予約確認／キャンセル</title>
+  <title>予約確認／キャンセル@</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -164,42 +164,20 @@ firebase.auth().getRedirectResult().then(result => {
   const alreadyRedirected = sessionStorage.getItem("alreadyRedirected");
 
   if (result.user) {
-    // リダイレクト後のログイン成功
-    currentUser = result.user;
-    loadReservations("asc");
-    sessionStorage.removeItem("alreadyRedirected"); // フラグ解除
+    setupAfterLogin(result.user);
+    sessionStorage.removeItem("alreadyRedirected");
     return;
   }
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
-      currentUser = user;
-      loadReservations("asc");
-
-      const name = user.displayName || "";
-      const email = user.email || "";
-      const photoURL = user.photoURL || "";
-
-      const nameDiv = document.getElementById("menuUserName");
-      const emailDiv = document.getElementById("menuUserEmail");
-      const img = document.getElementById("profileImage");
-
-      if (nameDiv) nameDiv.textContent = name;
-      if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
-      if (img && photoURL) {
-        img.src = photoURL;
-        img.style.display = "block";
-      }
-
-      document.getElementById("sideLoginButton").style.display = "none";
-      document.getElementById("sideLogoutButton")?.style.display = "inline-block";
+      setupAfterLogin(user);
     } else {
       if (!alreadyRedirected) {
-        sessionStorage.setItem("alreadyRedirected", "true"); // フラグを保存
+        sessionStorage.setItem("alreadyRedirected", "true");
         const provider = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithRedirect(provider);
       } else {
-        // すでにリダイレクト済み → フラグ解除だけ
         sessionStorage.removeItem("alreadyRedirected");
       }
     }
@@ -207,6 +185,34 @@ firebase.auth().getRedirectResult().then(result => {
 }).catch(error => {
   console.error("ログインエラー:", error);
 });
+
+
+
+
+function setupAfterLogin(user) {
+  currentUser = user;
+
+  const name = user.displayName || "";
+  const email = user.email || "";
+  const photoURL = user.photoURL || "";
+
+  const nameDiv = document.getElementById("menuUserName");
+  const emailDiv = document.getElementById("menuUserEmail");
+  const img = document.getElementById("profileImage");
+
+  if (nameDiv) nameDiv.textContent = name;
+  if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
+  if (img && photoURL) {
+    img.src = photoURL;
+    img.style.display = "block";
+  }
+
+  document.getElementById("sideLoginButton").style.display = "none";
+  document.getElementById("sideLogoutButton")?.style.display = "inline-block";
+
+  loadReservations("asc");
+}
+
 
 
 

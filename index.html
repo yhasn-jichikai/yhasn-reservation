@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約</title>
+  <title>YHASN施設予約＠</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -668,6 +668,18 @@ document.querySelector(".image-section").style.display = "block";
 document.querySelector("h3").style.display = "block";
 document.querySelectorAll("h3")[1].style.display = "block";
 
+// ハンバーガーメニュー制御（DOMContentLoaded内に入れる）
+document.getElementById("menuButton").addEventListener("click", () => {
+  document.getElementById("sideMenu").classList.add("visible");
+  document.getElementById("menuOverlay").classList.remove("hidden");
+});
+
+document.getElementById("menuOverlay").addEventListener("click", () => {
+  document.getElementById("sideMenu").classList.remove("visible");
+  document.getElementById("menuOverlay").classList.add("hidden");
+});
+
+
 loadSchedule(selectedDate);
 });
   });
@@ -796,16 +808,7 @@ function closeModal(event, id) {
 }
 
 
-// ハンバーガーメニューの表示制御
-document.getElementById("menuButton").addEventListener("click", () => {
-  document.getElementById("sideMenu").classList.add("visible");
-  document.getElementById("menuOverlay").classList.remove("hidden");
-});
 
-document.getElementById("menuOverlay").addEventListener("click", () => {
-  document.getElementById("sideMenu").classList.remove("visible");
-  document.getElementById("menuOverlay").classList.add("hidden");
-});
 
 // 表示名とメールをメニューに反映
 firebase.auth().onAuthStateChanged(user => {

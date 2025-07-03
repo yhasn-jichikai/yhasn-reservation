@@ -767,6 +767,23 @@ document.querySelectorAll("h3")[1].style.display = "block";
 
 loadSchedule(selectedDate);
 });
+
+  // ✅ ハンバーガーメニューの処理（追記部分）
+  const menuBtn = document.getElementById("menuButton");
+  const sideMenu = document.getElementById("sideMenu");
+  const menuOverlay = document.getElementById("menuOverlay");
+
+  menuBtn.addEventListener("click", () => {
+    sideMenu.classList.add("visible");
+    menuOverlay.classList.add("show");
+  });
+
+  menuOverlay.addEventListener("click", () => {
+    sideMenu.classList.remove("visible");
+    menuOverlay.classList.remove("show");
+  });
+
+
   });
 
   document.getElementById("loginButton").addEventListener("click", () => {
@@ -892,22 +909,7 @@ function closeModal(event, id) {
   document.getElementById(id).style.display = "none";
 }
 
-// ハンバーガーメニュー開閉処理
-document.addEventListener("DOMContentLoaded", () => {
-  const menuBtn = document.getElementById("menuButton");
-  const sideMenu = document.getElementById("sideMenu");
-  const menuOverlay = document.getElementById("menuOverlay");
 
-  menuBtn.addEventListener("click", () => {
-    sideMenu.classList.add("visible");
-    menuOverlay.classList.add("show"); // ← 修正
-  });
-
-  menuOverlay.addEventListener("click", () => {
-    sideMenu.classList.remove("visible");
-    menuOverlay.classList.remove("show"); // ← 修正
-  });
-});
 
 
 

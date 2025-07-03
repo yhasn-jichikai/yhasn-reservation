@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約</title>
+  <title>YHASN施設予約＄</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -665,15 +665,12 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
 });
 
     Promise.all(promises).then(() => {
-  const user = firebase.auth().currentUser; // 明示的に取得
-  renderSchedule(roomTimeStatus, user);     // 👈 user を渡す
-  loading.style.display = "none";
-});
-
+      renderSchedule(roomTimeStatus);
+      loading.style.display = "none";
+    });
   }
 
-
- function renderSchedule(status, user) {
+  function renderSchedule(status) {
   const scheduleTableRooms = document.getElementById("scheduleTableRooms");
   const scheduleTableBeds = document.getElementById("scheduleTableBeds");
   scheduleTableRooms.innerHTML = "";
@@ -713,26 +710,8 @@ times.forEach(timeObj => {
 
   const user = firebase.auth().currentUser;
   document.querySelectorAll("td.available").forEach(cell => {
-  cell.classList.remove("clickable");
-  cell.removeEventListener("click", cell._clickHandler);
-
-  if (user) {
-    cell.classList.add("clickable");
-    cell._clickHandler = () => {
-      document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
-      cell.classList.add("selected");
-      selectedRoom = cell.dataset.room;
-      selectedTime = cell.dataset.time;
-      document.getElementById("selectedInfo").textContent = `【${formatDisplayDate(selectedDate)}】 ${selectedTime} - ${selectedRoom}`;
-      document.getElementById("reservationSection").style.display = "block";
-    };
-    cell.addEventListener("click", cell._clickHandler);
-  } else {
-    cell._clickHandler = null;
-    cell.style.pointerEvents = "none";
-  }
-});
-
+    cell.style.cursor = user ? "pointer" : "default";
+  });
 
   function handleSelection(cell) {
   selectedRoom = cell.dataset.room;
@@ -960,22 +939,17 @@ function closeModal(event, id) {
 function handleLogin() {
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).then(result => {
-   if (!result.user.email.endsWith("@yhasn.ed.jp")) {
-  alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-  firebase.auth().signOut();
-} else {
-  // ✅ サイドメニューを閉じる
-  document.getElementById("sideMenu").classList.remove("visible");
-  document.getElementById("menuOverlay").classList.remove("show");
+    if (!result.user.email.endsWith("@yhasn.ed.jp")) {
+      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+      firebase.auth().signOut();
+    } else {
+      // ✅ サイドメニューを閉じる
+      document.getElementById("sideMenu").classList.remove("visible");
+      document.getElementById("menuOverlay").classList.remove("show");
 
- 
-if (selectedDate) {
-  location.reload(); // ← これに置き換えるだけ
-}
-
-
-}
-
+      // ✅ 表を再描画（ログイン後にマスがクリック可能になる）
+      if (selectedDate) loadSchedule(selectedDate);
+    }
   });
 }
 
@@ -983,6 +957,8 @@ function handleLogout() {
   firebase.auth().signOut().then(() => {
     alert("ログアウトしました");
     document.getElementById("errorMsg").textContent = "";
+
+    // ✅ 表を再描画（ログアウト後に選択できないようにする）
     if (selectedDate) loadSchedule(selectedDate);
 
     // ✅ サイドメニューを閉じる

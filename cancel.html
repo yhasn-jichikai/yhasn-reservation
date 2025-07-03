@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>予約確認／キャンセル</title>
+  <title>予約確認／キャンセル！</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -114,7 +114,6 @@
   </div>
   <h1>あなたの予約／キャンセル
   </h1>
-  <p id="userEmail">ログイン状態を確認中...</p>
 <div style="text-align: left; margin-bottom: 10px;">
   <button id="ascBtn" onclick="loadReservations('asc')">昇順</button>
   <button id="descBtn" onclick="loadReservations('desc')">降順</button>
@@ -161,16 +160,44 @@ const db = firebase.firestore();
 
 let currentUser = null;
 
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    loadReservations("asc"); // 初期表示
-  } else {
-    // 自動でGoogleログインへ
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithRedirect(provider);
+firebase.auth().getRedirectResult().then(result => {
+  if (result.user) {
+    currentUser = result.user;
+    loadReservations("asc");
   }
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      loadReservations("asc");
+
+      const name = user.displayName || "";
+      const email = user.email || "";
+      const photoURL = user.photoURL || "";
+
+      const nameDiv = document.getElementById("menuUserName");
+      const emailDiv = document.getElementById("menuUserEmail");
+      const img = document.getElementById("profileImage");
+
+      if (nameDiv) nameDiv.textContent = name;
+      if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
+      if (img && photoURL) {
+        img.src = photoURL;
+        img.style.display = "block";
+      }
+
+      document.getElementById("sideLoginButton").style.display = "none";
+      document.getElementById("sideLogoutButton").style.display = "inline-block";
+    } else if (!result.user) {
+      // リダイレクト後ではない、未ログイン時のみログインへ
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithRedirect(provider);
+    }
+  });
+}).catch(error => {
+  console.error("ログインエラー:", error);
 });
+
 
 function formatJapaneseDate(isoDate) {
   const [year, month, day] = isoDate.split("-");
@@ -258,31 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ログイン状態の反映（onAuthStateChangedの中に追記可）
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    const name = user.displayName || "";
-    const email = user.email || "";
-    const photoURL = user.photoURL || "";
 
-    const nameDiv = document.getElementById("menuUserName");
-    const emailDiv = document.getElementById("menuUserEmail");
-    const img = document.getElementById("profileImage");
-
-    if (nameDiv) nameDiv.textContent = name;
-    if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
-    if (img && photoURL) {
-      img.src = photoURL;
-      img.style.display = "block";
-    }
-
-    document.getElementById("sideLoginButton").style.display = "none";
-    document.getElementById("sideLogoutButton").style.display = "inline-block";
-  } else {
-    document.getElementById("sideLoginButton").style.display = "inline-block";
-    document.getElementById("sideLogoutButton").style.display = "none";
-  }
-});
 
 
 

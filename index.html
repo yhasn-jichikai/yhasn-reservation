@@ -690,14 +690,21 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
 times.forEach(timeObj => {
   html += `<tr><th>${timeObj.label}</th>`;
   roomsSubset.forEach(room => {
-    const timeVal = timeObj.value;
-    if (status[timeVal][room]) {
-      const info = status[timeVal][room];
-      html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
-    } else {
-      html += `<td class="available" data-room="${room}" data-time="${timeVal}"><i class="fas fa-circle"></i></td>`;
-    }
-  });
+  const timeVal = timeObj.value;
+
+  let roomKey = room;
+  if (room.startsWith("ベッド")) {
+    const num = room.replace("ベッド", "");
+    roomKey = "ベッド" + num.padStart(2, "0");  // ← ここで"ベッド01"に変換
+  }
+
+  if (status[timeVal][roomKey]) {
+    const info = status[timeVal][roomKey];
+    html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+  } else {
+    html += `<td class="available" data-room="${room}" data-time="${timeVal}"><i class="fas fa-circle"></i></td>`;
+  }
+});
   html += "</tr>";
 });
 

@@ -646,14 +646,20 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
   roomTimeStatus[timeVal] = {};  // ← オブジェクトではなく文字列キーを使用
 
   rooms.forEach(room => {
-    roomTimeStatus[timeVal][room] = null;
+  roomTimeStatus[timeVal][room] = null;
 
-    const query = db.collection("reservations")
-      .where("date", "==", date)
-      .where("time", "==", timeVal)  // ← ここも time.value を使うべき
-      .where("room", "==", room);
+  let roomKeyForQuery = room;
+  if (room.startsWith("ベッド")) {
+    const num = room.replace("ベッド", "");
+    roomKeyForQuery = "ベッド" + num.padStart(2, "0");
+  }
 
-    promises.push(query.get().then(snapshot => {
+  const query = db.collection("reservations")
+    .where("date", "==", date)
+    .where("time", "==", timeVal)
+    .where("room", "==", roomKeyForQuery);
+
+  promises.push(query.get().then(snapshot => {
       if (!snapshot.empty) {
         const data = snapshot.docs[0].data();
         roomTimeStatus[timeVal][room] = {
@@ -693,17 +699,17 @@ times.forEach(timeObj => {
   const timeVal = timeObj.value;
 
   let roomKey = room;
-  if (room.startsWith("ベッド")) {
-    const num = room.replace("ベッド", "");
-    roomKey = "ベッド" + num.padStart(2, "0");  // ← ここで"ベッド01"に変換
-  }
+if (room.startsWith("ベッド")) {
+  const num = room.replace("ベッド", "");
+  roomKey = "ベッド" + num.padStart(2, "0");
+}
 
-  if (status[timeVal][roomKey]) {
-    const info = status[timeVal][roomKey];
-    html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
-  } else {
-    html += `<td class="available" data-room="${room}" data-time="${timeVal}"><i class="fas fa-circle"></i></td>`;
-  }
+if (status[timeVal][roomKey]) {
+  const info = status[timeVal][roomKey];
+  html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
+} else {
+  html += `<td class="available" data-room="${room}" data-time="${timeVal}"><i class="fas fa-circle"></i></td>`;
+}
 });
   html += "</tr>";
 });
@@ -1007,3 +1013,8 @@ function handleLogout() {
 
 </body>
 </html>
+
+
+
+
+

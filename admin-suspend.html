@@ -341,6 +341,27 @@ const Banner = (() => {
       const input = prompt("管理者パスワードを入力してください");
       if (input !== ADMIN_PASS) return hardBlock("パスワードが違います。");
       // OK → リスト購読開始
+
+// ここに到達＝Firebase AuthはOK
+Banner.set('diag-warn', '認証OK・接続確認中', 'Firestoreへの読み取り権限をチェックしています…');
+Banner.log(`ログイン中: ${auth.currentUser?.email || '(不明)'}`);
+
+// Firestore接続＆権限チェック：ダミー読み取り
+try {
+  const ping = await getDoc(doc(db, "suspendedUsers", "__diag_ping__"));
+  // 読み取り自体が許可されていればここに到達（ドキュメントの有無は不問）
+  Banner.set('diag-ok', 'Firestore 接続OK', '停止一覧の購読を開始します。');
+  Banner.log('ダミー読み取り: 成功（権限OK）');
+} catch (err) {
+  const code = err?.code || 'unknown';
+  const msg  = err?.message || String(err);
+  Banner.set('diag-error', 'Firestore 読み取りエラー', `コード: <b>${code}</b><br>${msg}`);
+  Banner.log(`ダミー読み取り: 失敗 code=${code}`);
+  // permission-denied の場合はルールが原因の最有力
+  // 続行せず return しておくと原因が見やすい
+  return;
+}
+
       startLiveList();
     });
 
@@ -413,37 +434,45 @@ const Banner = (() => {
     }
 
     function startLiveList() {
-      const qy = query(coll, orderBy("createdAt", "desc"));
-      onSnapshot(qy, (snap) => {
-        if (snap.empty) {
-          renderEmpty();
-          return;
-        }
-        let html = "";
-        let count = 0;
-        snap.forEach((docSnap) => {
-          const data = docSnap.data() || {};
-          count++;
-          html += `
-            <tr data-id="${docSnap.id}">
-              <td>${formatDate(data.createdAt)}</td>
-              <td>${data.studentId || docSnap.id}</td>
-              <td>${data.name || "-"}</td>
-              <td>${data.grade ? data.grade + "年" : "-"}</td>
-              <td><span class="status">停止中</span></td>
-              <td class="right">
-                <button class="btn-danger" data-action="unlock">解除</button>
-              </td>
-            </tr>
-          `;
-        });
-        listBody.innerHTML = html;
-        countBadge.textContent = `${count} 件`;
-      }, (err) => {
-        console.error(err);
-        renderEmpty("読み込みでエラーが発生しました。");
-      });
+  const qy = query(coll, orderBy("createdAt", "desc"));
+  onSnapshot(qy, (snap) => {
+    if (snap.empty) {
+      renderEmpty("停止中アカウントは現在ありません。");
+      Banner.set('diag-ok', '接続OK', 'データは空です（0件）。');
+      Banner.log('onSnapshot: 0件');
+      return;
     }
+    let html = "";
+    let count = 0;
+    snap.forEach((docSnap) => {
+      const data = docSnap.data() || {};
+      count++;
+      html += `
+        <tr data-id="${docSnap.id}">
+          <td>${formatDate(data.createdAt)}</td>
+          <td>${data.studentId || docSnap.id}</td>
+          <td>${data.name || "-"}</td>
+          <td>${data.grade ? data.grade + "年" : "-"}</td>
+          <td><span class="status">停止中</span></td>
+          <td class="right">
+            <button class="btn-danger" data-action="unlock">解除</button>
+          </td>
+        </tr>
+      `;
+    });
+    listBody.innerHTML = html;
+    countBadge.textContent = `${count} 件`;
+    Banner.set('diag-ok', '接続OK', `${count}件を取得しました。`);
+    Banner.log(`onSnapshot: ${count}件`);
+  }, (err) => {
+    console.error(err);
+    const code = err?.code || "unknown";
+    const msg  = err?.message || "不明なエラー";
+    renderEmpty(`読み込みエラー：${code}<br>${msg}`);
+    Banner.set('diag-error', '一覧購読エラー', `コード: <b>${code}</b><br>${msg}`);
+    Banner.log(`onSnapshot error: code=${code}`);
+  });
+}
 
     // ---- 解除操作（= ドキュメント削除）----
     listBody.addEventListener("click", async (e) => {

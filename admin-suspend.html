@@ -282,6 +282,16 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+// --- 段階灯: SDKロード確認 ---
+Banner.set('diag-warn', 'SDKロードOK', `origin=${location.origin}<br>この後、認証状態を確認します。`);
+Banner.log('SDK 初期化完了');
+
+// 3秒待っても onAuthStateChanged が来なければ注意表示
+let _authTick = setTimeout(() => {
+  Banner.set('diag-error', '認証待ちタイムアウト', 'onAuthStateChanged が発火していません。<br>このドメインで未ログインの可能性があります。いったん admin-login.html でログインして戻ってきてください。');
+  Banner.log('onAuthStateChanged 未発火（3秒タイムアウト）');
+}, 3000);
+
 // ===== 診断ユーティリティ =====
 const Banner = (() => {
   const el = (id) => document.getElementById(id);
@@ -337,6 +347,8 @@ const warnNoLogin = () => {
 
 // ↓ ここから onAuthStateChanged 本体
 onAuthStateChanged(auth, async (user) => {
+  clearTimeout(_authTick);
+Banner.log('onAuthStateChanged 発火');
   if (!user) return warnNoLogin(); // ← ここで止めるだけ
   const email = user.email || "";
   if (!email.endsWith(ADMIN_DOMAIN)) {

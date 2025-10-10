@@ -202,7 +202,7 @@
         <h2>停止アカウント追加</h2>
         <form id="suspendForm" autocomplete="off" novalidate>
           <label for="studentId">学籍番号（6桁・半角数字のみ）</label>
-          <input type="text" id="studentId" inputmode="numeric" pattern="\\d{6}" placeholder="例：231234" maxlength="6" required />
+          <input type="text" id="studentId" inputmode="numeric" pattern="\d{6}" placeholder="例：231234" maxlength="6" required />
           <div class="hint">※ 6桁以外はエラー</div>
 
           <div class="row">
@@ -263,8 +263,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import {
-  getFirestore, doc, setDoc, deleteDoc, getDoc, serverTimestamp,
-  collection, onSnapshot, query, orderBy
+  getFirestore, doc, setDoc, deleteDoc, getDoc, getDocs, serverTimestamp,
+  collection, onSnapshot, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     // TODO: あなたの Firebase 設定を貼り付け（他ページと同じもの）
@@ -361,19 +361,17 @@ onAuthStateChanged(auth, async (user) => {
 Banner.set('diag-warn', '認証OK・接続確認中', 'Firestoreへの読み取り権限をチェックしています…');
 Banner.log(`ログイン中: ${auth.currentUser?.email || '(不明)'}`);
 
-// Firestore接続＆権限チェック：ダミー読み取り
+// Firestore接続＆権限チェック：一覧クエリで1件だけ読む
 try {
-  const ping = await getDoc(doc(db, "suspendedUsers", "__diag_ping__"));
-  // 読み取り自体が許可されていればここに到達（ドキュメントの有無は不問）
+  const testQ = query(collection(db, "suspendedUsers"), limit(1));
+  await getDocs(testQ); // データ0件でもOK。権限さえあれば成功。
   Banner.set('diag-ok', 'Firestore 接続OK', '停止一覧の購読を開始します。');
-  Banner.log('ダミー読み取り: 成功（権限OK）');
+  Banner.log('テスト読み取り: 成功（権限OK）');
 } catch (err) {
   const code = err?.code || 'unknown';
   const msg  = err?.message || String(err);
   Banner.set('diag-error', 'Firestore 読み取りエラー', `コード: <b>${code}</b><br>${msg}`);
-  Banner.log(`ダミー読み取り: 失敗 code=${code}`);
-  // permission-denied の場合はルールが原因の最有力
-  // 続行せず return しておくと原因が見やすい
+  Banner.log(`テスト読み取り: 失敗 code=${code}`);
   return;
 }
 

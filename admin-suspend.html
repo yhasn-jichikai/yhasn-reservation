@@ -165,11 +165,35 @@
     .right {
       text-align: right;
     }
+    /* 診断バナーの色切替 */
+.diag-ok    { background:#e8f5e9 !important; border-color:#c8e6c9 !important; color:#256029 !important; }
+.diag-warn  { background:#fff3cd !important; border-color:#ffeeba !important; color:#856404 !important; }
+.diag-error { background:#fdecea !important; border-color:#f5c6cb !important; color:#7f1d1d !important; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>停止アカウント管理</h1>
+    <!-- 診断バナー（常に上部に出る。OK/注意/エラーの状態色つき） -->
+<div id="diagBanner" style="
+  display:flex;align-items:flex-start;gap:10px;
+  border-radius:12px;padding:10px 12px;margin:10px 0 16px;
+  background:#fff3cd;border:1px solid #ffeeba;color:#856404;
+">
+  <div style="font-weight:700;min-width:4em">状態</div>
+  <div style="flex:1">
+    <div id="diagTitle" style="font-weight:700">初期化中…</div>
+    <div id="diagMsg" style="font-size:13px;opacity:.9">ページを読み込んでいます。</div>
+    <details id="diagDetails" style="margin-top:6px;">
+      <summary style="cursor:pointer;">詳細ログを表示</summary>
+      <pre id="diagLog" style="white-space:pre-wrap;font-size:12px;margin:8px 0 0;"></pre>
+    </details>
+  </div>
+  <button id="diagCopy" style="
+    border:none;border-radius:999px;padding:8px 12px;font-weight:700;cursor:pointer;
+    background:#43a047;color:#fff;
+  ">コピー</button>
+</div>
     <p class="desc">学籍番号6桁で管理。ここで停止に登録されたユーザーは、予約操作を制限します（実装連携は後述）。</p>
 
     <div class="grid">
@@ -239,9 +263,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import {
-      getFirestore, doc, setDoc, deleteDoc, serverTimestamp,
-      collection, onSnapshot, query, orderBy
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  getFirestore, doc, setDoc, deleteDoc, getDoc, serverTimestamp,
+  collection, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     // TODO: あなたの Firebase 設定を貼り付け（他ページと同じもの）
     const firebaseConfig = {
@@ -257,6 +281,48 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+
+// ===== 診断ユーティリティ =====
+const Banner = (() => {
+  const el = (id) => document.getElementById(id);
+  const $banner = el('diagBanner');
+  const $title  = el('diagTitle');
+  const $msg    = el('diagMsg');
+  const $log    = el('diagLog');
+  const $copy   = el('diagCopy');
+
+  function set(kind, title, msg) {
+    $banner.classList.remove('diag-ok','diag-warn','diag-error');
+    $banner.classList.add(kind); // 'diag-ok' | 'diag-warn' | 'diag-error'
+    $title.textContent = title || '';
+    $msg.innerHTML = msg || '';
+  }
+  function log(line) {
+    const t = new Date().toLocaleString();
+    $log.textContent += `[${t}] ${line}\n`;
+  }
+  function copyAll() {
+    const text = `## ${$title.textContent}\n${$msg.textContent}\n\n${$log.textContent}`;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('診断ログをコピーしました。サポートに貼り付けて共有できます。');
+    }).catch(() => {
+      alert('コピーに失敗しました。長押しで手動選択してください。');
+    });
+  }
+  $copy?.addEventListener('click', copyAll);
+
+  // 予期しないエラーも拾う
+  window.addEventListener('error', (e) => {
+    set('diag-error', '画面エラー', 'スクリプトでエラーが発生しました。詳細を開いて確認してください。');
+    log(`window.error: ${e.message} @${e.filename}:${e.lineno}`);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    set('diag-error', 'Promise未処理エラー', '通信または権限でエラーの可能性。詳細ログを確認してください。');
+    log(`unhandledrejection: ${e.reason?.code || ''} ${e.reason?.message || e.reason}`);
+  });
+
+  return { set, log };
+})();
 
     // ---- 超簡易・管理者ガード（@yhasn.ed.jp + 追加PW：admin2025）----
     const ADMIN_DOMAIN = "@yhasn.ed.jp";

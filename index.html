@@ -1391,6 +1391,15 @@ document.querySelectorAll(".image-section img").forEach(img => {
             alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
             return;
           }
+          
+          // --- 停止中アカウントチェック ---
+const suspendRef = db.collection("suspendedUsers").doc(studentId);
+const suspendSnap = await suspendRef.get();
+if (suspendSnap.exists) {
+  alert(`学籍番号 ${studentId} は現在「予約停止中」です。\n管理者にお問い合わせください。`);
+  return; // 予約処理を中止
+}
+          
 
           return db.collection("reservations").add({
             room: roomToSave,

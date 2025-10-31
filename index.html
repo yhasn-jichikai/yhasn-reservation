@@ -1399,6 +1399,27 @@ document.querySelectorAll(".image-section img").forEach(img => {
     alert(`このアカウントは停止中です。\n詳細は管理者にお問い合わせください。`);
     return; // 予約処理を中止
   }
+  
+  // --- 学年・学籍番号による一時制限チェック（2026-01-01〜2026-02-15）---
+const startLimit = new Date("2026-01-01");
+const endLimit   = new Date("2026-02-15");
+const currentDate = new Date(selectedDate);
+
+const isWithinLimitPeriod = currentDate >= startLimit && currentDate <= endLimit;
+const isTargetRoom = ["学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5"].includes(selectedRoom);
+
+if (isWithinLimitPeriod && isTargetRoom) {
+  // 学籍番号の先頭2桁
+  const studentPrefix = studentId.slice(0, 2);
+  // 学年（数値化）
+  const gradeNum = grade.replace("年", "");
+
+  if (["24", "25"].includes(studentPrefix) || ["1", "2"].includes(gradeNum)) {
+    alert(`（2026/1/1〜2/15）は、3年生のみ学生演習室2〜5を予約できます。\n他の教室または期間外の日付を選択してください。`);
+    return; // 予約中止
+  }
+}
+  
 
   // --- 通常の予約処理続行 ---
   return db.collection("reservations").add({

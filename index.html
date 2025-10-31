@@ -1396,7 +1396,7 @@ document.querySelectorAll(".image-section img").forEach(img => {
 const suspendRef = db.collection("suspendedUsers").doc(studentId);
 const suspendSnap = await suspendRef.get();
 if (suspendSnap.exists) {
-  alert(`学籍番号 ${studentId} は現在「予約停止中」です。\n管理者にお問い合わせください。`);
+  alert(`このアカウントは停止中です。\n詳細は管理者にお問い合わせください。`);
   return; // 予約処理を中止
 }
           

@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>YHASN施設予約</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -44,26 +45,145 @@
       font-size: 16px;
       color: #333;
     }
-   table {
-  width: 90%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #a5d6a7;
+  /* === 表の見た目を“元の雰囲気”に戻しつつ整える === */
+/* === コンパクト版：最初の見た目に寄せる（小さめ・中央寄せ） === */
+
+/* ページ全体の余白を少しだけ詰める */
+.container {
+  width: 100%;
+  max-width: 980px;            /* 表含め全体の最大幅を抑える */
+  margin: 0 auto;
 }
-    th {
-      height:200px;
-    }
-    th, td {
-      
-      background-color: #a5d6a7;
-      border: 1px solid #81c784;
-      padding: 12px;
-      text-align: center;
-      height: 40px;
-		}
+
+/* タイトルや見出しをやや小さめに */
+h1 { font-size: 22px; margin: 18px 0 12px; }
+h2 { font-size: 18px; margin: 14px 0 8px; }
+h3 { font-size: 16px; margin: 12px 0 6px; }
+
+/* ボタンを小さめに（高さ・フォント） */
+button {
+  padding: 8px 14px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+#dateControls {
+  gap: 6px;
+  margin-bottom: 8px;
+}
+#dateControls label { font-size: 14px; }
+
+/* === 「前の日・日付選択・次の日」ブロックを中央寄せ === */
+#dateControls {
+  /* 横並び＋中央寄せ */
+  display: flex;
+  justify-content: center;  /* ←中央寄せの主役 */
+  align-items: center;
+  gap: 12px;
+
+  /* 行をページの中央に置くための補助 */
+  margin: 10px auto 16px;   /* 上下余白＋左右autoで中央 */
+  width: 100%;
+  max-width: 900px;         /* デスクトップで広がりすぎ防止（任意で調整） */
+}
+
+/* 子要素（ボタン・入力）は幅を勝手に伸ばさない */
+#dateControls > * {
+  flex: 0 0 auto;
+}
+
+/* 日付入力の最小幅＆中央寄せ（flatpickr等のテキストボックス想定） */
+#dateControls input[type="text"],
+#dateControls input[type="date"] {
+  min-width: 160px;         /* 必要に応じて 140px などへ */
+  text-align: center;
+}
+
+/* スマホはさらに間隔を詰める */
+@media (max-width: 480px) {
+  #dateControls { gap: 8px; max-width: 100%; }
+  #dateControls input[type="text"],
+  #dateControls input[type="date"] { min-width: 140px; }
+}
+
+
+/* 表ラッパー：横に伸びすぎない＆中央寄せ */
+#scheduleTableRooms, #scheduleTableBeds {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#scheduleTableRooms table,
+#scheduleTableBeds table {
+  width: 96%;
+  max-width: 900px;            /* 表そのものの最大幅をさらに抑える */
+  margin: 10px auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* ヘッダ（時間帯・部屋名） */
+#scheduleTableRooms th,
+#scheduleTableBeds th {
+  background-color: #a5d6a7;
+  color: #fff;
+  padding: 6px 8px;            /* 余白を小さめに */
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 13px;             /* 文字もやや小さめ */
+}
+
+/* 左端の時間列（tbody > th）は淡い背景で区別、折返しOK */
+#scheduleTableRooms tbody th,
+#scheduleTableBeds tbody th {
+  white-space: normal;
+  color: #333;
+  background-color: #e7ffe9;
+  font-weight: 700;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+/* データセル：高さ/余白を控えめに */
+#scheduleTableRooms td,
+#scheduleTableBeds td {
+  background-color: #fff;
+  border: 1px solid #81c784;
+  padding: 6px 8px;            /* 余白を小さめに */
+  text-align: center;
+  height: 32px;                /* デフォ目安を少し低めに */
+  vertical-align: middle;
+  font-size: 13px;             /* 文字もやや小さめ */
+}
+
+/* 予約済みセル */
+td.disabled {
+  background-color: #cfead0;   /* 少しだけ淡い緑に調整 */
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* 画像：はじめから小さめに（必要時に拡大はモーダルで） */
+.image-section img {
+  width: 52%;
+  max-width: 420px;            /* 以前に近い小ささ */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin: 12px auto;
+  cursor: zoom-in;
+  display: block;
+}
+
+/* 完了画面も少しコンパクト */
+#completeSection h2 { font-size: 22px; }
+#completeInfo     { font-size: 16px; }
+
+
+
       th:first-child,
       td:first-child{
         white-space: nowrap;
@@ -73,18 +193,7 @@
       color: #999;
       cursor: not-allowed;
     }
-   td.available {
-  background-color: #ffffff !important;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-td.available:not(.clickable) {
-  cursor: not-allowed;
-  /* opacity: 0.4; ← これを削除 */
-}
-td.available.selected {
-  background-color: #d0f0c0 !important;
-}
+  
     button {
       background-color: #66bb6a;
       color: #fff;
@@ -189,15 +298,7 @@ td.available.selected {
   width: 100%;
 }
 
-.image-section img {
-  width: 70%;
-  max-width: 600px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin: 20px auto;
-  cursor: zoom-in;
-  display: block;
-}
+
 
 @keyframes fadeInZoom {
   0% {
@@ -228,7 +329,7 @@ td.available.selected {
   left: 0;
   width: 240px;
   height: 100vh;
-  background-color: #4caf50;
+  background-color: #3b8b3d;
   color: white;
   padding: 20px;
   box-shadow: 2px 0 8px rgba(0,0,0,0.2);
@@ -243,7 +344,7 @@ td.available.selected {
   width: 100%;
   margin-bottom: 10px;
   background-color: white;
-  color: #4caf50;
+  color: #3b8b3d;
   border: none;
   padding: 10px;
   font-size: 14px;
@@ -299,6 +400,242 @@ td.available.selected {
   transform: scale(1.03);
 }
 
+/* === Smooth Select Animation for table cells === */
+td.available {
+  position: relative;
+  background-color: #ffffff !important;
+  cursor: pointer;
+  /* レイアウトを揺らさないプロパティ中心に */
+  will-change: background-color, transform, box-shadow, opacity;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+td.available::after {
+  content: "";
+  position: absolute;
+  inset: 2px;                 /* 枠に少し余白を作る */
+  border-radius: 6px;
+  background: radial-gradient(closest-side, rgba(76,175,80,0.18), transparent 70%);
+  transform: scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+/* タップ直後の微スケール（押した感） */
+td.available.tap-active {
+  transform: scale(0.985);
+}
+/* 選択状態は色＋うっすら内側シャドウで“留まる”強調 */
+td.available.selected {
+  background-color: #e8f5e9 !important;
+  box-shadow:
+    0 0 0 2px rgba(67,160,71,.25) inset,
+    0 2px 8px rgba(0,0,0,.05);
+}
+td.available.selected::after {
+  opacity: 1;
+  transform: scale(1);
+}
+/* 未クリック可能時 */
+td.available:not(.clickable) {
+  cursor: not-allowed;
+}
+
+/* 視覚過敏・省電力配慮 */
+@media (prefers-reduced-motion: reduce) {
+  td.available,
+  td.available::after {
+    transition: none !important;
+  }
+}
+
+/* === グローバル即時タップ対策 === */
+button, a, [role="button"],
+#menuButton, #sideMenu button,
+#prevDayBtn, #nextDayBtn,
+#loginButton, #loginAndReserveButton,
+.image-section img, .modal {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* 300ms遅延を抑止 */
+}
+#toCancelButton, #sideLoginButton, #sideLogoutButton, #loginAndReserveButton, #menuOverlay, #imgEnsyuu, #imgBed {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+
+
+
+
+
+
+/* --- PC基準の整え（昔の雰囲気） --- */
+:root {
+  /* 必要ならここで全体の倍率を微調整（1.00～0.90） */
+  --ui-scale: 1.00;
+}
+
+body { padding: calc(30px * var(--ui-scale)); }
+
+h1 { font-size: calc(22px * var(--ui-scale)); margin: 12px 0 8px; }
+label, p { font-size: calc(16px * var(--ui-scale)); }
+
+button {
+  font-size: calc(16px * var(--ui-scale));
+  padding: calc(12px * var(--ui-scale)) calc(24px * var(--ui-scale));
+  border-radius: 5px;
+}
+
+/* テーブルは昔どおり“ほどよく狭め”＋セルは高さ40px目安 */
+table { width: 90%; margin-top: 20px; }
+th { height: auto; } /* ← あなたのCSSにある height:200px を打ち消す */
+th, td {
+  padding: calc(10px * var(--ui-scale)) calc(12px * var(--ui-scale));
+  height: calc(40px * var(--ui-scale));
+  font-size: calc(14px * var(--ui-scale));
+}
+
+/* 画像は“昔っぽくやや大きめプレビュー” */
+.image-section img {
+  width: 68%;
+  max-width: 600px;
+  margin: 18px auto;
+}
+
+/* トップのボタン群も少しだけ詰める */
+#topButtons button { margin-left: 8px; }
+
+
+
+
+/* === スマホ最適化：画面に収めるための段階的スケーリング === */
+/* 既存の :root { --ui-scale: 1.00; } を活用して、ブレークポイントごとに全体縮小 */
+@media (max-width: 1024px) {
+  :root { --ui-scale: 0.92; }
+  .container { max-width: 860px; }
+  #scheduleTableRooms table,
+  #scheduleTableBeds table {
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  :root { --ui-scale: 0.84; }
+  body { padding: 16px; }
+  h1 { margin: 10px 0; }
+  #dateControls { gap: 6px; }
+  /* セルの高さを少し下げる */
+  th, td { height: calc(36px * var(--ui-scale)); }
+  /* 画像は横幅にフィット、説明テキストは省略 */
+  .image-section img { width: 100%; max-width: none; }
+  .image-section p { font-size: 12px; }
+  /* サイドメニューは少し細めに */
+  #sideMenu { width: 78vw; }
+  #menuButton { top: 12px; left: 12px; }
+  /* テーブルはにじみ防止のため中央寄せ維持 */
+  #scheduleTableRooms, #scheduleTableBeds { overflow-x: auto; }
+}
+
+@media (max-width: 480px) {
+  /* スマホではさらに小さく（文字もUIも一緒に縮む） */
+  :root { --ui-scale: 0.46; }
+
+  body { padding: 10px; }
+  h1 { font-size: calc(22px * var(--ui-scale)); }
+
+  label, p { font-size: calc(18px * var(--ui-scale)); }
+
+  /* 表全体の文字・余白をさらに圧縮、折り返しを抑制してはみ出し防止 */
+  th, td {
+    font-size: calc(4px * var(--ui-scale));
+    padding: calc(2px * var(--ui-scale)) calc(2px * var(--ui-scale));
+    height: calc(28px * var(--ui-scale));
+    white-space: nowrap;
+    line-height: 1.15;
+  }
+
+  /* 見出しセルの微調整（時間・部屋名が詰まりすぎないように） */
+  #scheduleTableRooms th,
+  #scheduleTableBeds th {
+    font-size: 8px;
+    padding: 4px;
+    line-height: 1.15;
+  }
+  #scheduleTableRooms tbody th,
+  #scheduleTableBeds tbody th {
+    font-size: 8px;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  /* 時間ラベルに <br> があっても行間が詰まりすぎないよう調整 */
+  #scheduleTableRooms th br,
+  #scheduleTableBeds th br,
+  #scheduleTableRooms tbody th br,
+  #scheduleTableBeds tbody th br {
+    line-height: 1.1;
+  }
+
+  /* ボタンやラベルも少し小さめに */
+  button {
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+  }
+  #dateControls label { font-size: none; }
+  #selectedDateDisplay { font-size: 12px; padding:2px 4px}
+
+  /* 画像は説明文を省略して全幅表示、改行増加を避ける */
+  .image-section { margin-top: 14px; }
+  .image-section p { display: 10; }
+  .image-section img { width: 50%; }
+
+  /* テーブルの外側余白を縮小しつつ中央にフィット */
+  #scheduleTableRooms table,
+  #scheduleTableBeds table {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px auto;
+  }
+
+  #sideMenu {
+  width: 196px;
+}
+
+#loginButton {
+  background-color: #f57c00 !important; /* 鮮やかなオレンジ */
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+#nextDayBtn {
+  font-size: 10px;
+  padding: 4px 8px
+}
+#prevDayBtn {
+  font-size: 10px;
+  padding: 4px 8px
+}
+
+  /* 画面横スクロールの発生を極力抑制 */
+  html, body { overflow-x: hidden; }
+}
+
+
 
 
   </style>
@@ -329,23 +666,23 @@ td.available.selected {
   <div id="displayName" style="font-size: 16px;"></div>
   <div id="displayEmail" style="font-size: 12px;"></div>
   <hr style="margin: 12px 0;">
-  <button onclick="location.href='cancel.html'">あなたの予約／キャンセル</button>
-  <button id="sideLoginButton" onclick="handleLogin()" style="display: none;">ログイン</button>
-  <button id="sideLogoutButton" onclick="handleLogout()" style="display: none;">ログアウト</button>
+  <button id="toCancelButton">あなたの予約／キャンセル</button>
+<button id="sideLoginButton" style="display: none;">ログイン</button>
+<button id="sideLogoutButton" style="display: none;">ログアウト</button>
 
   
 </div>
   
 
   <div class="container">
-    <h1>YHASN施設予約です！</h1>
+    <h1>YHASN施設予約</h1>
 
   <button type="button" id="loginButton">ログインして予約する</button>
   
 
     <div id="dateControls">
       <button type="button" id="prevDayBtn">＜ 前の日</button>
-      <label id="dateLabel">日付を選択してください: <input type="text" id="date" required></label>
+      <label id="dateLabel"><input type="text" id="date" required></label>
       <button type="button" id="nextDayBtn">次の日 ＞</button>
     </div>
 
@@ -385,13 +722,15 @@ td.available.selected {
 <div class="image-section">
   <h2>演習室・交流室レイアウト</h2>
   <p style="font-size: 14px; color: #555;">※クリックで拡大</p>
+<img id="imgEnsyuu" src="ensyuusitu2.jpg" alt="演習室レイアウト">
 
-<img src="ensyuusitu2.jpg" alt="演習室レイアウト" onclick="openModal('modalEnsyuu')">
+
+
   
 
   <h2>基礎看護実習室（ベッド1〜12）</h2>
   <p style="font-size: 14px; color: #555;">※クリックで拡大</p>
-    <img src="bed2.jpg" alt="ベッド配置図" onclick="openModal('modalBed')">
+   <img id="imgBed"    src="bed2.jpg"       alt="ベッド配置図"> 
   
 </div>
       
@@ -410,13 +749,14 @@ td.available.selected {
   </div>
 
 <!-- モーダル本体 -->
-<div id="modalEnsyuu" class="modal" onclick="closeModal(event, 'modalEnsyuu')">
+<div id="modalEnsyuu" class="modal">
   <img src="ensyuusitu2.jpg" alt="演習室拡大">
 </div>
 
-<div id="modalBed" class="modal" onclick="closeModal(event,'modalBed')">
+<div id="modalBed" class="modal">
   <img src="bed2.jpg" alt="ベッド配置拡大">
-</div>  <!-- ▲ 教室レイアウト画像表示ここまで -->
+</div>
+
 
 
 
@@ -437,85 +777,129 @@ td.available.selected {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // ← ここから追記：セッション保持を明示（既定もLOCALだが明文化）
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.warn);
+// ここまで追記 →
+
+
+// ★★★ ここから追記（db 定義の直後に入れる）★★★
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwBztqWNBpozNAL9S10_K44z4T5l8vIv7a7s3SyjI1W7zZhvdhLfaZVeLNVSBvcxIQ06A/exec'; // あなたのGAS WebアプリURL
+const SHARED_SECRET = 'yhasn_2025jichikai_reservation_sending-email';                   // GAS側と同じ秘密文字列
+
+async function sendMailForReservation({ to, dateText, timeText, roomText, roomSaved, studentId, studentName, grade }) {
+  const subject = `予約を受け付けました：${dateText} ${timeText} ${roomText}`;
+  const html = `
+    <div style="font-family:'Noto Sans JP',sans-serif; line-height:1.7;">
+      <p>${studentName || '利用者'} さん</p>
+      <p>以下の内容で予約を受け付けました。</p>
+      <table style="border-collapse:collapse;">
+        <tr><td style="padding:4px 8px;">日付</td><td style="padding:4px 8px;">${dateText}</td></tr>
+        <tr><td style="padding:4px 8px;">時間</td><td style="padding:4px 8px;">${timeText}</td></tr>
+        <tr><td style="padding:4px 8px;">ベッド/部屋</td><td style="padding:4px 8px;">${roomText}</td></tr>
+        <tr><td style="padding:4px 8px;">学籍番号</td><td style="padding:4px 8px;">${studentId}</td></tr>
+        <tr><td style="padding:4px 8px;">氏名</td><td style="padding:4px 8px;">${studentName}</td></tr>
+        <tr><td style="padding:4px 8px;">学年</td><td style="padding:4px 8px;">${grade}</td></tr>
+      </table>
+      <p>※このメールは送信専用です。</p>
+    </div>
+  `;
+  try {
+        // CORSプリフライト回避のため Content-Type を text/plain に
+    // 応答は読まない（GASはCORSヘッダを付けられないため）
+    await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        secret: SHARED_SECRET,
+        to,
+        subject,
+        html,
+        origin: location.origin   // ← GAS側でALLOW_FROMチェックに使うならそのまま
+      })
+    }).catch((e) => {
+      console.warn('メール送信に失敗(ネットワーク)', e);
+    });
+
+  } catch (e) {
+    console.warn('メール送信に失敗(ネットワーク)', e);
+  }
+}
+// ★★★ 追記ここまで ★★★
+
+
   let currentUser = null;
 
 firebase.auth().onAuthStateChanged(user => {
   currentUser = user;
 
-      if (user) {
-    const name = user.displayName || "";
-    const email = user.email || "";
-    const photoURL = user.photoURL || "";
-
-    // 名前表示処理
-    const nameDiv = document.getElementById("menuUserName");
-    const emailDiv = document.getElementById("menuUserEmail");
-    const img = document.getElementById("profileImage");
-
-    if (nameDiv) nameDiv.textContent = name;
-    if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
-    if (img && photoURL) {
-      img.src = photoURL;
-      img.style.display = "block";
-    }
-  }
-
-  const sideLoginBtn = document.getElementById("sideLoginButton");
+  const nameDiv   = document.getElementById("menuUserName");
+  const emailDiv  = document.getElementById("menuUserEmail");
+  const img       = document.getElementById("profileImage");
+  const sideLoginBtn  = document.getElementById("sideLoginButton");
   const sideLogoutBtn = document.getElementById("sideLogoutButton");
 
-  if (user) {
-    if (sideLoginBtn) sideLoginBtn.style.display = "none";
-    if (sideLogoutBtn) sideLogoutBtn.style.display = "inline-block";
-  } else {
-    if (sideLoginBtn) sideLoginBtn.style.display = "inline-block";
-    if (sideLogoutBtn) sideLogoutBtn.style.display = "none";
-  }
-
-
-
-  const loginBtn = document.getElementById("loginButton");
+  const loginBtn  = document.getElementById("loginButton");
   const logoutBtn = document.getElementById("logoutButton");
   const userEmail = document.getElementById("userEmail");
-if (user) {
-  const fullName = user.displayName || ""; // 例: B231103阿部 智之丞
-  const email = user.email || "";
-  const studentIdFromEmail = email.split("@")[0]; // 231103
-
-  let combinedName = fullName;
-
-  // 「姓 名」の区切りがスペースありの場合（例: "B231103阿部 智之丞"）
-  if (fullName.includes(" ")) {
-    const parts = fullName.split(" ");
-    const familyPart = parts[0]; // B231103阿部
-    const firstName = parts[1];  // 智之丞
-
-    const nameWithoutStudentId = familyPart.replace(/[AB]\d{6}/, ""); // 阿部
-
-    combinedName = `${nameWithoutStudentId} ${firstName}`;
-  }
-
-  // 入力欄に自動入力
-  const studentIdInput = document.getElementById("studentId");
-  const nameInput = document.getElementById("name");
-
-  if (studentIdInput && nameInput) {
-    studentIdInput.value = studentIdFromEmail;
-    nameInput.value = combinedName;
-  }
-}
   const reserveSection = document.getElementById("reservationSection");
 
-  // UI切り替え
   if (user) {
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-    userEmail.textContent = "ログイン中: " + user.email;
-    reserveSection.style.display = "block";
+    // ===== ログイン時の表示更新 =====
+    const fullName = user.displayName || "";
+    const email    = user.email || "";
+    const photoURL = user.photoURL || "";
+
+    // メニューの表示
+    if (nameDiv)  nameDiv.textContent  = fullName;
+    if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
+    if (img) {
+      if (photoURL) {
+        img.src = photoURL;
+      } else {
+        img.removeAttribute("src");
+      }
+      img.style.display = "block";
+    }
+
+    // 入力欄の自動入力（既存ロジックを踏襲）
+    const studentIdFromEmail = email.split("@")[0];
+    let combinedName = fullName;
+    if (fullName.includes(" ")) {
+      const parts = fullName.split(" ");
+      const familyPart = parts[0];
+      const firstName  = parts[1];
+      const nameWithoutStudentId = familyPart.replace(/[AB]\d{6}/, "");
+      combinedName = `${nameWithoutStudentId} ${firstName}`;
+    }
+    const studentIdInput = document.getElementById("studentId");
+    const nameInput      = document.getElementById("name");
+    if (studentIdInput) studentIdInput.value = studentIdFromEmail;
+    if (nameInput)      nameInput.value      = combinedName;
+
+    // ボタン表示
+    if (sideLoginBtn)  sideLoginBtn.style.display  = "none";
+    if (sideLogoutBtn) sideLogoutBtn.style.display = "inline-block";
+    if (loginBtn)  loginBtn.style.display  = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+    if (userEmail) userEmail.textContent   = "ログイン中: " + email;
+    if (reserveSection) reserveSection.style.display = "block";
+
   } else {
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
-    userEmail.textContent = "";
-    reserveSection.style.display = "none";
+    // ===== ログアウト時は必ず空へ =====
+    if (nameDiv)  nameDiv.textContent = "";
+    if (emailDiv) emailDiv.textContent = "";
+    if (img) {
+      img.style.display = "none";
+      img.removeAttribute("src");
+    }
+
+    // ボタン表示
+    if (sideLoginBtn)  sideLoginBtn.style.display  = "inline-block";
+    if (sideLogoutBtn) sideLogoutBtn.style.display = "none";
+    if (loginBtn)  loginBtn.style.display  = "inline-block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (userEmail) userEmail.textContent   = "";
+    if (reserveSection) reserveSection.style.display = "none";
   }
 
   // 🔁 状態変化に応じて表を再描画
@@ -523,6 +907,7 @@ if (user) {
     loadSchedule(selectedDate);
   }
 });
+
 
   const holidays = {
     "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
@@ -695,22 +1080,19 @@ document.getElementById("scheduleTableBeds").innerHTML = "";
     // テーブルの生成部分
 times.forEach(timeObj => {
   html += `<tr><th>${timeObj.label}</th>`;
-  roomsSubset.forEach(room => {
-  const timeVal = timeObj.value;
+   roomsSubset.forEach(room => {
+    const timeVal = timeObj.value;
 
-  let roomKey = room;
-if (room.startsWith("ベッド")) {
-  const num = room.replace("ベッド", "");
-  roomKey = "ベッド" + num.padStart(2, "0");
-}
+    // 画面用のキー（room そのまま）で参照する
+    const cellStatus = status[timeVal][room];
 
-if (status[timeVal][roomKey]) {
-  const info = status[timeVal][roomKey];
-  html += `<td class="disabled">${info.name || '<i class="fas fa-times"></i>'}</td>`;
-} else {
-  html += `<td class="available" data-room="${room}" data-time="${timeVal}"><i class="fas fa-circle"></i></td>`;
-}
-});
+    if (cellStatus) {
+      html += `<td class="disabled">${cellStatus.name || '<i class="fas fa-times"></i>'}</td>`;
+    } else {
+      html += `<td class="available" data-room="${room}" data-time="${timeVal}"><i class="fas fa-circle"></i></td>`;
+    }
+  });
+
   html += "</tr>";
 });
 
@@ -739,20 +1121,58 @@ if (status[timeVal][roomKey]) {
     if (firebase.auth().currentUser) {
       cell.classList.add("clickable");
       cell._clickHandler = () => {
-        document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
-        cell.classList.add("selected");
-        handleSelection(cell);
-        document.getElementById("reservationSection").style.display = "block";
-      };
+  document.querySelectorAll("td.available.selected").forEach(c => c.classList.remove("selected"));
+  // トランジションを確実に発火させるため、1フレーム遅らせて付与
+  requestAnimationFrame(() => {
+    cell.classList.add("selected");
+    handleSelection(cell);
+    document.getElementById("reservationSection").style.display = "block";
+  });
+};
+
       cell.addEventListener("click", cell._clickHandler);
     } else {
       cell._clickHandler = null;
       cell.style.pointerEvents = "none";
     }
   });
+    // === 追記：空室セルのタップ即時フィードバック（モバイル体感向上） ===
+  (function bindFastTapOnce() {
+    const roots = [
+      document.getElementById("scheduleTableRooms"),
+      document.getElementById("scheduleTableBeds")
+    ];
+    roots.forEach(root => {
+      if (!root || root._fastTapBound) return;
+
+      // 押した瞬間に視覚だけ先に反映
+      root.addEventListener("pointerdown", (e) => {
+        const td = e.target.closest && e.target.closest("td.available");
+        if (!td) return;
+        td.classList.add("tap-active");
+      }, { passive: true });
+
+      // 離したら少し遅らせて元に戻す（押下感の余韻）
+      const clearActive = (e) => {
+        const td = (e && e.target && e.target.closest) ? e.target.closest("td.available") : null;
+        if (td) setTimeout(() => td.classList.remove("tap-active"), 80);
+      };
+      root.addEventListener("pointerup", clearActive,     { passive: true });
+      root.addEventListener("pointercancel", clearActive, { passive: true });
+      root.addEventListener("pointerleave", clearActive,  { passive: true });
+
+      // 二重バインド防止
+      root._fastTapBound = true;
+    });
+  })();
+
 }
 
   document.addEventListener("DOMContentLoaded", () => {
+    const menuBtn     = document.getElementById("menuButton");
+const sideMenu    = document.getElementById("sideMenu");
+const menuOverlay = document.getElementById("menuOverlay");
+
 datePicker = flatpickr("#date", {
   dateFormat: "Y-m-d",
   minDate: "today",
@@ -773,178 +1193,256 @@ datePicker = flatpickr("#date", {
       }
     });
 
-    const today = formatDate(new Date());
-    selectedDate = getNextValidDate(new Date(), 0);
+       // ✅ 初期表示日を決定（今日が土日祝なら直近の平日にシフト）
+    function findInitialDate(startDate) {
+      let d = new Date(startDate);
+      while (
+        d.getDay() === 0 || d.getDay() === 6 || 
+        allHolidays[formatDate(d)]
+      ) {
+        d.setDate(d.getDate() + 1);
+      }
+      return formatDate(d);
+    }
+
+    selectedDate = findInitialDate(new Date());
     loadSchedule(selectedDate);
 
-    document.getElementById("prevDayBtn").addEventListener("click", () => {
-      const date = new Date(selectedDate);
-      const prev = getNextValidDate(date, -1);
-      loadSchedule(prev);
-    });
 
-    document.getElementById("nextDayBtn").addEventListener("click", () => {
-      const date = new Date(selectedDate);
-      const next = getNextValidDate(date, 1);
-      loadSchedule(next);
-    });
+    // 共通：即時タップ＆キーボード対応ユーティリティ
+function fastOn(el, handler) {
+  // pointerup で即時発火（モバイルの click 遅延回避）
+  el.addEventListener("pointerup", (ev) => {
+    // スクロール・ドラッグ誤爆を軽減
+    if (Math.abs(ev.pointerType === 'touch' ? ev.width : 0) > 100) return;
+    handler(ev);
+  }, { passive: true });
 
-   document.getElementById("backButton").addEventListener("click", () => {
-document.getElementById("completeSection").style.display = "none";
-document.getElementById("scheduleTableRooms").style.display = "block";
-document.getElementById("scheduleTableBeds").style.display = "block";
-document.getElementById("dateControls").style.display = "flex";
-
-// 🎯予約表見出しと画像も復活
-document.querySelector(".image-section").style.display = "block";
-document.querySelector("h3").style.display = "block";
-document.querySelectorAll("h3")[1].style.display = "block";
-
-loadSchedule(selectedDate);
-});
-
-  // ✅ ハンバーガーメニューの処理（追記部分）
-  const menuBtn = document.getElementById("menuButton");
-  const sideMenu = document.getElementById("sideMenu");
-  const menuOverlay = document.getElementById("menuOverlay");
-
-  menuBtn.addEventListener("click", () => {
-    sideMenu.classList.add("visible");
-    menuOverlay.classList.add("show");
-  });
-
-  menuOverlay.addEventListener("click", () => {
-    sideMenu.classList.remove("visible");
-    menuOverlay.classList.remove("show");
-  });
-
-
-  document.getElementById("loginButton").addEventListener("click", () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).then(result => {
-    if (!result.user.email.endsWith("@yhasn.ed.jp")) {
-      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-      firebase.auth().signOut();
-    } else {
-      // ✅ 初期化再描画（クリックできるように）
-      setTimeout(() => {
-        if (firebase.auth().currentUser && selectedDate) {
-          loadSchedule(selectedDate);
-        }
-      }, 100);
+  // Enter/Space でも操作できるように（アクセシビリティ）
+  el.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault();
+      handler(ev);
     }
   });
+}
+
+// ---- 「前の日」「次の日」 ----
+fastOn(document.getElementById("prevDayBtn"), () => {
+  const date = new Date(selectedDate);
+  const prev = getNextValidDate(date, -1);
+  loadSchedule(prev);
+});
+fastOn(document.getElementById("nextDayBtn"), () => {
+  const date = new Date(selectedDate);
+  const next = getNextValidDate(date, 1);
+  loadSchedule(next);
 });
 
+// ---- 完了画面→戻る ----
+fastOn(document.getElementById("backButton"), () => {
+  document.getElementById("completeSection").style.display = "none";
+  document.getElementById("scheduleTableRooms").style.display = "block";
+  document.getElementById("scheduleTableBeds").style.display = "block";
+  document.getElementById("dateControls").style.display = "flex";
+  // 🎯予約表見出しと画像も復活
+  document.querySelector(".image-section").style.display = "block";
+  document.querySelector("h3").style.display = "block";
+  document.querySelectorAll("h3")[1].style.display = "block";
+  loadSchedule(selectedDate);
+});
 
-// 🔑 ログアウトボタン処理
-document.getElementById("logoutButton").addEventListener("click", () => {
-  firebase.auth().signOut().then(() => {
-    alert("ログアウトしました");
-    document.getElementById("errorMsg").textContent = "";
-    if (selectedDate) loadSchedule(selectedDate);
+// ---- ハンバーガーメニュー ----
+fastOn(menuBtn, () => {
+  sideMenu.classList.add("visible");
+  menuOverlay.classList.add("show");
+});
+fastOn(menuOverlay, () => {
+  sideMenu.classList.remove("visible");
+  menuOverlay.classList.remove("show");
+});
+
+// ---- ログイン（メインボタン） ----
+// ===== サイドメニュー：各ボタン =====
+fastOn(document.getElementById("toCancelButton"), () => {
+  location.href = "cancel.html";
+});
+fastOn(document.getElementById("sideLoginButton"), () => {
+  handleLogin();
+});
+fastOn(document.getElementById("sideLogoutButton"), () => {
+  handleLogout();
+});
+
+// ===== ハンバーガー（定義済み menuBtn / sideMenu / menuOverlay を使用）=====
+fastOn(menuBtn, () => {
+  sideMenu.classList.add("visible");
+  menuOverlay.classList.add("show");
+});
+fastOn(menuOverlay, () => {
+  sideMenu.classList.remove("visible");
+  menuOverlay.classList.remove("show");
+});
+
+// ===== モーダル：開く（画像タップ）=====
+fastOn(document.getElementById("imgEnsyuu"), () => openModal("modalEnsyuu"));
+fastOn(document.getElementById("imgBed"),    () => openModal("modalBed"));
+
+// ===== モーダル：閉じる（背景タップ）=====
+["modalEnsyuu", "modalBed"].forEach(id => {
+  const m = document.getElementById(id);
+  if (!m) return;
+  fastOn(m, (ev) => {
+    const t = ev.target;
+    if (t && t.tagName && t.tagName.toLowerCase() === "img") return; // 画像タップは閉じない
+    m.style.display = "none";
   });
 });
+
+fastOn(document.getElementById("loginButton"), async () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account', hd: 'yhasn.ed.jp' });
+  try {
+    const result = await firebase.auth().signInWithPopup(provider);
+    if (!result.user.email.endsWith("@yhasn.ed.jp")) {
+      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+      await firebase.auth().signOut();
+      return;
+    }
+    setTimeout(() => {
+      if (firebase.auth().currentUser && selectedDate) loadSchedule(selectedDate);
+    }, 100);
+  } catch (e) {
+    console.warn("signIn canceled or failed:", e);
+  }
+});
+
+// ---- 画像モーダル（開く側）も即時化 ----
+document.querySelectorAll(".image-section img").forEach(img => {
+  img.style.cursor = "zoom-in";
+  fastOn(img, () => {
+    // 既存の onclick と二重になっても悪影響はありません
+    // alt / 位置から ID を推定
+    if (img.src.includes("ensyuusitu2.jpg")) openModal("modalEnsyuu");
+    else if (img.src.includes("bed2.jpg")) openModal("modalBed");
+  });
+});
+
+// ---- モーダル（閉じる側）も即時化 ----
+["modalEnsyuu", "modalBed"].forEach(id => {
+  const m = document.getElementById(id);
+  if (!m) return;
+  fastOn(m, (ev) => {
+    // 画像自体のタップでは閉じない（既存仕様踏襲）
+    if (ev && ev.target && ev.target.tagName && ev.target.tagName.toLowerCase() === "img") return;
+    m.style.display = "none";
+  });
+});
+
+// ===== 「予約する」ボタン（即時タップ） =====
+{
+  const btn = document.getElementById("loginAndReserveButton");
+  if (btn) {
+    function reserveHandler() {
+      document.getElementById("errorMsg").textContent = "";
+
+      const name      = document.getElementById("name").value.trim();
+      const studentId = document.getElementById("studentId").value.trim();
+      const grade     = document.getElementById("grade").value;
+
+      if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
+        document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
+        return;
+      }
+
+      const confirmMsg = `以下の内容で予約しますか？\n\n` +
+        `日付：${formatDisplayDate(selectedDate)}\n` +
+        `時間帯：${selectedTime}\n` +
+        `部屋：${selectedRoom}\n` +
+        `学籍番号：${studentId}\n` +
+        `学年：${grade}\n` +
+        `名前：${name}`;
+      if (!confirm(confirmMsg)) return;
+
+      const user = firebase.auth().currentUser;
+      if (!user) { alert("ログインしてください。"); return; }
+      if (!user.email.endsWith("@yhasn.ed.jp")) {
+        alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+        return;
+      }
+      const emailStudentId = user.email.split("@")[0].slice(0, 6);
+      if (emailStudentId !== studentId) {
+        alert("不正な学籍番号です。\n正しい学籍番号を入力してください。");
+        return;
+      }
+
+      let roomToSave = selectedRoom;
+      if (roomToSave.startsWith("ベッド")) {
+        const padded = roomToSave.replace("ベッド","").padStart(2,"0");
+        roomToSave = `ベッド${padded}`;
+      }
+
+      db.collection("reservations")
+        .where("date", "==", selectedDate)
+        .where("studentId", "==", studentId)
+        .get()
+        .then(snapshot => {
+          if (!snapshot.empty) {
+            alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
+            return;
+          }
+
+          return db.collection("reservations").add({
+            room: roomToSave,
+            date: selectedDate,
+            time: selectedTime,
+            name,
+            studentId,
+            grade,
+            email: user.email,
+            createdAt: new Date()
+          }).then(() => {
+            // 既存のメール送信
+            sendMailForReservation({
+              to: user.email,
+              dateText: selectedDate,
+              timeText: selectedTime,
+              roomText: selectedRoom,
+              roomSaved: roomToSave,
+              studentId,
+              studentName: name,
+              grade
+            });
+
+            // 完了画面表示（既存UI切替）
+            document.getElementById("reservationSection").style.display = "none";
+            document.getElementById("dateControls").style.display = "none";
+            document.getElementById("scheduleTableRooms").style.display = "none";
+            document.getElementById("scheduleTableBeds").style.display = "none";
+            document.querySelector(".image-section").style.display = "none";
+            document.querySelector("h3").style.display = "none";
+            document.querySelectorAll("h3")[1].style.display = "none";
+            document.getElementById("completeSection").style.display = "block";
+            document.getElementById("errorMsg").textContent = "";
+          });
+        }).catch(error => {
+          console.error("予約エラー:", error);
+          document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
+        });
+    }
+
+    // ここはDOM内なので fastOn が使える
+    fastOn(btn, reserveHandler);
+  }
+}
+
 
 
   });
 
   
 
-  document.getElementById("loginAndReserveButton").addEventListener("click", function () {
-  document.getElementById("errorMsg").textContent = ""; // ← ここを追加
 
-  const name = document.getElementById("name").value.trim();
-  const studentId = document.getElementById("studentId").value.trim();
-  const grade = document.getElementById("grade").value;
-
-  if (!selectedDate || !selectedRoom || !selectedTime || !name || !studentId || !grade) {
-    document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
-    return;
-  }
-
-  // 🔍 ダイアログ追加
-  const confirmMsg = `以下の内容で予約しますか？\n\n` +
-    `日付：${formatDisplayDate(selectedDate)}\n` +
-    `時間帯：${selectedTime}\n` +
-    `部屋：${selectedRoom}\n` +
-    `学籍番号：${studentId}\n` +
-    `学年：${grade}\n` +
-    `名前：${name}`;
-
-  if (!confirm(confirmMsg)) {
-    return; // キャンセルしたら何もしない
-  }
-  const user = firebase.auth().currentUser;
-
-  if (!user) {
-    alert("ログインしてください。");
-    return;
-  }
-
-  if (!user.email.endsWith("@yhasn.ed.jp")) {
-    alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-    return;
-  }
-
-  const emailStudentId = user.email.split("@")[0].slice(0, 6);
-  if (emailStudentId !== studentId) {
-    alert("不正な学籍番号です。\n正しい学籍番号を入力してください。");
-    return;
-  }
-
-  // 🔍 同日・同学籍番号の予約が既にあるか確認
-  db.collection("reservations")
-    .where("date", "==", selectedDate)
-    .where("studentId", "==", studentId)
-    .get()
-    .then(snapshot => {
-      if (!snapshot.empty) {
-        alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
-        return;
-      }
-
-      // ✅ 重複がなければ予約を追加
-            let roomToSave = selectedRoom;
-      if (roomToSave.startsWith("ベッド")) {
-        const bedNum = roomToSave.replace("ベッド", "");
-        const padded = bedNum.padStart(2, "0");
-        roomToSave = `ベッド${padded}`;
-      }
-
-      db.collection("reservations").add({
-        room: roomToSave,
-        date: selectedDate,
-        time: selectedTime,
-        name,
-        studentId,
-        grade,
-        email: user.email,
-        createdAt: new Date()
-      }).then(() => {
-// 予約成功後の画面切り替え
-document.getElementById("reservationSection").style.display = "none";
-document.getElementById("dateControls").style.display = "none";
-document.getElementById("scheduleTableRooms").style.display = "none";
-document.getElementById("scheduleTableBeds").style.display = "none";
-
-// 🎯画像と見出しを非表示にする（完了画面用）
-document.querySelector(".image-section").style.display = "none";
-document.querySelector("h3").style.display = "none"; // 演習室・交流室見出し
-document.querySelectorAll("h3")[1].style.display = "none"; // ベッド見出し
-
-
-// 完了画面を表示
-document.getElementById("completeSection").style.display = "block";
-
-// 🔁 エラーメッセージをクリアする
-document.getElementById("errorMsg").textContent = "";
- }).catch(error => {
-        console.error("予約エラー:", error);
-        document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
-      });
-    });
-});
 
 function openModal(id) {
   document.getElementById(id).style.display = "flex";
@@ -959,48 +1457,89 @@ function closeModal(event, id) {
 
 function handleLogin() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).then(result => {
+  provider.setCustomParameters({
+    prompt: 'select_account',  // ← 常にアカウント選択を強制
+    hd: 'yhasn.ed.jp'
+  });
+
+  firebase.auth().signInWithPopup(provider).then(async (result) => {
     const user = result.user;
+
+    // 最終バリデーション
     if (!user.email.endsWith("@yhasn.ed.jp")) {
       alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
-      firebase.auth().signOut();
-    } else {
-      // サイドメニューを閉じる
-      document.getElementById("sideMenu").classList.remove("visible");
-      document.getElementById("menuOverlay").classList.remove("show");
+      await firebase.auth().signOut();
+      return;
+    }
 
-     // ✅ ログイン状態の反映後に再描画（少し待ってから）
+    // サイドメニューを閉じる
+    document.getElementById("sideMenu").classList.remove("visible");
+    document.getElementById("menuOverlay").classList.remove("show");
+
+    // 反映待ちの後、表を再描画
     setTimeout(() => {
       if (firebase.auth().currentUser && selectedDate) {
         loadSchedule(selectedDate);
       }
-    }, 100); 
+    }, 100);
 
-      // 🔁 認証状態の変化を1回だけ監視して再描画（←ここがポイント！）
-      const unsubscribe = firebase.auth().onAuthStateChanged(newUser => {
-        if (newUser) {
-          if (selectedDate) loadSchedule(selectedDate);
-          unsubscribe(); // 一度だけ動かす
-        }
-      });
-    }
+    // 状態変化を一度だけ拾って再描画
+    const unsubscribe = firebase.auth().onAuthStateChanged(newUser => {
+      if (newUser) {
+        if (selectedDate) loadSchedule(selectedDate);
+        unsubscribe();
+      }
+    });
+
+  }).catch((e) => {
+    console.warn("signIn canceled or failed:", e);
   });
 }
+
 
 
 function handleLogout() {
+  // 1) まず即時にUIをクリア（onAuthStateChanged を待たずに消す）
+  const nameDiv   = document.getElementById("menuUserName");
+  const emailDiv  = document.getElementById("menuUserEmail");
+  const img       = document.getElementById("profileImage");
+  const sideLoginBtn  = document.getElementById("sideLoginButton");
+  const sideLogoutBtn = document.getElementById("sideLogoutButton");
+  const loginBtn  = document.getElementById("loginButton");
+  const logoutBtn = document.getElementById("logoutButton");
+  const userEmail = document.getElementById("userEmail");
+  const reserveSection = document.getElementById("reservationSection");
+
+  if (nameDiv)  nameDiv.textContent = "";
+  if (emailDiv) emailDiv.textContent = "";
+  if (img) {
+    img.style.display = "none";
+    img.removeAttribute("src");
+  }
+  if (sideLoginBtn)  sideLoginBtn.style.display  = "inline-block";
+  if (sideLogoutBtn) sideLogoutBtn.style.display = "none";
+  if (loginBtn)  loginBtn.style.display  = "inline-block";
+  if (logoutBtn) logoutBtn.style.display = "none";
+  if (userEmail) userEmail.textContent   = "";
+  if (reserveSection) reserveSection.style.display = "none";
+
+  // 2) 本体のサインアウト
   firebase.auth().signOut().then(() => {
     alert("ログアウトしました");
-    document.getElementById("errorMsg").textContent = "";
+    const err = document.getElementById("errorMsg");
+    if (err) err.textContent = "";
 
-    // ✅ 表を再描画（ログアウト後に選択できないようにする）
+    // 表を再描画（未ログインUIに更新）
     if (selectedDate) loadSchedule(selectedDate);
 
-    // ✅ サイドメニューを閉じる
+    // サイドメニューを閉じる
     document.getElementById("sideMenu").classList.remove("visible");
     document.getElementById("menuOverlay").classList.remove("show");
+  }).catch((e) => {
+    console.warn("signOut failed:", e);
   });
 }
+
 
 
 
@@ -1013,6 +1552,7 @@ function handleLogout() {
 
 </body>
 </html>
+
 
 
 

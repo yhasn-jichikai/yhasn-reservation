@@ -1386,55 +1386,55 @@ document.querySelectorAll(".image-section img").forEach(img => {
         .where("date", "==", selectedDate)
         .where("studentId", "==", studentId)
         .get()
-        .then(snapshot => {
-          if (!snapshot.empty) {
-            alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
-            return;
-          }
-          
-          // --- 停止中アカウントチェック ---
-const suspendRef = db.collection("suspendedUsers").doc(studentId);
-const suspendSnap = await suspendRef.get();
-if (suspendSnap.exists) {
-  alert(`このアカウントは停止中です。\n詳細は管理者にお問い合わせください。`);
-  return; // 予約処理を中止
-}
-          
+.then(async (snapshot) => {
+  if (!snapshot.empty) {
+    alert("既にこの日には予約があります。\n1日に複数の予約はできません。");
+    return;
+  }
 
-          return db.collection("reservations").add({
-            room: roomToSave,
-            date: selectedDate,
-            time: selectedTime,
-            name,
-            studentId,
-            grade,
-            email: user.email,
-            createdAt: new Date()
-          }).then(() => {
-            // 既存のメール送信
-            sendMailForReservation({
-              to: user.email,
-              dateText: selectedDate,
-              timeText: selectedTime,
-              roomText: selectedRoom,
-              roomSaved: roomToSave,
-              studentId,
-              studentName: name,
-              grade
-            });
+  // --- 停止中アカウントチェック ---
+  const suspendRef = db.collection("suspendedUsers").doc(studentId);
+  const suspendSnap = await suspendRef.get();
+  if (suspendSnap.exists) {
+    alert(`このアカウントは停止中です。\n詳細は管理者にお問い合わせください。`);
+    return; // 予約処理を中止
+  }
 
-            // 完了画面表示（既存UI切替）
-            document.getElementById("reservationSection").style.display = "none";
-            document.getElementById("dateControls").style.display = "none";
-            document.getElementById("scheduleTableRooms").style.display = "none";
-            document.getElementById("scheduleTableBeds").style.display = "none";
-            document.querySelector(".image-section").style.display = "none";
-            document.querySelector("h3").style.display = "none";
-            document.querySelectorAll("h3")[1].style.display = "none";
-            document.getElementById("completeSection").style.display = "block";
-            document.getElementById("errorMsg").textContent = "";
-          });
-        }).catch(error => {
+  // --- 通常の予約処理続行 ---
+  return db.collection("reservations").add({
+    room: roomToSave,
+    date: selectedDate,
+    time: selectedTime,
+    name,
+    studentId,
+    grade,
+    email: user.email,
+    createdAt: new Date()
+  }).then(() => {
+    // 既存のメール送信
+    sendMailForReservation({
+      to: user.email,
+      dateText: selectedDate,
+      timeText: selectedTime,
+      roomText: selectedRoom,
+      roomSaved: roomToSave,
+      studentId,
+      studentName: name,
+      grade
+    });
+
+    // 完了画面表示（既存UI切替）
+    document.getElementById("reservationSection").style.display = "none";
+    document.getElementById("dateControls").style.display = "none";
+    document.getElementById("scheduleTableRooms").style.display = "none";
+    document.getElementById("scheduleTableBeds").style.display = "none";
+    document.querySelector(".image-section").style.display = "none";
+    document.querySelector("h3").style.display = "none";
+    document.querySelectorAll("h3")[1].style.display = "none";
+    document.getElementById("completeSection").style.display = "block";
+    document.getElementById("errorMsg").textContent = "";
+  });
+}).catch(error => {
           console.error("予約エラー:", error);
           document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
         });

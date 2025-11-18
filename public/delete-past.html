@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>過去予約データ削除（本日より前のみ）</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; padding: 24px; background:#fff8e1; }
+    h1 { color:#e65100; }
+    button { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
+    #runBtn { background:#d32f2f; color:#fff; }
+    #log { white-space: pre-wrap; background:#fff; border:1px solid #ccc; padding:12px; margin-top:16px; border-radius:6px; max-width: 780px;}
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <h1>過去の予約データ削除（本日より前）</h1>
+  <p style="color:#d32f2f; font-weight:bold;">
+    ※この操作は元に戻せません。<br>
+    本日より前の予約データだけ削除します。<br>
+    今日・明日以降の予約は残ります。
+  </p>
+  <button id="runBtn">削除実行</button>
+  <div id="log" aria-live="polite"></div>
+
+  <script>
+    // ==== あなたのFirebase設定 ====
+    const firebaseConfig = {
+      apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+      authDomain: "yhasn-reserve.firebaseapp.com",
+      projectId: "yhasn-reserve",
+      storageBucket: "yhasn-reserve.appspot.com",
+      messagingSenderId: "406712332925",
+      appId: "1:406712332925:web:fb9253a313e4c76cfcb714"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const logEl = document.getElementById('log');
+    function log(msg) { logEl.textContent += `${msg}\n`; }
+    function clearLog() { logEl.textContent = ''; }
+
+    // JSTの今日を YYYY-MM-DD で取得
+    function todayJST() {
+      const now = new Date();
+      const jst = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+      const y = jst.getFullYear();
+      const m = String(jst.getMonth() + 1).padStart(2, '0');
+      const d = String(jst.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    // 300件ずつ削除（本日より前のみ）
+    async function deleteBatch(limit = 300) {
+      const today = todayJST();
+      const snap = await db.collection('reservations')
+        .where('date', '<', today)
+        .orderBy('date')
+        .limit(limit)
+        .get();
+
+      if (snap.empty) return 0;
+      const batch = db.batch();
+      snap.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+      return snap.size;
+    }
+
+    async function deleteAllPast() {
+      clearLog();
+      const ok = confirm(`本日(${todayJST()})より前の予約データを削除します。実行しますか？`);
+      if (!ok) return;
+
+      let total = 0, round = 0;
+      while (true) {
+        const count = await deleteBatch();
+        if (!count) break;
+        total += count;
+        round++;
+        log(`ラウンド${round}: ${count}件削除（累計 ${total}件）`);
+        await new Promise(r => setTimeout(r, 120)); // Firestore負荷軽減
+      }
+      log(`✅ 完了：合計 ${total}件を削除しました。`);
+    }
+
+    document.getElementById('runBtn').addEventListener('click', deleteAllPast);
+  </script>
+</body>
+</html>

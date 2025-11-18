@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>予約確認／キャンセル</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #e8f5e9;
+      padding: 30px;
+      text-align: center;
+    }
+    h1 {
+      color: #43a047;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #a5d6a7;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #a5d6a7;
+      color: #fff;
+    }
+    td {
+      background-color: #ffffff;
+    }
+    button {
+      background-color: #66bb6a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #388e3c;
+    }
+  button.active {
+    background-color: #1b5e20 !important;
+    font-weight: bold;
+  }
+
+#menuButton {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1100;
+  cursor: pointer;
+}
+#sideMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background-color: #4caf50;
+  color: white;
+  padding: 20px;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1101;
+}
+#sideMenu.visible {
+  transform: translateX(0);
+}
+#sideMenu button {
+  width: 100%;
+  margin-bottom: 10px;
+  background-color: white;
+  color: #4caf50;
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#menuOverlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.menu-user {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+/* === モバイルのタップ体感を改善（即時フィードバック） === */
+#reservationList button {
+  transition: transform 40ms ease, box-shadow 40ms linear, background-color 40ms linear;
+  -webkit-tap-highlight-color: transparent; /* モバイル青ハイライト抑制 */
+  touch-action: manipulation;               /* ダブルタップ等の待ちを抑制 */
+}
+#reservationList button.tap-active {
+  transform: scale(0.98);
+  box-shadow: 0 0 0 2px rgba(76,175,80,0.25) inset; /* うっすら押した感 */
+  background-color: #81c784 !important;             /* 押下時の色変化 */
+}
+
+/* サイドメニュー等のボタンにも適用したいなら（任意） */
+#sideMenu button { touch-action: manipulation; }
+
+  
+  </style>
+</head>
+<body>
+  
+  <div style="text-align: left; margin-bottom: 10px;">
+  
+  </div>
+  <h1>YHASN施設<br><br>あなたの予約／キャンセル
+  </h1>
+<div style="text-align: left; margin-bottom: 10px;">
+  <button id="ascBtn" onclick="loadReservations('asc')">昇順</button>
+  <button id="descBtn" onclick="loadReservations('desc')">降順</button>
+</div>
+  <div id="reservationList"></div>
+
+<!-- ハンバーガーメニューのボタン -->
+<div id="menuButton">
+  <i class="fas fa-bars fa-2x"></i>
+</div>
+
+<!-- オーバーレイ（メニュー外クリックで閉じる） -->
+<div id="menuOverlay"></div>
+
+<!-- サイドメニュー本体 -->
+<div id="sideMenu">
+  <div style="margin-bottom: 20px; font-weight: bold; font-size: 18px;">YHASN施設予約</div>
+
+  <div class="menu-user">
+    <img id="profileImage" src="" alt="プロフィール画像" style="display:none; width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+    <div id="menuUserName" style="font-size: 14px; font-weight: bold;"></div>
+    <div id="menuUserEmail" style="font-size: 12px;"></div>
+  </div>
+
+  <hr style="margin: 12px 0;">
+  <button onclick="location.href='index.html'">予約ページへ戻る</button>
+  <button id="sideLoginButton" onclick="handleLogin()" style="display: none;">ログイン</button>
+    <button id="sideLogoutButton" onclick="handleLogout()" style="display: none;">ログアウト</button>
+
+</div>
+
+
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+  authDomain: "yhasn-reserve.firebaseapp.com",
+  projectId: "yhasn-reserve",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwBztqWNBpozNAL9S10_K44z4T5l8vIv7a7s3SyjI1W7zZhvdhLfaZVeLNVSBvcxIQ06A/exec';
+const SHARED_SECRET = 'yhasn_2025jichikai_reservation_sending-email';
+
+// 予約完了メール（index.htmlと同一）
+async function sendMailForReservation({ to, dateText, timeText, roomText, studentId, studentName, grade }) {
+  const subject = `予約を受け付けました：${dateText} ${timeText} ${roomText}`;
+  const html = `
+    <div style="font-family:'Noto Sans JP',sans-serif;line-height:1.7;">
+      <p>${studentName || '利用者'} さん</p>
+      <p>以下の内容で予約を受け付けました。</p>
+      <table style="border-collapse:collapse;">
+        <tr><td style="padding:4px 8px;">日付</td><td style="padding:4px 8px;">${dateText}</td></tr>
+        <tr><td style="padding:4px 8px;">時間</td><td style="padding:4px 8px;">${timeText}</td></tr>
+        <tr><td style="padding:4px 8px;">ベッド/部屋</td><td style="padding:4px 8px;">${roomText}</td></tr>
+        <tr><td style="padding:4px 8px;">学籍番号</td><td style="padding:4px 8px;">${studentId || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">氏名</td><td style="padding:4px 8px;">${studentName || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">学年</td><td style="padding:4px 8px;">${grade || '-'}</td></tr>
+      </table>
+      <p>※このメールは送信専用です。</p>
+    </div>
+  `;
+  await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type':'text/plain;charset=utf-8' }, // プリフライト回避
+    body: JSON.stringify({ secret: SHARED_SECRET, to, subject, html, origin: location.origin })
+  }).catch(e => console.warn('メール送信失敗', e));
+}
+
+// キャンセル完了メール（新規）
+async function sendMailForCancel({ to, dateText, timeText, roomText, studentId, studentName, grade }) {
+  const subject = `予約をキャンセルしました：${dateText} ${timeText} ${roomText}`;
+  const html = `
+    <div style="font-family:'Noto Sans JP',sans-serif;line-height:1.7;">
+      <p>${studentName || '利用者'} さん</p>
+      <p>以下の予約をキャンセルしました。</p>
+      <table style="border-collapse:collapse;">
+        <tr><td style="padding:4px 8px;">日付</td><td style="padding:4px 8px;">${dateText}</td></tr>
+        <tr><td style="padding:4px 8px;">時間</td><td style="padding:4px 8px;">${timeText}</td></tr>
+        <tr><td style="padding:4px 8px;">ベッド/部屋</td><td style="padding:4px 8px;">${roomText}</td></tr>
+        <tr><td style="padding:4px 8px;">学籍番号</td><td style="padding:4px 8px;">${studentId || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">氏名</td><td style="padding:4px 8px;">${studentName || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">学年</td><td style="padding:4px 8px;">${grade || '-'}</td></tr>
+      </table>
+      <p>※このメールは送信専用です。</p>
+    </div>
+  `;
+  await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify({ secret: SHARED_SECRET, to, subject, html, origin: location.origin })
+  }).catch(e => console.warn('メール送信失敗', e));
+}
+let currentUser = null;
+
+
+
+function formatJapaneseDate(isoDate) {
+  const [year, month, day] = isoDate.split("-");
+  return `${year}年${Number(month)}月${Number(day)}日`;
+}
+
+// 保存名（ベッド01 等）→ 画面/メール用（ベッド1）に整形
+function toDisplayRoom(room) {
+  if (!room) return '';
+  // 例: "ベッド01" → "ベッド1"
+  return room.replace(/^ベッド0?(\d{1,2})$/, 'ベッド$1');
+}
+
+// === 追記：予約一覧のボタンにタップ即時フィードバックを付与 ===
+function bindFastTapForCancelButtons() {
+  const root = document.getElementById('reservationList');
+  if (!root || root._fastTapBound) return; // 一度だけ張ればOK（委譲）
+
+  // 押した瞬間に見た目だけ先に変える
+  root.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest && e.target.closest('button');
+    if (!btn) return;
+    btn.classList.add('tap-active');
+  }, { passive: true });
+
+  // 離したら少し遅らせて元に戻す（押下感の余韻）
+  const clear = (e) => {
+    const btn = (e && e.target && e.target.closest) ? e.target.closest('button') : null;
+    if (btn) setTimeout(() => btn.classList.remove('tap-active'), 80);
+  };
+  root.addEventListener('pointerup', clear,     { passive: true });
+  root.addEventListener('pointercancel', clear, { passive: true });
+  root.addEventListener('pointerleave', clear,  { passive: true });
+
+  root._fastTapBound = true; // 二重バインド防止
+}
+
+
+
+function loadReservations(order) {
+  const listDiv = document.getElementById("reservationList");
+  if (!currentUser) {
+  listDiv.innerHTML = `
+    <div style="margin: 16px 0;">
+      <p>予約を確認するにはログインしてください。</p>
+      <button onclick="handleLogin()">ログインして予約を確認</button>
+    </div>`;
+  // ボタンの見た目は昇順をデフォルトactiveに
+  document.getElementById("ascBtn").classList.add("active");
+  document.getElementById("descBtn").classList.remove("active");
+  return;
+}
+
+
+  // ここでボタンの見た目切り替え
+  document.getElementById("ascBtn").classList.remove("active");
+  document.getElementById("descBtn").classList.remove("active");
+  if (order === "asc") {
+    document.getElementById("ascBtn").classList.add("active");
+  } else {
+    document.getElementById("descBtn").classList.add("active");
+  }
+
+    // ✅ 今日が土日祝なら、直近の平日にずらす
+  function formatDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  // 固定祝日データ（index.html と揃える）
+  const holidays = {
+    "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
+    "2025-04-29": true, "2025-05-03": true, "2025-05-04": true, "2025-05-05": true,
+    "2025-07-21": true, "2025-08-11": true, "2025-09-15": true, "2025-09-23": true,
+    "2025-10-13": true, "2025-11-03": true, "2025-11-23": true, "2025-12-23": true
+  };
+
+  function getNextWeekday(date) {
+    let d = new Date(date);
+    while (d.getDay() === 0 || d.getDay() === 6 || holidays[formatDate(d)]) {
+      d.setDate(d.getDate() + 1);
+    }
+    return d;
+  }
+
+  let baseDate = new Date();
+  baseDate = getNextWeekday(baseDate); // ← 土日祝なら次の平日へ
+  const today = formatDate(baseDate);
+
+  db.collection("reservations")
+    .where("email", "==", currentUser.email)
+    .where("date", ">=", today)
+    .orderBy("date", order)
+    .orderBy("time", order)
+    .get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        listDiv.innerHTML = "<p>現在、予約はありません。</p>";
+        return;
+      }
+
+      let html = "<table><thead><tr><th>日付</th><th>時間</th><th>部屋</th><th>操作</th></tr></thead><tbody>";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        html += `<tr>
+          <td>${formatJapaneseDate(data.date)}</td>
+          <td>${data.time}</td>
+          <td>${toDisplayRoom(data.room)}</td>
+
+          <td>
+  <button onclick="confirmCancel('${doc.id}', '${formatJapaneseDate(data.date)}', '${data.time}', '${data.room}')">
+    キャンセル
+  </button>
+</td>
+        </tr>`;
+      });
+      html += "</tbody></table>";
+      listDiv.innerHTML = html;
+            if (typeof bindFastTapForCancelButtons === 'function') {
+        bindFastTapForCancelButtons();
+      }
+
+    })
+    .catch(error => {
+      listDiv.innerHTML = "<p>予約の取得中にエラーが発生しました。</p>";
+      console.error(error);
+    });
+}
+
+function confirmCancel(docId) {
+  // まず予約ドキュメントを読む（メール用に必要）
+  db.collection("reservations").doc(docId).get()
+    .then((docSnap) => {
+      if (!docSnap.exists) {
+        alert("予約が見つかりませんでした。");
+        return;
+      }
+      const data = docSnap.data();
+
+      // 表示用の確認メッセージを作る（人間向けに整形）
+      const dateDisp = formatJapaneseDate(data.date || '');
+      const roomDisp = toDisplayRoom(data.room || '');
+      const timeDisp = data.time || '';
+
+      const message = `以下の予約を削除してもよろしいですか？\n\n日付：${dateDisp}\n時間：${timeDisp}\n教室：${roomDisp}`;
+      if (!confirm(message)) return;
+
+      // ここで削除
+      return db.collection("reservations").doc(docId).delete()
+        .then(() => {
+          // 削除成功後にキャンセル完了メールを送信
+          const to = (data.email || currentUser?.email || '').trim();
+          if (to) {
+            sendMailForCancel({
+              to,
+              dateText: data.date || '',         // YYYY-MM-DD のままメールへ
+              timeText: timeDisp,
+              roomText: roomDisp,                // "ベッド1" など人間向け表記
+              studentId: data.studentId || '',
+              studentName: data.name || '',
+              grade: data.grade || ''
+            });
+          }
+          alert("キャンセルが完了しました。");
+          // 並び順は現状のボタン状態を踏襲
+          const order = document.getElementById("ascBtn").classList.contains("active") ? "asc" : "desc";
+          loadReservations(order);
+        });
+    })
+    .catch((error) => {
+      alert("キャンセル処理中にエラーが発生しました。");
+      console.error(error);
+    });
+}
+
+
+// サイドメニュー開閉処理
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("menuButton");
+  const sideMenu = document.getElementById("sideMenu");
+  const menuOverlay = document.getElementById("menuOverlay");
+
+  menuBtn.addEventListener("click", () => {
+    sideMenu.classList.add("visible");
+    menuOverlay.classList.add("show");
+  });
+
+  menuOverlay.addEventListener("click", () => {
+    sideMenu.classList.remove("visible");
+    menuOverlay.classList.remove("show");
+  });
+    // 初期は昇順ボタンを見た目activeに
+  const ascBtn = document.getElementById("ascBtn");
+  const descBtn = document.getElementById("descBtn");
+  if (ascBtn && descBtn) {
+    ascBtn.classList.add("active");
+    descBtn.classList.remove("active");
+  }
+
+});
+
+
+
+// ===== 認証処理（最終版・単一ブロック：ポップアップのみ） =====
+const ALLOWED_DOMAIN = "@yhasn.ed.jp";
+
+function isAllowedSchoolUser(user) {
+  const email = user?.email || "";
+  return email.endsWith(ALLOWED_DOMAIN);
+}
+
+function updateMenuProfile(user) {
+  const nameDiv = document.getElementById("menuUserName");
+  const emailDiv = document.getElementById("menuUserEmail");
+  const img = document.getElementById("profileImage");
+  const loginButton = document.getElementById("sideLoginButton");
+  const logoutButton = document.getElementById("sideLogoutButton");
+
+  if (!user) {
+    if (nameDiv) nameDiv.textContent = "";
+    if (emailDiv) emailDiv.textContent = "";
+    if (img) img.style.display = "none";
+    if (loginButton) loginButton.style.display = "inline-block";
+    if (logoutButton) logoutButton.style.display = "none";
+    return;
+  }
+
+  const name = user.displayName || "";
+  const email = user.email || "";
+  const photoURL = user.photoURL || "";
+
+  if (nameDiv) nameDiv.textContent = name;
+  if (emailDiv) emailDiv.textContent = `${email} でログイン中`;
+  if (img && photoURL) {
+    img.src = photoURL;
+    img.style.display = "block";
+  }
+  if (loginButton) loginButton.style.display = "none";
+  if (logoutButton) logoutButton.style.display = "inline-block";
+}
+
+// サイドメニューの「ログイン」ボタン（手動ポップアップのみ）
+async function handleLogin() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    if (!isAllowedSchoolUser(result.user)) {
+      alert("学校のメールアドレス（@yhasn.ed.jp）でログインしてください。");
+      await firebase.auth().signOut();
+      currentUser = null;
+      updateMenuProfile(null);
+      return;
+    }
+    currentUser = result.user;
+    updateMenuProfile(result.user);
+    const order = document.getElementById("ascBtn")?.classList.contains("active") ? "asc" : "desc";
+    loadReservations(order || "asc");
+  } catch (e) {
+    if (e?.code === "auth/popup-closed-by-user") return;
+    console.error("handleLogin error:", e);
+    alert("ログインに失敗しました。もう一度お試しください。");
+  }
+}
+
+// サイドメニューの「ログアウト」
+async function handleLogout() {
+  try {
+    await firebase.auth().signOut();
+    currentUser = null;
+    updateMenuProfile(null);
+    // 未ログイン表示に戻す
+    const listDiv = document.getElementById("reservationList");
+    if (listDiv) {
+      listDiv.innerHTML = `
+        <div style="margin: 16px 0;">
+          <p>ログアウトしました。予約を確認するにはログインしてください。</p>
+          <button onclick="handleLogin()">ログインして予約を確認</button>
+        </div>`;
+    }
+    // ボタン見た目は昇順をデフォルトactiveに
+    document.getElementById("ascBtn")?.classList.add("active");
+    document.getElementById("descBtn")?.classList.remove("active");
+  } catch (e) {
+    console.error("handleLogout error:", e);
+    alert("ログアウトに失敗しました。もう一度お試しください。");
+  }
+}
+
+// 状態監視：自動リダイレクトは使わない（無限ループ防止）
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user) {
+    if (!isAllowedSchoolUser(user)) {
+      await firebase.auth().signOut();
+      currentUser = null;
+      updateMenuProfile(null);
+      return;
+    }
+    currentUser = user;
+    updateMenuProfile(user);
+    loadReservations("asc");
+  } else {
+    currentUser = null;
+    updateMenuProfile(null);
+    const listDiv = document.getElementById("reservationList");
+    if (listDiv) {
+      listDiv.innerHTML = `
+        <div style="margin: 16px 0;">
+          <p>予約を確認するにはログインしてください。</p>
+          <button onclick="handleLogin()">ログインして予約を確認</button>
+        </div>`;
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+</script></body>
+</html>

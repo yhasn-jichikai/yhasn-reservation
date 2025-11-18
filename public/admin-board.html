@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>掲示板（お知らせ管理） | YHASN施設予約</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body { font-family: 'Noto Sans JP', sans-serif; margin: 0; background:#f3fbfb; }
+  h1 { margin: 60px 0 10px; color:#0288d1; text-align:center; font-size:32px; }
+
+  /* ---- ハンバーガーメニュー（admin.htmlと同等の見た目） ---- */
+  #hamburgerMenu { position: fixed; top: 10px; left: 10px; z-index: 999; }
+  #menuToggle { background:#00bcd4; color:#fff; border:none; padding:10px 14px; font-size:24px; border-radius:4px; cursor:pointer; }
+  #menuToggle:hover { background:#0097a7; }
+  #sideMenu { position: fixed; top:0; left:-280px; width:240px; height:100%; background:#e1f5fe; padding:20px;
+              box-shadow:2px 0 6px rgba(0,0,0,0.2); transition:left .3s ease; z-index:1500; }
+  #sideMenu.visible { left:0; }
+  #sideMenu .menu-header { font-weight:700; font-size:18px; color:#006064; margin-bottom:16px; }
+  #sideMenu .menu-user { font-size:14px; color:#333; margin-bottom:16px; }
+  #sideMenu button { display:block; width:100%; margin:10px 0; padding:10px; background:#0288d1; color:#fff;
+                     border:none; border-radius:4px; text-align:left; cursor:pointer; }
+  #sideMenu button:hover { background:#0277bd; }
+  #profileImage { width:50px; height:50px; border-radius:50%; object-fit:cover; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,.3); }
+  #menuOverlay { position:fixed; top:0; left:280px; width:calc(100vw - 280px); height:100vh; background:rgba(0,0,0,.3);
+                 z-index:1000; opacity:0; pointer-events:none; transition:opacity .3s ease; }
+  #menuOverlay.visible { opacity:1; pointer-events:auto; }
+  #menuOverlay.hidden  { opacity:0; pointer-events:none; }
+
+  /* ログアウトを赤く＆間隔 */
+  #logoutButtonSide { background:#f44336 !important; margin-top:20px; text-align:center; }
+  #logoutButtonSide:hover { background:#d32f2f !important; }
+
+  /* ---- ページ本体 ---- */
+  .container { max-width: 980px; margin: 0 auto; padding: 0 16px 24px; }
+  .card { background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.1); padding:16px; }
+  label { display:block; margin:10px 0 6px; font-weight:600; }
+  input[type="text"], textarea { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:16px; }
+  .row { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  .btn { border:none; border-radius:6px; padding:8px 12px; font-weight:700; cursor:pointer; }
+  .btn-blue { background:#0288d1; color:#fff; }
+  .btn-blue:hover { background:#0277bd; }
+  .btn-green { background:#2e7d32; color:#fff; }
+  .btn-orange { background:#ef6c00; color:#fff; }
+  .btn-red { background:#f44336; color:#fff; }
+  .table { width:100%; border-collapse:collapse; }
+  .table th, .table td { border-bottom:1px solid #eee; padding:8px; vertical-align:top; text-align:left; }
+  .muted { color:#777; font-size:12px; }
+</style>
+</head>
+<body>
+
+<!-- ハンバーガーメニュー -->
+<div id="hamburgerMenu">
+  <button id="menuToggle">&#9776;</button>
+  <div id="sideMenu">
+    <div class="menu-header">YHASN施設予約管理</div>
+    <div class="menu-user">
+      <img id="profileImage" src="" alt="プロフィール画像" style="display:none;">
+      <div id="menuUserEmail">ログイン中</div>
+    </div>
+    <hr>
+    <button onclick="location.href='admin.html'">管理トップへ戻る</button>
+    <button onclick="window.open('admin-reserve.html','_self')">教員用予約ページへ</button>
+    <button onclick="window.open('admin-suspend.html','_self')">停止アカウント管理</button>
+    <button id="logoutButtonSide">ログアウト</button>
+  </div>
+</div>
+<div id="menuOverlay" class="hidden"></div>
+
+<h1>掲示板（お知らせ管理）</h1>
+
+<div class="container">
+
+  <!-- 投稿カード -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="margin:0 0 10px; color:#01579b;">新規投稿</h2>
+    <div>
+      <label>タイトル</label>
+      <input type="text" id="noticeTitle" placeholder="例：今週の予約ルールについて">
+    </div>
+    <div>
+      <label>本文</label>
+      <textarea id="noticeBody" rows="5" placeholder="本文を入力"></textarea>
+    </div>
+    <div class="row" style="margin-top:6px;">
+      <label><input type="checkbox" id="noticePinned"> 上部に固定する</label>
+      <label><input type="checkbox" id="noticePublic" checked> 公開する（学生に表示）</label>
+      <span id="noticeMsg" class="muted"></span>
+    </div>
+    <div style="text-align:right; margin-top:8px;">
+      <button class="btn btn-blue" onclick="reloadNotices()">再読み込み</button>
+      <button class="btn btn-green" onclick="submitNotice()">投稿</button>
+    </div>
+  </div>
+
+  <!-- 一覧カード -->
+  <div class="card">
+    <h2 style="margin:0 0 10px; color:#01579b;">投稿一覧</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>固定</th>
+          <th>公開</th>
+          <th>タイトル / 本文</th>
+          <th>作成日時</th>
+          <th style="text-align:right;">操作</th>
+        </tr>
+      </thead>
+      <tbody id="noticeList">
+        <tr><td colspan="5" class="muted" style="padding:12px;">読み込み中…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Firebase SDK（compatでadmin.htmlと同系統） -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+  // Firebase 初期化（admin.html と同一設定）
+  const firebaseConfig = {
+    apiKey: "AIzaSyCw6RzSw72t0BKoGjCONNPwz4plqn-74VY",
+    authDomain: "yhasn-reserve.firebaseapp.com",
+    projectId: "yhasn-reserve",
+    storageBucket: "yhasn-reserve.appspot.com",
+    messagingSenderId: "406712332925",
+    appId: "1:406712332925:web:fb9253a313e4c76cfcb714"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // 認証チェック（未ログインなら管理ログインへ）
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
+      alert("ログインしてください");
+      location.href = "admin-login.html";
+      return;
+    }
+    const emailDiv = document.getElementById("menuUserEmail");
+    if (emailDiv) {
+      const name = user.displayName || "";
+      const parts = name.trim().split(" ");
+      const reversed = parts.length === 2 ? `${parts[0]} ${parts[1]}` : name;
+      emailDiv.textContent = `${reversed}（${user.email}）でログイン中`;
+    }
+    if (user.photoURL) {
+      const img = document.getElementById("profileImage");
+      img.src = user.photoURL; img.style.display = "block";
+    }
+    reloadNotices();
+  });
+
+  // ハンバーガーメニュー開閉
+  document.getElementById("menuToggle").addEventListener("click", () => {
+    const side = document.getElementById("sideMenu");
+    const overlay = document.getElementById("menuOverlay");
+    const vis = side.classList.toggle("visible");
+    if (vis) { overlay.classList.remove("hidden"); overlay.classList.add("visible"); }
+    else { overlay.classList.remove("visible"); overlay.classList.add("hidden"); }
+  });
+  document.getElementById("menuOverlay").addEventListener("click", () => {
+    document.getElementById("sideMenu").classList.remove("visible");
+    const overlay = document.getElementById("menuOverlay");
+    overlay.classList.remove("visible"); overlay.classList.add("hidden");
+  });
+  document.getElementById("logoutButtonSide").addEventListener("click", () => {
+    firebase.auth().signOut().then(() => {
+      alert("ログアウトしました。画面遷移します");
+      location.href = "admin-login.html";
+    });
+  });
+
+  // 掲示板ロジック
+  function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+  function submitNotice(){
+    const title = document.getElementById('noticeTitle').value.trim();
+    const body  = document.getElementById('noticeBody').value.trim();
+    const pinned = document.getElementById('noticePinned').checked;
+    const isPublic = document.getElementById('noticePublic').checked;
+    const msg = document.getElementById('noticeMsg');
+    if (!title){ msg.textContent = "タイトルを入力してください。"; return; }
+
+    const u = firebase.auth().currentUser;
+    const author = u ? (u.email || u.uid) : '-';
+
+    db.collection('notices').add({
+      title, body, pinned, public: isPublic, author,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(()=>{
+      msg.textContent = "投稿しました。";
+      document.getElementById('noticeTitle').value = '';
+      document.getElementById('noticeBody').value = '';
+      document.getElementById('noticePinned').checked = false;
+      document.getElementById('noticePublic').checked = true;
+      reloadNotices();
+      setTimeout(()=>{ msg.textContent=''; }, 1800);
+    }).catch((e)=>{
+  console.error('[notices.add] error:', e);
+  msg.style.color = '#c62828';
+  msg.textContent = `投稿に失敗しました：${e?.message || e}`;
+});
+
+  }
+
+  function renderRow(id, d){
+    const created = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate() : null;
+    const ts = created ? `${created.getFullYear()}-${String(created.getMonth()+1).padStart(2,'0')}-${String(created.getDate()).padStart(2,'0')} ${String(created.getHours()).padStart(2,'0')}:${String(created.getMinutes()).padStart(2,'0')}` : '-';
+    return `
+      <tr data-id="${id}">
+        <td>${d.pinned ? '📌' : ''}</td>
+        <td>${d.public ? '公開' : '非公開'}</td>
+        <td>
+          <div style="font-weight:700;">${escapeHtml(d.title||'')}</div>
+          ${d.body ? `<div class="muted" style="white-space:pre-wrap; margin-top:4px;">${escapeHtml(d.body)}</div>` : ''}
+        </td>
+        <td>${ts}</td>
+        <td style="text-align:right;">
+          <button class="btn btn-orange" onclick="toggleNotice('${id}','pinned',${!d.pinned})">${d.pinned ? '固定解除' : '固定'}</button>
+          <button class="btn btn-green"  onclick="toggleNotice('${id}','public',${!d.public})">${d.public ? '非公開に' : '公開に'}</button>
+          <button class="btn btn-red"    onclick="deleteNotice('${id}')">削除</button>
+        </td>
+      </tr>`;
+  }
+
+  function reloadNotices(){
+    const tbody = document.getElementById('noticeList');
+    tbody.innerHTML = `<tr><td colspan="5" class="muted" style="padding:12px;">読み込み中…</td></tr>`;
+    db.collection('notices').orderBy('pinned','desc').orderBy('createdAt','desc').limit(100).get()
+      .then(snap=>{
+        if (snap.empty){ tbody.innerHTML = `<tr><td colspan="5" class="muted" style="padding:12px;">投稿はありません。</td></tr>`; return; }
+        let html=''; snap.forEach(doc=>{ html += renderRow(doc.id, doc.data()); });
+        tbody.innerHTML = html;
+      })
+      .catch(e=>{ tbody.innerHTML = `<tr><td colspan="5" class="muted" style="padding:12px;color:#c62828;">読み込みエラー：${e.message}</td></tr>`; });
+  }
+  function toggleNotice(id, field, value){
+    db.collection('notices').doc(id).set({ [field]: value }, { merge:true }).then(reloadNotices);
+  }
+  function deleteNotice(id){
+    if (!confirm('この投稿を削除します。よろしいですか？')) return;
+    db.collection('notices').doc(id).delete().then(reloadNotices);
+  }
+</script>
+</body>
+</html>

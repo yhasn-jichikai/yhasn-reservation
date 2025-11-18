@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約管理＠</title>
+  <title>YHASN施設予約管理</title>
 
   <style>
 body {
@@ -257,6 +257,18 @@ button.cancel-btn:hover {
   text-align: left;
 }
 
+/* ハンバーガーメニュー内のログアウトボタンを強調 */
+#sideMenu #logoutButtonSide {
+  background-color: #f44336; /* 赤色 */
+  margin-top: 20px;          /* 上にスペースを追加 */
+  text-align: center;        /* 文字を中央寄せ */
+}
+
+#sideMenu #logoutButtonSide:hover {
+  background-color: #d32f2f; /* ホバー時の濃い赤 */
+}
+
+
 #sideMenu button:hover {
   background-color: #0277bd;
 }  
@@ -293,7 +305,81 @@ button.cancel-btn:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
     
+/* === 予約表：複数選択用チェックボックスのUI改善 === */
+#reservationsTable.multi-mode td:nth-child(8) {
+  /* 「操作」列（8列目）をホバーで分かりやすく */
+  cursor: pointer;
+}
+#reservationsTable.multi-mode td:nth-child(8):hover {
+  background: #e3f2fd;
+}
+
+/* 行ホバーでうっすら可視化（視線誘導用） */
+#reservationsTable tbody tr:hover {
+  background: #f7fbff;
+}
+
+/* チェックボックス自体を大きく・押しやすく */
+.multi-cancel-checkbox {
+  width: 24px;
+  height: 24px;
+  /* 対応ブラウザなら色も統一 */
+  accent-color: #0288d1;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.multi-cancel-checkbox:hover {
+  outline: 2px solid #81d4fa;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
             
+/* === PC向け：空室表の最大幅を制限して中央寄せ === */
+@media (min-width: 1024px) {
+  /* 好みで調整：1100〜1300pxくらいが見やすい */
+  :root { --schedule-max-width: 1200px; }
+
+  /* 空室表コンテナをセンター＆最大幅制限 */
+  #scheduleTable {
+    max-width: var(--schedule-max-width);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* PCでは少しだけ詰めて表示（文字とパディングを控えめに） */
+  #scheduleTable th,
+  #scheduleTable td {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  /* 時間帯の列が潰れすぎないよう幅を確保（必要に応じて調整） */
+  #scheduleTable td.time-label {
+    width: 140px;
+    white-space: nowrap;
+  }
+}
+
+/* 横スクロール許可（必要なときだけ使う） */
+#scheduleTable { overflow-x: auto; }
+#scheduleTable table { min-width: 1100px; } /* 横幅の下限（好みで調整） */
+
+
+/* === モバイルのタップ体感を改善（即時フィードバック） === */
+#scheduleTable td.empty {
+  transition: background-color 40ms linear, transform 40ms ease;
+  -webkit-tap-highlight-color: transparent; /* モバイルの青ハイライトを消す */
+  touch-action: manipulation;               /* ダブルタップ待ち等を抑制 */
+}
+#scheduleTable td.empty.tap-active {
+  background-color: #e0f7fa !important;     /* うっすら色変化：押した感 */
+  transform: scale(0.995);                   /* ほんの少しだけ縮ませる */
+}
+
+/* ボタン類にもヒント（必要なら） */
+button, .tab-button { touch-action: manipulation; }
+
     
   </style>
   
@@ -327,7 +413,11 @@ button.cancel-btn:hover {
     
     <hr>
     <button onclick="location.href='admin-reserve.html'">教員用予約ページへ</button>
-    <button id="logoutButtonSide">ログアウト</button>
+<button onclick="window.open('admin-suspend.html', '_blank')">停止アカウント管理</button>
+<button onclick="window.open('admin-board.html', '_self')">掲示板（お知らせ投稿）</button>
+<button id="logoutButtonSide">ログアウト</button>
+
+
   </div>
 </div>
     <div id="menuOverlay" class="hidden"></div>
@@ -349,9 +439,10 @@ button.cancel-btn:hover {
 
 <!-- 複数選択・一括キャンセルボタン -->
 <div style="text-align: right; margin-bottom: 10px;">
+  <button onclick="cancelSelected()" id="cancelSelectedBtn" class="cancel-btn" style="display:none;">選択した項目を一括キャンセル</button>
   <button onclick="toggleMultiSelectMode()" id="multiSelectBtn">複数選択</button>
-  <button onclick="cancelSelected()" id="cancelSelectedBtn" class="cancel-btn" style="display:none;">一括キャンセル</button>
 </div>
+
 
 
 <!-- ▼ これを追加：予約情報一覧タブ -->
@@ -378,6 +469,15 @@ button.cancel-btn:hover {
     </thead>
     <tbody></tbody>
   </table>
+<!-- ▼ ページャ -->
+<div id="pager" style="display:flex; gap:10px; align-items:center; justify-content:center; margin-top:8px;">
+  <button id="prevPageBtn" style="display:none;">＜ 前30件</button>
+  <span id="pageInfo" style="font-weight:bold;"></span>
+  <button id="nextPageBtn" style="display:none;">次30件 ＞</button>
+</div>
+
+
+
 </div>
 
 <div id="emptyTab" class="tab-content" style="display:none;">
@@ -409,6 +509,47 @@ button.cancel-btn:hover {
     // Firebase初期化
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+// ==== ここから追記（db の直後） ====
+// index.html と同じ Web アプリ URL とシークレットを使う
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwBztqWNBpozNAL9S10_K44z4T5l8vIv7a7s3SyjI1W7zZhvdhLfaZVeLNVSBvcxIQ06A/exec';
+const SHARED_SECRET = 'yhasn_2025jichikai_reservation_sending-email';
+
+// 管理者キャンセル通知メール（予約者へ）
+async function sendMailAdminCancel({ to, dateText, timeText, roomText, studentId, studentName, grade }) {
+  const subject = `【管理者処理】予約をキャンセルしました：${dateText} ${timeText} ${roomText}`;
+  const html = `
+    <div style="font-family:'Noto Sans JP',sans-serif; line-height:1.7;">
+      <p>${studentName || '利用者'} さん</p>
+      <p>以下の予約は<strong>管理者によりキャンセル</strong>されました。</p>
+      <table style="border-collapse:collapse;">
+        <tr><td style="padding:4px 8px;">日付</td><td style="padding:4px 8px;">${dateText}</td></tr>
+        <tr><td style="padding:4px 8px;">時間</td><td style="padding:4px 8px;">${timeText}</td></tr>
+        <tr><td style="padding:4px 8px;">ベッド/部屋</td><td style="padding:4px 8px;">${roomText}</td></tr>
+        <tr><td style="padding:4px 8px;">学籍番号</td><td style="padding:4px 8px;">${studentId || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">氏名</td><td style="padding:4px 8px;">${studentName || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">学年</td><td style="padding:4px 8px;">${grade || '-'}</td></tr>
+      </table>
+      <p>※このメールは送信専用です。</p>
+    </div>
+  `;
+  try {
+    // プリフライト回避のため text/plain を利用（index と同じ方式）
+    await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        secret: SHARED_SECRET,
+        to,
+        subject,
+        html,
+        origin: location.origin
+      })
+    }).catch(e => console.warn('メール送信失敗(ネットワーク)', e));
+  } catch (e) {
+    console.warn('メール送信失敗', e);
+  }
+}
+// ==== ここまで追記 ====
 
 // 0埋めされたベッド名（ベッド01など）をベッド1形式で表示する
 function formatRoomName(room) {
@@ -424,12 +565,20 @@ let currentSortOrder = "asc";  // 初期は昇順
 
 function changeSortOrder(order) {
   currentSortOrder = order;
+  currentPage = 0; // ← 並び替え時は1ページ目へ
+
   loadReservations(); // 並べ替え再実行
 }
+
 
 // ▼ 追記：複数選択モード制御用
 let multiSelectMode = false;
 let selectedIds = [];
+
+// ▼ ページング制御
+const PAGE_SIZE = 30;
+let currentPage = 0;
+let allDocs = []; // {id, data} の配列（本日以降の全予約）を保持
 
 
 
@@ -479,53 +628,17 @@ function loadReservations() {
         return;
       }
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
+            // 取得データを配列に保持（並び順はクエリで確定済み）
+      allDocs = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+
+      // 初回はページ先頭に戻す
+      currentPage = 0;
+
+      // 1ページを描画
+      renderPage();
 
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${data.date}</td>
-          <td>${data.time}</td>
-          <td>${formatRoomName(data.room)}</td>
-          <td>${data.name}</td>
-          <td>${data.studentId || ""}</td>
-          <td>${data.grade || ""}</td>
-          <td>${data.email}</td>
-          <td>
-            ${
-              multiSelectMode
-                ? `<input type="checkbox" class="multi-cancel-checkbox" data-id="${doc.id}" onchange="toggleSelect('${doc.id}', this.checked)">`
-                : `<button class="cancel-btn" data-id="${doc.id}" onclick="cancelSingle('${doc.id}')">キャンセル</button>`
-            }
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
 
-      document.getElementById("reservationsTable").classList.remove("multi-mode");
-      document.getElementById("cancelSelectedBtn").style.display = "none";
-
-      tbody.querySelectorAll("button").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          if (confirm("この予約をキャンセルしますか？")) {
-            db.collection("reservations").doc(id).delete().then(() => {
-              alert("キャンセルしました");
-              loadReservations();
-            }).catch(err => {
-              alert("キャンセルに失敗しました");
-              console.error(err);
-            });
-          }
-        });
-      });
-            // ▼ 追加：複数選択中ならキャンセルボタン表示
-      if (multiSelectMode) {
-        document.getElementById("cancelSelectedBtn").style.display = "inline-block";
-      } else {
-        document.getElementById("cancelSelectedBtn").style.display = "none";
-      }
     })
     .catch(err => {
       console.error("読み込みエラー:", err);
@@ -533,6 +646,120 @@ function loadReservations() {
       document.body.innerHTML += `<p style="color:red;">読み込みエラー: ${err.message}</p>`;
     });
 }
+
+// ===== ページ描画＆ページャ制御 =====
+function renderPage() {
+  const tbody = document.querySelector("#reservationsTable tbody");
+  tbody.innerHTML = "";
+
+  if (!Array.isArray(allDocs) || allDocs.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='8'>本日以降の予約はありません</td></tr>";
+    // ページャ非表示
+    updatePager(0, 0, 0);
+    // multi-mode視覚状態の初期化
+    document.getElementById("reservationsTable").classList.remove("multi-mode");
+    document.getElementById("cancelSelectedBtn").style.display = "none";
+    return;
+  }
+
+  const start = currentPage * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, allDocs.length);
+  const pageItems = allDocs.slice(start, end);
+
+  // 行DOM生成
+  for (const { id, data } of pageItems) {
+    const tr = document.createElement("tr");
+    // 既に選択済みを復元
+    const checkedAttr = selectedIds.includes(id) ? "checked" : "";
+
+    tr.innerHTML = `
+      <td>${data.date}</td>
+      <td>${data.time}</td>
+      <td>${formatRoomName(data.room)}</td>
+      <td>${data.name}</td>
+      <td>${data.studentId || ""}</td>
+      <td>${data.grade || ""}</td>
+      <td>${data.email}</td>
+      <td>
+        ${
+          multiSelectMode
+            ? `<input type="checkbox" class="multi-cancel-checkbox" data-id="${id}" onchange="toggleSelect('${id}', this.checked)" ${checkedAttr}>`
+            : `<button class="cancel-btn" data-id="${id}" onclick="cancelSingle('${id}')">キャンセル</button>`
+        }
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // 複数選択モードのUI同期（ホバー・ボタン表示）
+  const tableEl = document.getElementById("reservationsTable");
+  if (multiSelectMode) {
+    tableEl.classList.add("multi-mode");
+    document.getElementById("cancelSelectedBtn").style.display = "inline-block";
+  } else {
+    tableEl.classList.remove("multi-mode");
+    document.getElementById("cancelSelectedBtn").style.display = "none";
+  }
+
+  // ドラッグ選択のイベントを最新の要素に張り直し
+  if (typeof wireUpCheckboxUX === "function") {
+    wireUpCheckboxUX();
+  }
+
+  // ページャ更新
+  updatePager(start + 1, end, allDocs.length);
+}
+
+function updatePager(from, to, total) {
+  const prevBtn = document.getElementById("prevPageBtn");
+  const nextBtn = document.getElementById("nextPageBtn");
+  const info    = document.getElementById("pageInfo");
+
+  // 総件数0なら非表示
+  if (total === 0) {
+    if (prevBtn) prevBtn.style.display = "none";
+    if (nextBtn) nextBtn.style.display = "none";
+    if (info)    info.textContent = "";
+    return;
+  }
+
+  // 表示テキスト「1–30 / 120件」
+  if (info) {
+    info.textContent = `${from}–${to} / ${total}件`;
+  }
+
+  // 前・次の可視/不可視
+  if (prevBtn) prevBtn.style.display = currentPage > 0 ? "inline-block" : "none";
+  if (nextBtn) nextBtn.style.display = (currentPage + 1) * PAGE_SIZE < total ? "inline-block" : "none";
+}
+
+// ページャのボタンイベント（重複バインド防止）
+(function setupPagerOnce() {
+  const prevBtn = document.getElementById("prevPageBtn");
+  const nextBtn = document.getElementById("nextPageBtn");
+  if (!prevBtn || !nextBtn) return;
+
+  if (!prevBtn._bound) {
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+      }
+    });
+    prevBtn._bound = true;
+  }
+
+  if (!nextBtn._bound) {
+    nextBtn.addEventListener("click", () => {
+      if ((currentPage + 1) * PAGE_SIZE < allDocs.length) {
+        currentPage++;
+        renderPage();
+      }
+    });
+    nextBtn._bound = true;
+  }
+})();
+
 
    
     
@@ -556,6 +783,11 @@ function switchTab(tabId) {
       cancelBtn.style.display = "none";
     }
   }
+    // ← 追記：タブ切替時も複数選択ボタンのラベルを現在モードに同期
+  if (multiBtn) {
+    multiBtn.textContent = multiSelectMode ? "複数選択解除" : "複数選択";
+  }
+
 
   // 呼び出し元イベントが使えないので、class追加は tabId に応じて明示的に書く
   if (tabId === "reservationsTab") {
@@ -597,7 +829,20 @@ const allHolidays = {
   "2025-12-23": "天皇誕生日"
 };
 
-let currentDate = getNextValidDate(new Date()); // ← グローバル日付管理用
+// ✅ 初期日付の決定：今日が土日祝なら直近の平日にシフト
+function findInitialAdminDate(startDate) {
+  let d = new Date(startDate);
+  while (
+    d.getDay() === 0 || d.getDay() === 6 || 
+    allHolidays[formatDate(d)]
+  ) {
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+
+let currentDate = findInitialAdminDate(new Date()); // ← 修正版
+
 
 function getNextValidDate(date, step = 0) {
   const next = new Date(date);
@@ -621,11 +866,42 @@ function loadSchedule(date) {
 
   const dateStr = formatDate(date);
   const timeSlots = ["08:30-09:00", "09:00-10:40（１限）", "10:40-12:10（２限）", "12:10-13:20（昼休み）", "13:20-15:00（３限）", "15:00-16:30（４限）", "16:30-18:00", "18:00-20:00"];
+    // Firestore 保存名に合わせた 0埋め版の部屋リスト
+  // 表示時は formatRoomName(room) で「ベッド1〜12」に整形して見せる
   const allRooms = [
     "学生演習室1", "学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5",
-    "交流室", "ベッド1", "ベッド2", "ベッド3", "ベッド4", "ベッド5", "ベッド6",
-    "ベッド7", "ベッド8", "ベッド9", "ベッド10", "ベッド11", "ベッド12"
+    "交流室",
+    "ベッド01", "ベッド02", "ベッド03", "ベッド04", "ベッド05", "ベッド06",
+    "ベッド07", "ベッド08", "ベッド09", "ベッド10", "ベッド11", "ベッド12"
   ];
+
+  function generateTable(rooms, title) {
+    // ヘッダは保存名→表示名に変換して出す（例：ベッド01 → ベッド1）
+   
+
+    timeSlots.forEach(time => {
+      html += `<tr><td class="time-label">${time}</td>`;
+      rooms.forEach(room => {
+        // ここでの room は保存名（ベッド01 等）。Firestore の data.room と一致する。
+        const key = `${time}_${room}`;
+        const d = dataMap[key];
+        if (d) {
+          html += `<td>
+  <div style="font-size: 12px; font-weight: bold;">${d.studentId || ""}</div>
+  <div style="font-size: 13px;">${d.grade || ""}</div>
+  <div style="font-size: 14px; font-weight: 600; color: #0277bd;">${d.name || ""}</div>
+</td>`;
+        } else {
+          html += `<td class="empty" title="予約可能"><i class="fas fa-circle"></i></td>`;
+        }
+      });
+      html += `</tr>`;
+    });
+
+    html += `</tbody></table><br>`;
+    return html;
+  }
+
 
   db.collection("reservations")
     .where("date", "==", dateStr)
@@ -670,6 +946,30 @@ function loadSchedule(date) {
       scheduleTable.innerHTML =
         generateTable(group1, "学生演習室・交流室") +
         generateTable(group2, "ベッド（1〜12）");
+              // === 追記：空室セルのタップ即時フィードバック（モバイル体感向上） ===
+      (function bindFastTapOnce() {
+        const root = document.getElementById("scheduleTable");
+        if (!root || root._fastTapBound) return;
+
+        // 押した瞬間に見た目だけ先に変える
+        root.addEventListener("pointerdown", (e) => {
+          const td = e.target.closest("td.empty");
+          if (!td) return;
+          td.classList.add("tap-active");
+        }, { passive: true });
+
+        // 離したら少しだけ余韻を残して元に戻す
+        const clearActive = (e) => {
+          const td = (e && e.target && e.target.closest) ? e.target.closest("td.empty") : null;
+          if (td) setTimeout(() => td.classList.remove("tap-active"), 80);
+        };
+        root.addEventListener("pointerup", clearActive,   { passive: true });
+        root.addEventListener("pointercancel", clearActive, { passive: true });
+        root.addEventListener("pointerleave", clearActive,  { passive: true });
+
+        root._fastTapBound = true;
+      })();
+
     })
     .catch(err => {
       scheduleTable.innerHTML = `<p style="color:red;">読み込み失敗: ${err.message}</p>`;
@@ -740,31 +1040,49 @@ updatePrevButtonVisibility(currentDate);
   document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
 }
 }
-    // ▼ 一括キャンセル処理
-document.getElementById("cancelSelectedBtn").addEventListener("click", () => {
-  const checkboxes = document.querySelectorAll(".multi-cancel-checkbox:checked");
-  if (checkboxes.length === 0) {
+   // ▼ 一括キャンセル処理（メール送信対応版）
+document.getElementById("cancelSelectedBtn").addEventListener("click", async () => {
+  const checked = document.querySelectorAll(".multi-cancel-checkbox:checked");
+  if (checked.length === 0) {
     alert("キャンセルする予約を選択してください。");
     return;
   }
 
-  if (!confirm(`${checkboxes.length}件の予約を一括キャンセルしますか？`)) return;
+  if (!confirm(`${checked.length}件の予約を一括キャンセルしますか？\n（各予約者にキャンセルメールが送信されます）`)) return;
 
-  const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
   let successCount = 0;
   let errorCount = 0;
 
-  const promises = idsToDelete.map(id =>
-    db.collection("reservations").doc(id).delete()
-      .then(() => successCount++)
-      .catch(() => errorCount++)
-  );
+  for (const cb of checked) {
+    const id = cb.dataset.id;
+    try {
+      const snap = await db.collection("reservations").doc(id).get();
+      if (!snap.exists) { errorCount++; continue; }
+      const d = snap.data();
 
-  Promise.all(promises).then(() => {
-    alert(`キャンセル完了：${successCount}件、失敗：${errorCount}件`);
-    loadReservations(); // 再読み込み
-  });
+      await sendMailAdminCancel({
+        to: d.email,
+        dateText: d.date,
+        timeText: d.time,
+        roomText: formatRoomName(d.room),
+        studentId: d.studentId || '',
+        studentName: d.name || '',
+        grade: d.grade || ''
+      });
+
+      await db.collection("reservations").doc(id).delete();
+      successCount++;
+    } catch (e) {
+      console.error(e);
+      errorCount++;
+    }
+  }
+
+  alert(`キャンセル完了：${successCount}件、失敗：${errorCount}件`);
+  currentPage = 0;
+  loadReservations();
 });
+
 function toggleSelect(id, checked) {
   if (checked) {
     selectedIds.push(id);
@@ -775,15 +1093,144 @@ function toggleSelect(id, checked) {
 
 function toggleMultiSelectMode() {
   multiSelectMode = !multiSelectMode;
-  document.getElementById("cancelSelectedBtn").style.display = multiSelectMode ? "inline-block" : "none";
-  loadReservations(); // ← これで表示をチェックボックスに切り替える
+
+  // ボタン表示／ラベル更新
+  const multiBtn = document.getElementById("multiSelectBtn");
+  const cancelBtn = document.getElementById("cancelSelectedBtn");
+
+  if (multiBtn) {
+    multiBtn.textContent = multiSelectMode ? "複数選択解除" : "複数選択";
+    multiBtn.setAttribute("aria-pressed", String(multiSelectMode));
+  }
+  if (cancelBtn) {
+    cancelBtn.style.display = multiSelectMode ? "inline-block" : "none";
+  }
+
+  // 表の再描画（チェックボックス化/解除）
+  loadReservations();
 }
+
+
+// === ここからドラッグ選択の実装 ===
+// チェック状態を安全に反映（selectedIdsも同期）
+function setCheckboxState(cb, state) {
+  if (!cb) return;
+  const id = cb.dataset.id;
+  if (typeof state === "boolean") {
+    cb.checked = state;
+    // 既存の toggleSelect を流用して選択配列を同期
+    toggleSelect(id, state);
+  }
+}
+
+// ドラッグ中フラグと、ドラッグで付けるべき状態（true=チェック、false=外す）
+let dragSelecting = false;
+let dragValue = false;
+
+// 今表示中のチェックボックスにイベントを張る
+function wireUpCheckboxUX() {
+  const boxes = document.querySelectorAll(".multi-cancel-checkbox");
+  boxes.forEach(cb => {
+    // マウスダウン開始：ここでドラッグ選択の基準状態を決める
+    cb.addEventListener("mousedown", (e) => {
+      if (!multiSelectMode) return;         // 複数選択モードのときだけ
+      e.preventDefault();                   // ブラウザの既定のトグルを止める
+      dragSelecting = true;
+      dragValue = !cb.checked;              // いまの反対を「今回のドラッグ値」にする
+      setCheckboxState(cb, dragValue);      // まず自分に反映
+    });
+
+    // マウスオーバー中：ドラッグ中なら同じ状態をどんどん反映
+    cb.addEventListener("mouseover", () => {
+      if (dragSelecting && multiSelectMode) {
+        setCheckboxState(cb, dragValue);
+      }
+    });
+  });
+}
+
+// マウスアップでドラッグ終了（どこで離してもOK）
+document.addEventListener("mouseup", () => {
+  dragSelecting = false;
+});
+
+// 「操作」セル全体をクリックでトグル（ホットエリア拡張）
+// クリック1発でチェック/解除できるようにする（複数選択モード時のみ）
+const reservationsTable = document.getElementById("reservationsTable");
+if (reservationsTable && !reservationsTable._cellClickBound) {
+  reservationsTable.addEventListener("click", (e) => {
+    if (!multiSelectMode) return;
+
+    const td = e.target.closest("td");
+    if (!td) return;
+
+    // 0始まりで8列目（=操作列）は index 7
+    if (td.cellIndex !== 7) return;
+
+    const cb = td.querySelector(".multi-cancel-checkbox");
+    if (cb) {
+      const newState = !cb.checked;
+      setCheckboxState(cb, newState);
+    }
+  });
+  // 二重バインド防止フラグ
+  reservationsTable._cellClickBound = true;
+}
+
+
+// 管理者から単体キャンセル（メール送信→削除）
+async function cancelSingle(id) {
+  try {
+    const snap = await db.collection("reservations").doc(id).get();
+    if (!snap.exists) {
+      alert("予約データが見つかりません。");
+      return;
+    }
+    const d = snap.data();
+    const roomText = formatRoomName(d.room); // ベッド01 → ベッド1 に整形
+
+    const msg =
+      `以下の予約をキャンセルします。\n\n` +
+      `日付：${d.date}\n` +
+      `時間：${d.time}\n` +
+      `部屋：${roomText}\n` +
+      `氏名：${d.name || ''}\n` +
+      `学籍番号：${d.studentId || ''}\n` +
+      `学年：${d.grade || ''}\n` +
+      `メール：${d.email || ''}`;
+
+    if (!confirm(msg)) return;
+
+    // 先にメール送信（失敗してもキャンセル自体は進める設計）
+    await sendMailAdminCancel({
+      to: d.email,
+      dateText: d.date,
+      timeText: d.time,
+      roomText,
+      studentId: d.studentId || '',
+      studentName: d.name || '',
+      grade: d.grade || ''
+    });
+
+    await db.collection("reservations").doc(id).delete();
+    alert("キャンセルしました（予約者へ通知メール送信）");
+    currentPage = 0;
+    loadReservations();
+  } catch (e) {
+    console.error(e);
+    alert("キャンセル処理でエラーが発生しました。");
+  }
+}
+
 
 // ハンバーガーメニューの表示切り替え
 document.getElementById("menuToggle").addEventListener("click", () => {
   const sideMenu = document.getElementById("sideMenu");
   const overlay = document.getElementById("menuOverlay");
   const isVisible = sideMenu.classList.toggle("visible");
+
+
+
 
   if (isVisible) {
   overlay.classList.remove("hidden");

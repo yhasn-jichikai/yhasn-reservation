@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>教室予約フォーム(管理者用)</title>
+  <title>YHASN施設予約(教員専用)</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -114,6 +114,52 @@ td.available.reserved {
   background-color: #e0f7fa;
   font-weight: bold;
 }
+
+/* ===== グローバル処理中オーバーレイ ===== */
+#busyOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;            /* 通常は非表示 */
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;            /* 画面最上位 */
+  backdrop-filter: blur(2px);
+}
+
+#busyOverlay.show {
+  display: flex;
+}
+
+/* ぐるぐる本体 */
+.busy-spinner {
+  width: 64px;
+  height: 64px;
+  border: 6px solid rgba(255,255,255,0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2) inset;
+}
+
+/* メッセージ */
+.busy-message {
+  margin-top: 14px;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* コンテンツを薄く見せたい時に付けるクラス */
+.body-dimmed {
+  filter: grayscale(10%) brightness(0.92);
+}
+
+/* 回転アニメ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
   </style>
 </head>
 
@@ -187,6 +233,104 @@ td.available.reserved {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+// ==== 祝日自動取得（holidays-jp） ====
+// https://holidays-jp.github.io/api/v1/<year>/date.json から取得
+
+const HOLIDAY_API = (year) => `https://holidays-jp.github.io/api/v1/${year}/date.json`;
+const holidayStore = { loaded: {} }; // { '2025-01-01': '元日', ..., loaded: {2025:true} }
+
+function ymd(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+async function loadHolidaysForRange(startDate, endDate) {
+  const y1 = startDate.getFullYear();
+  const y2 = endDate.getFullYear();
+  const years = [];
+  for (let y = y1; y <= y2; y++) {
+    if (!holidayStore.loaded[y]) years.push(y);
+  }
+  if (years.length === 0) return;
+  await Promise.all(years.map(async (y) => {
+    try {
+      const res = await fetch(HOLIDAY_API(y), { cache: "no-store" });
+      if (!res.ok) throw new Error(`fetch ${y} failed`);
+      const data = await res.json(); // { "YYYY-MM-DD": "名称", ... }
+      Object.keys(data).forEach(k => { holidayStore[k] = data[k]; });
+      holidayStore.loaded[y] = true;
+    } catch (e) {
+      console.warn("祝日の取得に失敗:", y, e);
+    }
+  }));
+}
+
+// 祝日判定
+function isHoliday(dateLike) {
+  const d = (dateLike instanceof Date) ? dateLike : new Date(dateLike);
+  return !!holidayStore[ymd(d)];
+}
+
+
+// db の直後に追加
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwBztqWNBpozNAL9S10_K44z4T5l8vIv7a7s3SyjI1W7zZhvdhLfaZVeLNVSBvcxIQ06A/exec';
+const SHARED_SECRET = 'yhasn_2025jichikai_reservation_sending-email';
+
+// ★ 管理者ページでは「上書きで消えた元予約者」にだけキャンセル通知メールを送る
+async function sendMailForOverwriteCancel({ to, dateText, studentName, studentId, grade, items }) {
+  // items: [{room:"ベッド01", time:"09:00-10:40(1限)"}, ...]
+  const prettyRoom = r =>
+    r.startsWith("ベッド")
+      ? "ベッド" + r.replace("ベッド", "").replace(/^0+/, "")
+      : r;
+
+  const rows = items.map(i => `
+    <tr>
+      <td style="padding:4px 8px;">${i.time}</td>
+      <td style="padding:4px 8px;">${prettyRoom(i.room)}</td>
+    </tr>
+  `).join("");
+
+  const subject = `【重要】予約が管理者によりキャンセルされました：${dateText}`;
+  const html = `
+    <div style="font-family:'Noto Sans JP',sans-serif; line-height:1.7;">
+      <p>${studentName || '利用者'} 様</p>
+      <p>以下のご予約は、管理者操作（上書き予約）によりキャンセルされました。</p>
+      <table style="border-collapse:collapse; margin-bottom:8px;">
+        <tr><td style="padding:4px 8px;">日付</td><td style="padding:4px 8px;">${dateText}</td></tr>
+        <tr><td style="padding:4px 8px;">氏名</td><td style="padding:4px 8px;">${studentName || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">学籍番号</td><td style="padding:4px 8px;">${studentId || '-'}</td></tr>
+        <tr><td style="padding:4px 8px;">学年</td><td style="padding:4px 8px;">${grade || '-'}</td></tr>
+      </table>
+      <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr><th style="padding:4px 8px;">時間</th><th style="padding:4px 8px;">部屋</th></tr>
+        ${rows}
+      </table>
+      <p style="margin-top:12px;">※このメールは送信専用です。</p>
+    </div>
+  `;
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // プリフライト回避
+      body: JSON.stringify({
+        secret: SHARED_SECRET,
+        to,
+        subject,
+        html,
+        origin: location.origin
+      })
+    });
+  } catch (e) {
+    console.warn('キャンセル通知メール送信に失敗', e);
+  }
+}
+
+
+
   let currentUser = null;
 
 firebase.auth().onAuthStateChanged(user => {
@@ -215,49 +359,37 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-  const holidays = {
-    "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
-    "2025-04-29": true, "2025-05-03": true, "2025-05-04": true, "2025-05-05": true,
-    "2025-07-21": true, "2025-08-11": true, "2025-09-15": true, "2025-09-23": true,
-    "2025-10-13": true, "2025-11-03": true, "2025-11-23": true, "2025-12-23": true
-  };
+  
 
-  function addSubstituteHolidays(holidays) {
-    const holidayDates = Object.keys(holidays).sort();
-    const substituteHolidays = {};
-
-    holidayDates.forEach(dateStr => {
-      const date = new Date(dateStr);
-      if (date.getDay() === 0) {
-        let offset = 1;
-        while (true) {
-          const substitute = new Date(date);
-          substitute.setDate(date.getDate() + offset);
-          const y = substitute.getFullYear();
-          const m = String(substitute.getMonth() + 1).padStart(2, "0");
-          const d = String(substitute.getDate()).padStart(2, "0");
-          const formatted = `${y}-${m}-${d}`;
-          if (!holidays[formatted] && !substituteHolidays[formatted]) {
-            substituteHolidays[formatted] = true;
-            break;
-          }
-          offset++;
-        }
-      }
-    });
-
-    return { ...holidays, ...substituteHolidays };
-  }
-
-  const allHolidays = addSubstituteHolidays(holidays);
-
+  // Firestore保存名に合わせて0埋めで持つ（表示はformatRoomNameで非0埋めに）
   const rooms = [
     "学生演習室1", "学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5",
-    "交流室", "ベッド1", "ベッド2", "ベッド3", "ベッド4", "ベッド5", "ベッド6",
-    "ベッド7", "ベッド8", "ベッド9", "ベッド10", "ベッド11", "ベッド12"
+    "交流室",
+    "ベッド01", "ベッド02", "ベッド03", "ベッド04", "ベッド05", "ベッド06",
+    "ベッド07", "ベッド08", "ベッド09", "ベッド10", "ベッド11", "ベッド12"
   ];
+
+  // 表示用に「ベッド01 → ベッド1」に直す
+  function formatRoomName(room) {
+    if (room.startsWith("ベッド")) {
+      const num = room.replace("ベッド", "").replace(/^0+/, "");
+      return "ベッド" + num;
+    }
+    return room;
+  }
+
    
-  const times = ["08:30-09:00", "09:00-10:40（１限）", "10:40-12:10（２限）", "12:10-13:20（昼休み）", "13:20-15:00（３限）", "15:00-16:30（４限）", "16:30-18:00", "18:00-20:00"];
+  // 置き換え
+const times = [
+  "08:30-09:00",
+  "09:00-10:40(1限)",
+  "10:40-12:10(2限)",
+  "12:10-13:20(昼休み)",
+  "13:20-15:00(3限)",
+  "15:00-16:30(4限)",
+  "16:30-18:00",
+  "18:00-20:00"
+];
 
   let selectedDate = "";
   let selectedRoom = "";
@@ -286,72 +418,74 @@ firebase.auth().onAuthStateChanged(user => {
     while (true) {
       newDate.setDate(newDate.getDate() + step);
       const formatted = formatDate(newDate);
-      if (newDate.getDay() !== 0 && newDate.getDay() !== 6 && !allHolidays[formatted]) {
-        return formatted;
-      }
+      if (newDate.getDay() !== 0 && newDate.getDay() !== 6 && !isHoliday(newDate)) {
+  return formatted;
+}
+
     }
   }
 
-  function loadSchedule(date) {
-  selectedDate = date;
-  document.getElementById("selectedDateDisplay").textContent = formatDisplayDate(date);
-  if (datePicker) {
-    datePicker.setDate(date);
-  }
+function loadSchedule(date) {
+selectedDate = date;
+document.getElementById("selectedDateDisplay").textContent = formatDisplayDate(date);
+if (datePicker) {
+datePicker.setDate(date);
+}
 
-    // 「前の日」ボタンの表示制御
-    const today = formatDate(new Date());
-    document.getElementById("prevDayBtn").style.display = (date === today) ? "none" : "inline-block";
+// 「前の日」ボタンの表示制御
+const today = formatDate(new Date());
+document.getElementById("prevDayBtn").style.display = (date === today) ? "none" : "inline-block";
 
-   const loading = document.getElementById("loading");
+// テーブル初期化＆ぐるぐる開始
+const loading = document.getElementById("loading");
 document.getElementById("scheduleTableRooms").innerHTML = "";
+loading.style.display = "block";
+setBusy(true, "予約表を読み込んでいます…");
 
-    loading.style.display = "block";
+const roomTimeStatus = {};
+const promises = [];
 
-    const roomTimeStatus = {};
-    const promises = [];
+times.forEach(time => {
+roomTimeStatus[time] = {};
+rooms.forEach(room => {
+roomTimeStatus[time][room] = null;
 
-    times.forEach(time => {
-      roomTimeStatus[time] = {};
-      rooms.forEach(room => {
-        roomTimeStatus[time][room] = null;
-        const query = db.collection("reservations")
-          .where("date", "==", date)
-          .where("time", "==", time)
-          .where("room", "==", room);
-        promises.push(
-  query.get().then(snapshot => {
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
-      roomTimeStatus[time][room] = {
-        name: data.name || ""
-      };
-    } else {
-      roomTimeStatus[time][room] = null;  // ← 追加：空でもnullを入れる
-    }
-  }).catch(err => {
-    console.warn(`読み込み失敗: ${time} - ${room}`, err);
-    roomTimeStatus[time][room] = null;  // ← 失敗してもnullで塞ぐ
-  })
+const query = db.collection("reservations")
+.where("date", "==", date)
+.where("time", "==", time)
+.where("room", "==", room);
+
+promises.push(
+query.get()
+.then(snapshot => {
+if (!snapshot.empty) {
+const data = snapshot.docs[0].data();
+roomTimeStatus[time][room] = { name: data.name || "" };
+} else {
+roomTimeStatus[time][room] = null;
+}
+})
+.catch(err => {
+console.warn(`読み込み失敗: ${time} - ${room}`, err);
+roomTimeStatus[time][room] = null;
+})
 );
-      });
-    });
+});
+});
 
 Promise.all(promises)
-  .then(() => {
-    try {
-      renderSchedule(roomTimeStatus);
-    } catch (e) {
-      console.error("描画中エラー:", e);
-    } finally {
-      loading.style.display = "none";
-    }
-  })
-  .catch(error => {
-    console.error("読み込みエラー:", error);
-    document.getElementById("loading").innerHTML = "読み込みに失敗しました。";
-  });
-  }
+.then(() => {
+renderSchedule(roomTimeStatus);
+})
+.catch(error => {
+console.error("読み込みエラー:", error);
+document.getElementById("loading").innerHTML = "読み込みに失敗しました。";
+})
+.finally(() => {
+loading.style.display = "none";
+setBusy(false); // ← 最後にぐるぐる終了
+});
+}
 
   function renderSchedule(status) {
   const scheduleTableRooms = document.getElementById("scheduleTableRooms");
@@ -362,10 +496,11 @@ const roomGroup1 = rooms.filter(r => r === "交流室" || r.includes("ベッド"
   function generateTable(roomsSubset) {
 let html = "<table><thead><tr><th>時間帯</th>";
 roomsSubset.forEach(room => {
-  html += `<th>${room}</th>`;
+  html += `<th>${formatRoomName(room)}</th>`;
 });
-html += `<th>ベッド全選択</th>`;  // ← 右端に「ベッド全選択」列を追加
+html += `<th>ベッド全選択</th>`;
 html += "</tr></thead><tbody>";
+
 
     times.forEach(time => {
   html += `<tr><th>${time}</th>`;
@@ -458,11 +593,12 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
       }
 
       const info = Array.from(selectedCells).map(c => {
-        const room = c.dataset.room;
-        const time = c.dataset.time;
-        return `${time} - ${room}`;
-      });
-      document.getElementById("selectedInfo").textContent = `選択済: \n${info.join('\n')}`;
+  const room = c.dataset.room;
+  const time = c.dataset.time;
+  return `${time} - ${formatRoomName(room)}`;
+});
+document.getElementById("selectedInfo").textContent = `選択済: \n${info.join('\n')}`;
+
     };
     cell.addEventListener("click", cell._clickHandler);
   } else {
@@ -473,28 +609,60 @@ document.querySelectorAll("td.available, td.available.reserved").forEach(cell =>
 }
 
   document.addEventListener("DOMContentLoaded", () => {
-    datePicker = flatpickr("#date", {
-      dateFormat: "Y-m-d",
-      minDate: "today",
-      disable: [
-        date => {
-          const formatted = formatDate(date);
-          return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
-        }
-      ],
-      locale: "ja",
-      allowInput: false,
-      onChange: (selectedDates) => {
-        if (selectedDates.length > 0) {
-          const date = formatDate(selectedDates[0]);
-          loadSchedule(date);
-        }
-      }
-    });
+    // 祝日をロードしてからカレンダー生成
+(async () => {
+  const today = new Date();
+  const end   = new Date(); end.setDate(end.getDate() + 30);
+  await loadHolidaysForRange(today, end);
 
-    const today = formatDate(new Date());
-    selectedDate = getNextValidDate(new Date(), 0);
+  datePicker = flatpickr("#date", {
+  dateFormat: "Y-m-d",
+  minDate: "today",
+  // maxDate を削除して無制限にする
+  disable: [
+    date => {
+      const wd = date.getDay();
+      return wd === 0 || wd === 6 || isHoliday(date);
+    }
+  ],
+  locale: "ja",
+  allowInput: false,
+  onChange: (selectedDates) => {
+    if (selectedDates.length > 0) {
+      const date = ymd(selectedDates[0]);
+      loadSchedule(date);
+    }
+  }
+});
+
+
+  // ✅ 初期表示日（今日が土日祝なら直近の平日にシフト）
+  function findInitialReserveDate(startDate) {
+    let d = new Date(startDate);
+    while (d.getDay() === 0 || d.getDay() === 6 || isHoliday(d)) {
+      d.setDate(d.getDate() + 1);
+    }
+    return ymd(d);
+  }
+
+  selectedDate = findInitialReserveDate(new Date());
+  loadSchedule(selectedDate);
+})();
+
+
+       // ✅ 初期表示日を決定（今日が土日祝なら直近の平日にシフト）
+    function findInitialReserveDate(startDate) {
+      let d = new Date(startDate);
+      while (d.getDay() === 0 || d.getDay() === 6 || isHoliday(d)) {
+  d.setDate(d.getDate() + 1);
+}
+
+      return formatDate(d);
+    }
+
+    selectedDate = findInitialReserveDate(new Date());
     loadSchedule(selectedDate);
+
 
     document.getElementById("prevDayBtn").addEventListener("click", () => {
       const date = new Date(selectedDate);
@@ -534,16 +702,17 @@ document.getElementById("logoutButton").addEventListener("click", () => {
   });
 });
 
-  document.getElementById("loginAndReserveButton").addEventListener("click", async function () {
-const name = document.getElementById("name").value.trim();
-const selectedCells = document.querySelectorAll("td.available.selected");
+document.getElementById("loginAndReserveButton").addEventListener("click", async function () {
+  const name = document.getElementById("name").value.trim();
+  const selectedCells = document.querySelectorAll("td.available.selected");
 
-if (!selectedDate || selectedCells.length === 0 || !name) {
-  document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
-  return;
-}
+  if (!selectedDate || selectedCells.length === 0 || !name) {
+    document.getElementById("errorMsg").textContent = "すべての項目を入力してください。";
+    return;
+  }
 
   const provider = new firebase.auth.GoogleAuthProvider();
+
   try {
     const result = await firebase.auth().signInWithPopup(provider);
     const user = result.user;
@@ -555,7 +724,10 @@ if (!selectedDate || selectedCells.length === 0 || !name) {
     }
 
     const batch = db.batch();
-    const deletePromises = [];
+
+    // ★ 上書きで消した予約を「元予約者メールごと」にまとめるマップ
+    //  { "someone@yhasn.ed.jp": { studentName, studentId, grade, items:[{room, time}, ...] }, ... }
+    const cancelMailMap = {};
 
     for (const cell of selectedCells) {
       const room = cell.dataset.room;
@@ -564,7 +736,7 @@ if (!selectedDate || selectedCells.length === 0 || !name) {
 
       const query = await db.collection("reservations")
         .where("date", "==", selectedDate)
-        .where("room", "==", room)
+        .where("room", "==", paddedRoom)
         .where("time", "==", time)
         .get();
 
@@ -574,37 +746,100 @@ if (!selectedDate || selectedCells.length === 0 || !name) {
           document.getElementById("errorMsg").textContent = "一部の予約がキャンセルされました。";
           return;
         }
-        query.forEach(doc => batch.delete(doc.ref));
+
+        // ★ ここで元予約者情報を収集してから delete
+        query.forEach(doc => {
+          const d = doc.data();
+          const to = (d.email || "").trim();
+          if (to) {
+            if (!cancelMailMap[to]) {
+              cancelMailMap[to] = {
+                studentName: d.name || "",
+                studentId: d.studentId || "",
+                grade: d.grade || "",
+                items: []
+              };
+            }
+            cancelMailMap[to].items.push({ room: paddedRoom, time });
+          }
+          batch.delete(doc.ref);
+        });
       }
 
       const newRef = db.collection("reservations").doc();
-			const studentId = "-";
-			const grade = "-";
+      const studentId = "-";
+      const grade = "-";
 
-batch.set(newRef, {
-  room: paddedRoom,
-  date: selectedDate,
-  time,
-  name,
-  studentId,  // ← "-" で登録
-  grade,      // ← "-" で登録
-  email: user.email,
-  createdAt: new Date()
-});
+      batch.set(newRef, {
+        room: paddedRoom,
+        date: selectedDate,
+        time,
+        name,
+        studentId,
+        grade,
+        email: user.email,   // 管理者(先生)のメール
+        createdAt: new Date()
+      });
     }
 
     await batch.commit();
 
+    // ★ 「上書きで消えた元予約者」全員へキャンセル通知メールを送信
+    for (const [to, payload] of Object.entries(cancelMailMap)) {
+      await sendMailForOverwriteCancel({
+        to,
+        dateText: selectedDate,
+        studentName: payload.studentName,
+        studentId: payload.studentId,
+        grade: payload.grade,
+        items: payload.items
+      });
+    }
+
+    // 画面更新（既存）
     document.getElementById("reservationSection").style.display = "none";
     document.getElementById("dateControls").style.display = "none";
     document.getElementById("completeSection").style.display = "block";
-    loadSchedule(selectedDate);  // 表を最新状態に更新
+    loadSchedule(selectedDate);
+
   } catch (error) {
     console.error("予約エラー:", error);
     document.getElementById("errorMsg").textContent = "予約に失敗しました。もう一度試してください。";
   }
 });
 
+
+// ===== 処理中オーバーレイの表示/非表示 =====
+function setBusy(isBusy, message = "処理中です…") {
+  const overlay = document.getElementById("busyOverlay");
+  const msg = document.getElementById("busyMessage");
+  if (!overlay || !msg) return;
+
+  msg.textContent = message || "処理中です…";
+
+  if (isBusy) {
+    overlay.classList.add("show");
+    document.body.classList.add("body-dimmed");
+    // クリック無効化（念のため）
+    document.body.style.pointerEvents = "none";
+    overlay.style.pointerEvents = "auto";
+  } else {
+    overlay.classList.remove("show");
+    document.body.classList.remove("body-dimmed");
+    document.body.style.pointerEvents = "";
+  }
+}
+
+
 </script>
+
+<!-- 全画面オーバーレイ（処理中表示） -->
+<div id="busyOverlay" aria-hidden="true">
+  <div>
+    <div class="busy-spinner" role="progressbar" aria-label="処理中"></div>
+    <div class="busy-message" id="busyMessage">処理中です…</div>
+  </div>
+</div>
+
 </body>
 </html>

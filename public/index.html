@@ -677,7 +677,21 @@ th, td {
   <div class="container">
     <h1>YHASN施設予約</h1>
 
+<!-- ▼ 追記：お知らせ（掲示板表示） -->
+<section id="noticeArea" style="max-width:980px;margin:0 auto 16px;background:#ffffff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.06);">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #eee;">
+    <h2 style="margin:0;font-size:18px;color:#2e7d32;">お知らせ</h2>
+    <button id="noticeReloadBtn" style="border:none;background:#43a047;color:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;">更新</button>
+  </div>
+  <div id="noticeListStudent" style="padding:10px 14px;">
+    <div style="color:#777;">読み込み中…</div>
+  </div>
+</section>
+
+
   <button type="button" id="loginButton">ログインして予約する</button>
+  
+
   
 
     <div id="dateControls">
@@ -776,6 +790,111 @@ th, td {
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+
+// ==== 祝日自動取得（holidays-jp GitHub JSON を利用） ====
+// 参考: https://holidays-jp.github.io/
+// 取得範囲：今日〜30日後までに跨る年（最大 現在年/翌年の2年分）
+
+const HOLIDAY_API = (year) => `https://holidays-jp.github.io/api/v1/${year}/date.json`;
+const holidayStore = { loaded: {} }; // { '2025-01-01': '元日', ... , loaded: {2025:true} }
+
+function ymd(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+async function loadHolidaysForRange(startDate, endDate) {
+  const y1 = startDate.getFullYear();
+  const y2 = endDate.getFullYear();
+  const years = [];
+  for (let y = y1; y <= y2; y++) {
+    if (!holidayStore.loaded[y]) years.push(y);
+  }
+  if (years.length === 0) return;
+
+  // 年ごとに取得（失敗しても処理は続ける）
+  await Promise.all(years.map(async (y) => {
+    try {
+      const res = await fetch(HOLIDAY_API(y), { cache: "no-store" });
+      if (!res.ok) throw new Error(`fetch ${y} failed`);
+      const data = await res.json(); // { "2025-01-01": "元日", ... }
+      Object.keys(data).forEach(k => { holidayStore[k] = data[k]; });
+      holidayStore.loaded[y] = true;
+    } catch (e) {
+      console.warn("祝日の取得に失敗:", y, e);
+      // 失敗時は loaded フラグのみ立てない（次回再試行できるように）
+    }
+  }));
+}
+
+// 祝日判定（取得できていない年は false 扱い）
+function isHoliday(dateLike) {
+  const d = (dateLike instanceof Date) ? dateLike : new Date(dateLike);
+  return !!holidayStore[ymd(d)];
+}
+
+
+
+
+// ==== 学生向けお知らせ表示（複合インデックス利用版） ====
+// クエリ：where(public==true).orderBy(pinned,'desc').orderBy(createdAt,'desc').limit(5)
+
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function renderNoticeItem(d){
+  const created = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate() : null;
+  const dateStr = created
+    ? `${created.getFullYear()}-${String(created.getMonth()+1).padStart(2,'0')}-${String(created.getDate()).padStart(2,'0')}`
+    : '';
+  const pin = d.pinned ? '📌 ' : '';
+  const title = escapeHtml(d.title || '');
+  const body  = d.body ? `<div style="white-space:pre-wrap;color:#333;margin-top:4px;">${escapeHtml(d.body)}</div>` : '';
+  return `
+    <article style="padding:10px 0;border-bottom:1px solid #eee;">
+      <div style="font-weight:700;color:#1b5e20;">${pin}${title}</div>
+      ${body}
+      <div style="font-size:12px;color:#777;margin-top:4px;">${dateStr}</div>
+    </article>
+  `;
+}
+
+function loadNoticesForStudent(){
+  const box = document.getElementById('noticeListStudent');
+  if (!box) return;
+  box.innerHTML = `<div style="color:#777;">読み込み中…</div>`;
+
+  db.collection('notices')
+    .where('public','==', true)
+    .orderBy('pinned','desc')
+    .orderBy('createdAt','desc')
+    .limit(5)
+    .get()
+    .then(snap => {
+      if (snap.empty) {
+        box.innerHTML = `<div style="color:#777;">現在、お知らせはありません。</div>`;
+        return;
+      }
+      let html = '';
+      snap.forEach(doc => { html += renderNoticeItem(doc.data() || {}); });
+      box.innerHTML = html;
+    })
+    .catch(e => {
+      // ここでインデックス不足等の具体エラーが見える
+      box.innerHTML = `<div style="color:#c62828;">お知らせの取得に失敗しました：${escapeHtml(e.message || String(e))}</div>`;
+      console.warn('loadNoticesForStudent error:', e);
+    });
+}
+
+// 初期表示＋手動更新
+document.addEventListener('DOMContentLoaded', loadNoticesForStudent);
+document.getElementById('noticeReloadBtn')?.addEventListener('click', loadNoticesForStudent);
+
+
+
 
   // ← ここから追記：セッション保持を明示（既定もLOCALだが明文化）
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.warn);
@@ -909,41 +1028,7 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
 
-  const holidays = {
-    "2025-01-01": true, "2025-01-13": true, "2025-02-11": true, "2025-03-20": true,
-    "2025-04-29": true, "2025-05-03": true, "2025-05-04": true, "2025-05-05": true,
-    "2025-07-21": true, "2025-08-11": true, "2025-09-15": true, "2025-09-23": true,
-    "2025-10-13": true, "2025-11-03": true, "2025-11-23": true, "2025-12-23": true
-  };
-
-  function addSubstituteHolidays(holidays) {
-    const holidayDates = Object.keys(holidays).sort();
-    const substituteHolidays = {};
-
-    holidayDates.forEach(dateStr => {
-      const date = new Date(dateStr);
-      if (date.getDay() === 0) {
-        let offset = 1;
-        while (true) {
-          const substitute = new Date(date);
-          substitute.setDate(date.getDate() + offset);
-          const y = substitute.getFullYear();
-          const m = String(substitute.getMonth() + 1).padStart(2, "0");
-          const d = String(substitute.getDate()).padStart(2, "0");
-          const formatted = `${y}-${m}-${d}`;
-          if (!holidays[formatted] && !substituteHolidays[formatted]) {
-            substituteHolidays[formatted] = true;
-            break;
-          }
-          offset++;
-        }
-      }
-    });
-
-    return { ...holidays, ...substituteHolidays };
-  }
-
-  const allHolidays = addSubstituteHolidays(holidays);
+ 
 
   const rooms = [
     "学生演習室1", "学生演習室2", "学生演習室3", "学生演習室4", "学生演習室5",
@@ -1001,9 +1086,10 @@ function getNextValidDate(date, step) {
     today.setHours(0, 0, 0, 0);
     if (step < 0 && newDate < today) return formatDate(today);
 
-    if (newDate.getDay() !== 0 && newDate.getDay() !== 6 && !allHolidays[formatted]) {
-      return formatted;
-    }
+    if (newDate.getDay() !== 0 && newDate.getDay() !== 6 && !isHoliday(newDate)) {
+  return formatted;
+}
+
   }
 }
 
@@ -1173,40 +1259,48 @@ times.forEach(timeObj => {
 const sideMenu    = document.getElementById("sideMenu");
 const menuOverlay = document.getElementById("menuOverlay");
 
-datePicker = flatpickr("#date", {
-  dateFormat: "Y-m-d",
-  minDate: "today",
-  maxDate: new Date().fp_incr(30),  // ← ここがポイント
-      disable: [
-        date => {
-          const formatted = formatDate(date);
-          return date.getDay() === 0 || date.getDay() === 6 || allHolidays[formatted];
-        }
-      ],
-      locale: "ja",
-      allowInput: false,
-      onChange: (selectedDates) => {
-        if (selectedDates.length > 0) {
-          const date = formatDate(selectedDates[0]);
-          loadSchedule(date);
-        }
-      }
-    });
+(async () => {
+  // 祝日を先にロード（今日〜30日後までの年）
+  const today = new Date();
+  const end   = new Date();
+  end.setDate(end.getDate() + 30);
+  await loadHolidaysForRange(today, end);
 
-       // ✅ 初期表示日を決定（今日が土日祝なら直近の平日にシフト）
-    function findInitialDate(startDate) {
-      let d = new Date(startDate);
-      while (
-        d.getDay() === 0 || d.getDay() === 6 || 
-        allHolidays[formatDate(d)]
-      ) {
-        d.setDate(d.getDate() + 1);
+  // 祝日/週末を無効化してカレンダー生成
+  datePicker = flatpickr("#date", {
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    maxDate: new Date().fp_incr(30),
+    disable: [
+      date => {
+        const wd = date.getDay();
+        return wd === 0 || wd === 6 || isHoliday(date);
       }
-      return formatDate(d);
+    ],
+    locale: "ja",
+    allowInput: false,
+    onChange: (selectedDates) => {
+      if (selectedDates.length > 0) {
+        const d = ymd(selectedDates[0]);
+        loadSchedule(d);
+      }
     }
+  });
 
-    selectedDate = findInitialDate(new Date());
-    loadSchedule(selectedDate);
+  // 初期表示日（今日が土日祝なら直近の平日にシフト）
+  function findInitialDate(startDate) {
+    let d = new Date(startDate);
+    while (d.getDay() === 0 || d.getDay() === 6 || isHoliday(d)) {
+      d.setDate(d.getDate() + 1);
+    }
+    return ymd(d);
+  }
+  selectedDate = findInitialDate(new Date());
+  loadSchedule(selectedDate);
+})();
+
+
+     
 
 
     // 共通：即時タップ＆キーボード対応ユーティリティ

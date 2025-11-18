@@ -1,0 +1,57 @@
+// firestore.rules
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 共通ヘルパー
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 管理者判定：@yhasn.ed.jp か、カスタムクレーム admin:true
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.matches('.*@yhasn\\.ed\\.jp$') ||
+        (request.auth.token.admin == true)
+      );
+    }
+
+    // ===== 掲示板（notices）=====
+    // 学生は読むだけOK、書き込みは管理者のみ
+    match /notices/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ===== 停止アカウント（suspendedUsers）=====
+    // index.html などから読んで制御するため read は誰でもOK、書き込みは管理者のみ
+    match /suspendedUsers/{sid} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ===== 予約（reservations）=====
+    // 想定フィールド: { email, studentId, grade, date, time, room, createdAt, ... }
+    // 管理者は全件 read/write 可能。学生は自分の予約のみ作成・（必要なら）削除可。
+    match /reservations/{rid} {
+      // 読み取り：
+      //  - 管理者は全件OK（admin.html の一覧表示用）
+      //  - 学生のクライアント側一覧表示を許可するなら、条件を追加する（例: 自分のメールのみ）
+      allow read: if isAdmin()
+                  || (isSignedIn() && resource.data.email == request.auth.token.email);
+
+      // 作成：サインイン済み & 自分のメールで保存する場合のみ
+      allow create: if isSignedIn()
+                    && request.resource.data.email == request.auth.token.email;
+
+      // 更新・削除：
+      //  - 管理者はOK
+      //  - 学生が自分の予約を取り消す仕様なら、下の2行を有効化
+      allow update, delete: if isAdmin()
+                            || (isSignedIn() && resource.data.email == request.auth.token.email);
+    }
+
+    // （他に使っているコレクションがあれば、同様にここへ追加）
+  }
+}

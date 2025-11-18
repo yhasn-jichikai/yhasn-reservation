@@ -165,31 +165,11 @@
     .right {
       text-align: right;
     }
-    /* 診断バナー */
-    .diag-ok    { background:#e8f5e9 !important; border-color:#c8e6c9 !important; color:#256029 !important; }
-    .diag-warn  { background:#fff3cd !important; border-color:#ffeeba !important; color:#856404 !important; }
-    .diag-error { background:#fdecea !important; border-color:#f5c6cb !important; color:#7f1d1d !important; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>停止アカウント管理</h1>
-    <div id="diagBanner" style="
-      display:flex;align-items:flex-start;gap:10px;
-      border-radius:12px;padding:10px 12px;margin:10px 0 16px;
-      background:#fff3cd;border:1px solid #ffeeba;color:#856404;">
-      <div style="font-weight:700;min-width:4em">状態</div>
-      <div style="flex:1">
-        <div id="diagTitle" style="font-weight:700">初期化中…</div>
-        <div id="diagMsg" style="font-size:13px;opacity:.9">ページを読み込んでいます。</div>
-        <details id="diagDetails" style="margin-top:6px;">
-          <summary style="cursor:pointer;">詳細ログを表示</summary>
-          <pre id="diagLog" style="white-space:pre-wrap;font-size:12px;margin:8px 0 0;"></pre>
-        </details>
-      </div>
-      <button id="diagCopy" style="border:none;border-radius:999px;padding:8px 12px;font-weight:700;cursor:pointer;background:#43a047;color:#fff;">コピー</button>
-    </div>
-
     <p class="desc">学籍番号6桁で管理。ここで停止に登録されたユーザーは予約を制限します。</p>
 
     <div class="grid">
@@ -281,34 +261,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ===== 診断ユーティリティ =====
-    const Banner = (() => {
-      const el = (id) => document.getElementById(id);
-      const $banner = el('diagBanner');
-      const $title  = el('diagTitle');
-      const $msg    = el('diagMsg');
-      const $log    = el('diagLog');
-      const $copy   = el('diagCopy');
-      function set(kind, title, msg) {
-        $banner.classList.remove('diag-ok','diag-warn','diag-error');
-        $banner.classList.add(kind);
-        $title.textContent = title || '';
-        $msg.innerHTML = msg || '';
-      }
-      function log(line) {
-        const t = new Date().toLocaleString();
-        $log.textContent += `[${t}] ${line}\n`;
-      }
-      $copy?.addEventListener('click', () => {
-        navigator.clipboard.writeText($log.textContent);
-        alert('ログをコピーしました');
-      });
-      return { set, log };
-    })();
-
-    Banner.set('diag-warn', 'SDKロードOK', `origin=${location.origin}`);
-    Banner.log('SDK初期化完了');
-
     const coll = collection(db, "suspendedUsers");
     const $ = (s) => document.querySelector(s);
     const form = $("#suspendForm");
@@ -318,20 +270,18 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        Banner.set('diag-error', '未ログイン', '管理者ログインが必要です');
+        alert("管理者ログインが必要です。");
+        location.href = "admin-login.html";
         return;
       }
-      Banner.set('diag-warn', '認証OK・接続確認中', 'Firestore接続を確認しています…');
       try {
         await getDocs(query(coll, limit(1)));
-        Banner.set('diag-ok', 'Firestore 接続OK', '一覧購読を開始します。');
         startLiveList();
       } catch (e) {
-        Banner.set('diag-error', 'Firestore 読み取りエラー', e.message);
+        alert("Firestoreの接続に失敗しました。");
       }
     });
 
-    // ---- 追加処理 ----
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       formMsg.textContent = "";
@@ -352,9 +302,7 @@
 
         form.reset();
         formMsg.textContent = `学籍番号 ${studentId}（${familyName} ${givenName}）を停止に登録しました。`;
-        Banner.log(`追加: ${studentId} / ${grade}年 / ${familyName} ${givenName}`);
-      } catch (err) {
-        console.error(err);
+      } catch {
         formMsg.textContent = "登録時にエラーが発生しました。";
       }
     });
@@ -362,10 +310,7 @@
     function formatDate(ts) {
       if (!ts) return "-";
       const d = ts.toDate ? ts.toDate() : new Date(ts);
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,"0");
-      const day = String(d.getDate()).padStart(2,"0");
-      return `${y}-${m}-${day}`;
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     }
 
     function renderEmpty(text="データがありません。") {
@@ -394,14 +339,11 @@
               <td>${data.grade ? data.grade + "年" : "-"}</td>
               <td><span class="status">停止中</span></td>
               <td class="right"><button class="btn-danger" data-action="unlock">解除</button></td>
-            </tr>
-          `;
+            </tr>`;
         });
         listBody.innerHTML = html;
         countBadge.textContent = `${count} 件`;
-      }, (err) => {
-        renderEmpty(`読み込みエラー：${err.message}`);
-      });
+      }, (err) => renderEmpty(`読み込みエラー：${err.message}`));
     }
 
     listBody.addEventListener("click", async (e) => {
@@ -412,10 +354,9 @@
       if (!id) return;
       const sid = tr.children[1]?.textContent?.trim() || id;
       const nm = `${tr.children[2]?.textContent?.trim() || ""} ${tr.children[3]?.textContent?.trim() || ""}`;
-      const ok = confirm(`以下のアカウントを停止解除します。\n\n学籍番号：${sid}\n氏名：${nm}`);
-      if (!ok) return;
+      if (!confirm(`以下のアカウントを停止解除します。\n\n学籍番号：${sid}\n氏名：${nm}`)) return;
       try { await deleteDoc(doc(db, "suspendedUsers", id)); }
-      catch (err) { alert("解除処理でエラーが発生しました。"); }
+      catch { alert("解除処理でエラーが発生しました。"); }
     });
   </script>
 </body>

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約！</title>
+  <title>YHASN施設予約</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -475,164 +475,151 @@ button, a, [role="button"],
 
 
 
-/* --- PC基準の整え（昔の雰囲気） --- */
-:root {
-  /* 必要ならここで全体の倍率を微調整（1.00～0.90） */
-  --ui-scale: 1.00;
+/* --- 全体スケール調整：PC / タブレット / スマホ --- */
+
+/* PC基準：少しだけコンパクトに */
+body {
+  font-size: 15px;
 }
 
-body { padding: calc(30px * var(--ui-scale)); }
-
-h1 { font-size: calc(22px * var(--ui-scale)); margin: 12px 0 8px; }
-label, p { font-size: calc(16px * var(--ui-scale)); }
-
-button {
-  font-size: calc(16px * var(--ui-scale));
-  padding: calc(12px * var(--ui-scale)) calc(24px * var(--ui-scale));
-  border-radius: 5px;
+/* 見出し・テキストの基本サイズ */
+h1 {
+  font-size: 24px;
+  margin: 14px 0 10px;
+}
+label,
+p {
+  font-size: 15px;
 }
 
-/* テーブルは昔どおり“ほどよく狭め”＋セルは高さ40px目安 */
-table { width: 90%; margin-top: 20px; }
-th { height: auto; } /* ← あなたのCSSにある height:200px を打ち消す */
-th, td {
-  padding: calc(10px * var(--ui-scale)) calc(12px * var(--ui-scale));
-  height: calc(40px * var(--ui-scale));
-  font-size: calc(14px * var(--ui-scale));
+/* テーブルの基本サイズ */
+#scheduleTableRooms th,
+#scheduleTableBeds th,
+#scheduleTableRooms td,
+#scheduleTableBeds td {
+  font-size: 13px;
+  padding: 6px 8px;
+  height: 32px;
 }
 
-/* 画像は“昔っぽくやや大きめプレビュー” */
-.image-section img {
-  width: 68%;
-  max-width: 600px;
-  margin: 18px auto;
-}
-
-/* トップのボタン群も少しだけ詰める */
-#topButtons button { margin-left: 8px; }
-
-
-
-
-/* === スマホ最適化：画面に収めるための段階的スケーリング === */
-/* 既存の :root { --ui-scale: 1.00; } を活用して、ブレークポイントごとに全体縮小 */
+/* タブレットくらい（横幅 ～1024px）で少しだけ縮める */
 @media (max-width: 1024px) {
-  :root { --ui-scale: 0.92; }
-  .container { max-width: 860px; }
-  #scheduleTableRooms table,
-  #scheduleTableBeds table {
-    width: 100%;
+  body {
+    font-size: 14px;
+    padding: 20px;
+  }
+  .container {
+    max-width: 960px;
+  }
+  h1 { font-size: 22px; }
+}
+
+/* スマホ縦画面想定（横幅 ～600px）でしっかり縮小 */
+@media (max-width: 600px) {
+  body {
+    font-size: 12px;
+    padding: 10px;
+  }
+
+  .container {
     max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
-@media (max-width: 768px) {
-  :root { --ui-scale: 0.84; }
-  body { padding: 16px; }
-  h1 { margin: 10px 0; }
-  #dateControls { gap: 6px; }
-  /* セルの高さを少し下げる */
-  th, td { height: calc(36px * var(--ui-scale)); }
-  /* 画像は横幅にフィット、説明テキストは省略 */
-  .image-section img { width: 100%; max-width: none; }
-  .image-section p { font-size: 12px; }
-  /* サイドメニューは少し細めに */
-  #sideMenu { width: 78vw; }
-  #menuButton { top: 12px; left: 12px; }
-  /* テーブルはにじみ防止のため中央寄せ維持 */
-  #scheduleTableRooms, #scheduleTableBeds { overflow-x: auto; }
-}
-
-@media (max-width: 480px) {
-  /* スマホではさらに小さく（文字もUIも一緒に縮む） */
-  :root { --ui-scale: 0.46; }
-
-  body { padding: 10px; }
-  h1 { font-size: calc(22px * var(--ui-scale)); }
-
-  label, p { font-size: calc(18px * var(--ui-scale)); }
-
-  /* 表全体の文字・余白をさらに圧縮、折り返しを抑制してはみ出し防止 */
-  th, td {
-    font-size: calc(4px * var(--ui-scale));
-    padding: calc(2px * var(--ui-scale)) calc(2px * var(--ui-scale));
-    height: calc(28px * var(--ui-scale));
-    white-space: nowrap;
-    line-height: 1.15;
+    margin: 0 auto;
   }
 
-  /* 見出しセルの微調整（時間・部屋名が詰まりすぎないように） */
+  h1 {
+    font-size: 18px;
+    margin: 8px 0 4px;
+  }
+  label,
+  p {
+    font-size: 12px;
+  }
+
+  /* ボタンも小さめに */
+  button {
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 4px;
+  }
+
+  /* ハンバーガーとサイドメニューを少しコンパクトに */
+  #menuButton {
+    top: 10px;
+    left: 10px;
+  }
+  #sideMenu {
+    width: 72vw;
+    padding: 16px;
+  }
+
+  /* 画面右上のボタンも縮小 */
+  #topButtons {
+    top: 10px;
+    right: 10px;
+  }
+  #topButtons button {
+    padding: 4px 8px;
+    font-size: 10px;
+    margin-left: 6px;
+  }
+
+  /* 日付操作まわりもぎゅっと */
+  #dateControls {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  #nextDayBtn,
+  #prevDayBtn {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  #selectedDateDisplay {
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+
+  /* テーブルの文字・セルサイズを縮小 */
   #scheduleTableRooms th,
-  #scheduleTableBeds th {
-    font-size: 8px;
-    padding: 4px;
-    line-height: 1.15;
+  #scheduleTableBeds th,
+  #scheduleTableRooms td,
+  #scheduleTableBeds td {
+    font-size: 10px;
+    padding: 3px 3px;
+    height: 24px;
   }
   #scheduleTableRooms tbody th,
   #scheduleTableBeds tbody th {
-    font-size: 8px;
-    line-height: 1.15;
-    white-space: nowrap;
+    font-size: 10px;
   }
 
-  /* 時間ラベルに <br> があっても行間が詰まりすぎないよう調整 */
-  #scheduleTableRooms th br,
-  #scheduleTableBeds th br,
-  #scheduleTableRooms tbody th br,
-  #scheduleTableBeds tbody th br {
-    line-height: 1.1;
+  /* 画像は横幅いっぱいに近い感じで */
+  .image-section {
+    margin-top: 16px;
   }
-
-  /* ボタンやラベルも少し小さめに */
-  button {
-    font-size: 12px;
-    padding: 8px 12px;
-    border-radius: 6px;
-  }
-  #dateControls label { font-size: none; }
-  #selectedDateDisplay { font-size: 12px; padding:2px 4px}
-
-  /* 画像は説明文を省略して全幅表示、改行増加を避ける */
-  .image-section { margin-top: 14px; }
-  .image-section p { display: 10; }
-  .image-section img { width: 50%; }
-
-  /* テーブルの外側余白を縮小しつつ中央にフィット */
-  #scheduleTableRooms table,
-  #scheduleTableBeds table {
+  .image-section img {
     width: 100%;
-    max-width: 100%;
-    margin: 8px auto;
+    max-width: 320px;
+    margin: 10px auto;
   }
 
-  #sideMenu {
-  width: 196px;
+  /* 横スクロールを極力抑える */
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
 
-#loginButton {
-  background-color: #f57c00 !important; /* 鮮やかなオレンジ */
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: background-color 0.3s, transform 0.2s;
-}
-
-#nextDayBtn {
-  font-size: 10px;
-  padding: 4px 8px
-}
-#prevDayBtn {
-  font-size: 10px;
-  padding: 4px 8px
-}
-
-  /* 画面横スクロールの発生を極力抑制 */
-  html, body { overflow-x: hidden; }
+/* さらに小さい端末（～375px）ならもう一段階だけ文字を少し小さく */
+@media (max-width: 375px) {
+  body {
+    font-size: 11px;
+  }
+  #scheduleTableRooms th,
+  #scheduleTableBeds th,
+  #scheduleTableRooms td,
+  #scheduleTableBeds td {
+    font-size: 9px;
+  }
 }
 
 

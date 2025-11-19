@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約a</title>
+  <title>YHASN施設予約234567</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1547,6 +1547,8 @@ function markThemeButton(theme) {
   });
 }
 
+
+
 // ユーザーごとのテーマ読み込み
 async function loadThemeForUser(user) {
   try {
@@ -1581,7 +1583,7 @@ async function saveThemeForUser(theme) {
 // 実際に class を付け替える
 function applyTheme(theme) {
   const body = document.body;
- const themes = ["green", "blue", "red", "yellow", "gray", "purple"];
+  const themes = ["green", "blue", "red", "yellow", "gray", "purple"];
   if (!themes.includes(theme)) theme = "green";
 
   themes.forEach(t => body.classList.remove(`theme-${t}`));
@@ -1589,16 +1591,13 @@ function applyTheme(theme) {
   markThemeButton(theme);
 }
 
+// ===== ログイン状態に応じて UI を更新＋テーマ反映 =====
+let currentUser = null;
 
-  let currentUser = null;
-
-firebase.auth().onAuthStateChanged(async user => {
-  if (user) {
-    // 🔥 ここが最重要：最初にテーマを読み込む
-    await loadThemeForUser();
-
+firebase.auth().onAuthStateChanged(user => {
   currentUser = user;
-  // ログインユーザーごとのテーマを反映
+
+  // まずテーマをユーザーごとに反映
   loadThemeForUser(user);
 
   const nameDiv   = document.getElementById("menuUserName");
@@ -1661,8 +1660,6 @@ firebase.auth().onAuthStateChanged(async user => {
       img.style.display = "none";
       img.removeAttribute("src");
     }
-
-    // ボタン表示
     if (sideLoginBtn)  sideLoginBtn.style.display  = "inline-block";
     if (sideLogoutBtn) sideLogoutBtn.style.display = "none";
     if (loginBtn)  loginBtn.style.display  = "inline-block";

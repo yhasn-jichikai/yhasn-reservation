@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約</title>
+  <title>YHASN施設予約a</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1592,7 +1592,11 @@ function applyTheme(theme) {
 
   let currentUser = null;
 
-firebase.auth().onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(async user => {
+  if (user) {
+    // 🔥 ここが最重要：最初にテーマを読み込む
+    await loadThemeForUser();
+
   currentUser = user;
   // ログインユーザーごとのテーマを反映
   loadThemeForUser(user);

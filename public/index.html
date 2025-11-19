@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約&&&</title>
+  <title>YHASN施設予約</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1085,6 +1085,122 @@ body.theme-yellow #scheduleTableBeds td {
   border-color: #ffd54f;
 }
 
+/* 丸アイコン式テーマセレクタ */
+#themeSelector.theme-icons {
+  margin: 10px 0 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.theme-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0,0,0,0.25);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.theme-circle:hover {
+  transform: scale(1.12);
+}
+
+.theme-circle.is-active {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.9), 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* ===== GRAY ===== */
+body.theme-gray { background-color: #f2f2f2; }
+body.theme-gray h1 { color: #616161; }
+
+body.theme-gray #scheduleTableRooms th,
+body.theme-gray #scheduleTableBeds th {
+  background-color: #bdbdbd;
+}
+
+body.theme-gray button {
+  background-color: #9e9e9e;
+}
+body.theme-gray button:hover {
+  background-color: #757575;
+}
+
+body.theme-gray #sideMenu {
+  background-color: #616161;
+}
+body.theme-gray #sideMenu hr {
+  background-color: #bdbdbd;
+}
+
+body.theme-gray #topRightLinks a {
+  background-color: #616161;
+}
+body.theme-gray #topRightLinks a:hover {
+  background-color: #424242;
+}
+
+body.theme-gray #noticeArea h2,
+body.theme-gray #completeSection h2 {
+  color: #424242;
+}
+
+/* 枠線 */
+body.theme-gray #scheduleTableRooms table,
+body.theme-gray #scheduleTableBeds table {
+  border-color: #bdbdbd;
+}
+body.theme-gray #scheduleTableRooms td,
+body.theme-gray #scheduleTableBeds td {
+  border-color: #9e9e9e;
+}
+
+/* ===== PURPLE ===== */
+body.theme-purple { background-color: #f3e5f5; }
+body.theme-purple h1 { color: #8e24aa; }
+
+body.theme-purple #scheduleTableRooms th,
+body.theme-purple #scheduleTableBeds th {
+  background-color: #ce93d8;
+}
+
+body.theme-purple button {
+  background-color: #ab47bc;
+}
+body.theme-purple button:hover {
+  background-color: #8e24aa;
+}
+
+body.theme-purple #sideMenu {
+  background-color: #6a1b9a;
+}
+body.theme-purple #sideMenu hr {
+  background-color: #ce93d8;
+}
+
+body.theme-purple #topRightLinks a {
+  background-color: #8e24aa;
+}
+body.theme-purple #topRightLinks a:hover {
+  background-color: #6a1b9a;
+}
+
+body.theme-purple #noticeArea h2,
+body.theme-purple #completeSection h2 {
+  color: #6a1b9a;
+}
+
+/* 枠線 */
+body.theme-purple #scheduleTableRooms table,
+body.theme-purple #scheduleTableBeds table {
+  border-color: #ce93d8;
+}
+body.theme-purple #scheduleTableRooms td,
+body.theme-purple #scheduleTableBeds td {
+  border-color: #ba68c8;
+}
+
   </style>
 </head>
 
@@ -1115,12 +1231,15 @@ body.theme-yellow #scheduleTableBeds td {
 
   <!-- テーマカラー選択 -->
   <div style="margin-top: 12px; font-size: 13px; font-weight: bold;">テーマカラー</div>
-  <div id="themeSelector">
-    <button type="button" class="theme-btn" data-theme="green">グリーン</button>
-    <button type="button" class="theme-btn" data-theme="blue">ブルー</button>
-    <button type="button" class="theme-btn" data-theme="red">レッド</button>
-    <button type="button" class="theme-btn" data-theme="yellow">イエロー</button>
-  </div>
+ <!-- テーマカラー選択（丸アイコン式） -->
+<div id="themeSelector" class="theme-icons">
+  <div class="theme-circle" data-theme="green"  style="background:#43a047;"></div>
+  <div class="theme-circle" data-theme="blue"   style="background:#1e88e5;"></div>
+  <div class="theme-circle" data-theme="red"    style="background:#e53935;"></div>
+  <div class="theme-circle" data-theme="yellow" style="background:#f9a825;"></div>
+  <div class="theme-circle" data-theme="gray"   style="background:#757575;"></div>
+  <div class="theme-circle" data-theme="purple" style="background:#8e24aa;"></div>
+</div>
 
   <hr style="margin: 12px 0;">
   <button id="toCancelButton">あなたの予約／キャンセル</button>
@@ -1404,11 +1523,12 @@ async function sendMailForReservation({ to, dateText, timeText, roomText, roomSa
 // ★★★ 追記ここまで ★★★
 
 // ===== テーマカラー関連（ユーザーごとに保存） =====
+
 function markThemeButton(theme) {
-  const buttons = document.querySelectorAll("#themeSelector .theme-btn");
-  buttons.forEach(btn => {
-    const isActive = btn.dataset.theme === theme;
-    btn.classList.toggle("is-active", isActive);
+  const circles = document.querySelectorAll("#themeSelector .theme-circle");
+  circles.forEach(c => {
+    const active = c.dataset.theme === theme;
+    c.classList.toggle("is-active", active);
   });
 }
 
@@ -1446,7 +1566,7 @@ async function saveThemeForUser(theme) {
 // 実際に class を付け替える
 function applyTheme(theme) {
   const body = document.body;
-  const themes = ["green", "blue", "red", "yellow"];
+ const themes = ["green", "blue", "red", "yellow", "gray", "purple"];
   if (!themes.includes(theme)) theme = "green";
 
   themes.forEach(t => body.classList.remove(`theme-${t}`));
@@ -1841,7 +1961,7 @@ function fastOn(el, handler) {
 
 // テーマボタンのイベント設定
 function setupThemeButtons() {
-  const buttons = document.querySelectorAll("#themeSelector .theme-btn");
+ const buttons = document.querySelectorAll("#themeSelector .theme-circle");
   if (!buttons.length) return;
 
   buttons.forEach(btn => {

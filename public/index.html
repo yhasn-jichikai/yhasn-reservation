@@ -551,12 +551,12 @@ p {
   h1 { font-size: 22px; }
 }
 
-/* スマホ縦画面想定（横幅 ～600px）：横長テーブル前提で調整 */
+/* スマホ縦画面想定（横幅 ～600px）：横長テーブル前提で全体をコンパクトに */
 @media (max-width: 600px) {
-  /* 全体の文字と余白を一段小さく */
+  /* 全体の文字と余白をさらに一段小さく（ほぼ 0.8倍イメージ） */
   body {
-    font-size: 11px;
-    padding: 8px;
+    font-size: 10px;
+    padding: 6px;
   }
 
   .container {
@@ -566,18 +566,18 @@ p {
   }
 
   h1 {
-    font-size: 16px;
+    font-size: 15px;
     margin: 6px 0 4px;
   }
   label,
   p {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   /* ボタンもひと回り小さく */
   button {
-    font-size: 10px;
-    padding: 5px 9px;
+    font-size: 9px;
+    padding: 4px 7px;
     border-radius: 4px;
   }
 
@@ -598,7 +598,7 @@ p {
   }
   #topButtons button {
     padding: 3px 6px;
-    font-size: 9px;
+    font-size: 8px;
     margin-left: 4px;
   }
 
@@ -609,11 +609,11 @@ p {
   }
   #nextDayBtn,
   #prevDayBtn {
-    font-size: 9px;
-    padding: 3px 6px;
+    font-size: 8px;
+    padding: 3px 5px;
   }
   #selectedDateDisplay {
-    font-size: 14px;
+    font-size: 13px;
     padding: 2px 4px;
   }
 
@@ -626,59 +626,59 @@ p {
     -webkit-overflow-scrolling: touch;
   }
 
-   /* 演習室・交流室テーブルはかなり細めに（横幅をキュッと） */
+  /* 演習室・交流室テーブルはかなり細めに（横幅をキュッと） */
   #scheduleTableRooms table {
     width: auto;          /* 画面幅に合わせず、中身ベースの幅 */
-    min-width: 650px;     /* 以前の 1100px から大幅に縮小 */
+    min-width: 650px;     /* PC・iPadより細く */
     margin: 6px auto;
   }
 
   /* ベッドテーブルは少しだけ細く（スクロール前提） */
   #scheduleTableBeds table {
     width: auto;
-    min-width: 900px;     /* 1100px → 900px に縮小 */
+    min-width: 900px;
     margin: 6px auto;
   }
 
-  /* 文字は少し小さめ＋ノーラップ＋高さ固定気味 */
+  /* 文字はひと回り小さめ＋ノーラップ＋高さ固定気味 */
   #scheduleTableRooms th,
   #scheduleTableBeds th,
   #scheduleTableRooms td,
   #scheduleTableBeds td {
-    font-size: 11px;
-    padding: 4px 6px;
-    height: 32px;         /* 行の高さのベースを固定 */
+    font-size: 10px;
+    padding: 3px 5px;
+    height: 28px;         /* 行の高さのベースを少し下げる */
     white-space: nowrap;  /* 自動改行を止める（<br> だけで改行） */
     line-height: 1.2;
   }
 
   #scheduleTableRooms tbody th,
   #scheduleTableBeds tbody th {
-    font-size: 11px;
+    font-size: 10px;
   }
 
-/* ==== 演習室・交流室（Rooms）列幅縮小：全列 70% ==== */
-#scheduleTableRooms th:first-child,
-#scheduleTableRooms tbody th:first-child {
-  min-width: 70px;    /* 時間帯：元90px → 70へ縮小 */
-}
-#scheduleTableRooms th:not(:first-child),
-#scheduleTableRooms td:not(:first-child) {
-  min-width: 56px;    /* 他の列：元80px → 70% の 56 へ縮小 */
-}
+  /* ==== 演習室・交流室（Rooms）列幅縮小：全列 70% ==== */
+  #scheduleTableRooms th:first-child,
+  #scheduleTableRooms tbody th:first-child {
+    min-width: 70px;    /* 時間帯：元90px → 70へ縮小 */
+  }
+  #scheduleTableRooms th:not(:first-child),
+  #scheduleTableRooms td:not(:first-child) {
+    min-width: 56px;    /* 他の列：元80px → 70% の 56 へ縮小 */
+  }
 
-/* ==== ベッド（Beds）列幅調整 ==== */
-/* 左端（時間帯）列 → 約90% */
-#scheduleTableBeds th:first-child,
-#scheduleTableBeds tbody th:first-child {
-  min-width: 72px;    /* 80px → 90% の 72px */
-}
+  /* ==== ベッド（Beds）列幅調整 ==== */
+  /* 左端（時間帯）列 → 約90% */
+  #scheduleTableBeds th:first-child,
+  #scheduleTableBeds tbody th:first-child {
+    min-width: 72px;    /* 80px → 90% の 72px */
+  }
 
-/* その他ベッド列 → 約80% */
-#scheduleTableBeds th:not(:first-child),
-#scheduleTableBeds td:not(:first-child) {
-  min-width: 64px;    /* 80px → 80% の 64px */
-}
+  /* その他ベッド列 → 約80% */
+  #scheduleTableBeds th:not(:first-child),
+  #scheduleTableBeds td:not(:first-child) {
+    min-width: 64px;    /* 80px → 80% の 64px */
+  }
 
   /* 画像はスマホ幅に合わせる */
   .image-section {
@@ -710,14 +710,6 @@ p {
   }
 }
 
-/* === スマホでは .container 全体を 0.8倍に縮小して、見た目だけコンパクトにする === */
-@media (max-width: 600px) {
-  .container {
-    transform: scale(0.8);
-    transform-origin: top center; /* 上中央を基準に縮小 */
-    width: 125%;                  /* 縮小でできる左右の余白を打ち消す調整 */
-  }
-}
 
 
   </style>

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約＠＠</title>
+  <title>YHASN施設予約^^</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -112,17 +112,19 @@ button {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
 #scheduleTableRooms table,
 #scheduleTableBeds table {
   width: 96%;
-  max-width: 900px;            /* 表そのものの最大幅をさらに抑える */
+  max-width: 900px;
   margin: 10px auto;
   border-collapse: separate;
   border-spacing: 0;
   background: #fff;
   border: 1px solid #a5d6a7;
-  border-radius: 6px;
-  overflow: hidden;
+  border-radius: 6px;   /* 角丸はそのまま */
+  position: relative;   /* sticky の基準を安定させる */
+  /* overflow: hidden;  ← sticky が効かなくなるので使わない */
 }
 
 /* ヘッダ（時間帯・部屋名） */

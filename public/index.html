@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約~~</title>
+  <title>YHASN施設予約</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1180,16 +1180,23 @@ function getNextValidDate(date, step) {
   }
 }
 
-  function loadSchedule(date) {
+function loadSchedule(date) {
   selectedDate = date;
   document.getElementById("selectedDateDisplay").textContent = formatDisplayDate(date);
   if (datePicker) {
     datePicker.setDate(date);
   }
 
-    // 「前の日」ボタンの表示制御
-    const today = formatDate(new Date());
-    document.getElementById("prevDayBtn").style.display = (date === today) ? "none" : "inline-block";
+  // 「前の日」ボタンの表示制御
+  const today = formatDate(new Date());
+  const prevBtn = document.getElementById("prevDayBtn");
+  if (prevBtn) {
+    const isToday = (date === today);
+
+    // ✨ 当日は「見えないけど幅は残す」→ 日付はど真ん中のまま
+    prevBtn.style.visibility = isToday ? "hidden" : "visible";
+    prevBtn.disabled = isToday; // 念のためクリックも無効化
+  }
 
    const loading = document.getElementById("loading");
 document.getElementById("scheduleTableRooms").innerHTML = "";

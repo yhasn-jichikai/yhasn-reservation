@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約</title>
+  <title>YHASN施設予約(´･ω･`)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -514,87 +514,124 @@ p {
   h1 { font-size: 22px; }
 }
 
-/* スマホ縦画面想定（横幅 ～600px）でしっかり縮小 */
+/* スマホ縦画面想定（横幅 ～600px）：横長テーブル前提で調整 */
 @media (max-width: 600px) {
+  /* 全体の文字と余白を一段小さく */
   body {
-    font-size: 12px;
-    padding: 10px;
+    font-size: 11px;
+    padding: 8px;
   }
 
   .container {
     max-width: 100%;
+    width: 100%;
     margin: 0 auto;
   }
 
   h1 {
-    font-size: 18px;
-    margin: 8px 0 4px;
+    font-size: 16px;
+    margin: 6px 0 4px;
   }
   label,
   p {
-    font-size: 12px;
+    font-size: 11px;
   }
 
-  /* ボタンも小さめに */
+  /* ボタンもひと回り小さく */
   button {
-    font-size: 11px;
-    padding: 6px 10px;
+    font-size: 10px;
+    padding: 5px 9px;
     border-radius: 4px;
   }
 
-  /* ハンバーガーとサイドメニューを少しコンパクトに */
+  /* ハンバーガーとサイドメニュー */
   #menuButton {
-    top: 10px;
-    left: 10px;
+    top: 8px;
+    left: 8px;
   }
   #sideMenu {
     width: 72vw;
-    padding: 16px;
+    padding: 12px;
   }
 
-  /* 画面右上のボタンも縮小 */
+  /* 右上ボタン */
   #topButtons {
-    top: 10px;
-    right: 10px;
+    top: 8px;
+    right: 8px;
   }
   #topButtons button {
-    padding: 4px 8px;
-    font-size: 10px;
-    margin-left: 6px;
+    padding: 3px 6px;
+    font-size: 9px;
+    margin-left: 4px;
   }
 
-  /* 日付操作まわりもぎゅっと */
+  /* 日付操作まわり */
   #dateControls {
-    gap: 6px;
-    margin-bottom: 8px;
+    gap: 4px;
+    margin-bottom: 6px;
   }
   #nextDayBtn,
   #prevDayBtn {
-    font-size: 10px;
-    padding: 4px 8px;
+    font-size: 9px;
+    padding: 3px 6px;
   }
   #selectedDateDisplay {
-    font-size: 12px;
+    font-size: 14px;
     padding: 2px 4px;
   }
 
-  /* テーブルの文字・セルサイズを縮小 */
+  /* ==== テーブルを「横長前提＋ノーラップ」で固定気味に ==== */
+
+  /* テーブル全体は横スクロールさせる */
+  #scheduleTableRooms,
+  #scheduleTableBeds {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #scheduleTableRooms table,
+  #scheduleTableBeds table {
+    width: auto;          /* 画面幅に合わせず、中身ベースの幅 */
+    min-width: 1100px;    /* iPadで見ていたときくらいの横長感 */
+    margin: 6px auto;
+  }
+
+  /* 文字は少し小さめ＋ノーラップ＋高さ固定気味 */
   #scheduleTableRooms th,
   #scheduleTableBeds th,
   #scheduleTableRooms td,
   #scheduleTableBeds td {
-    font-size: 10px;
-    padding: 3px 3px;
-    height: 24px;
-  }
-  #scheduleTableRooms tbody th,
-  #scheduleTableBeds tbody th {
-    font-size: 10px;
+    font-size: 11px;
+    padding: 4px 6px;
+    height: 32px;         /* 行の高さのベースを固定 */
+    white-space: nowrap;  /* 自動改行を止める（<br> だけで改行） */
+    line-height: 1.2;
   }
 
-  /* 画像は横幅いっぱいに近い感じで */
+  #scheduleTableRooms tbody th,
+  #scheduleTableBeds tbody th {
+    font-size: 11px;
+  }
+
+  /* 「時間帯」列は少し広め：09:00-10:40＋(１限) を2行で収めるイメージ */
+  #scheduleTableRooms th:first-child,
+  #scheduleTableBeds th:first-child,
+  #scheduleTableRooms tbody th:first-child,
+  #scheduleTableBeds tbody th:first-child {
+    min-width: 90px;
+  }
+
+  /* 教室・ベッド側の列もある程度幅を確保 */
+  #scheduleTableRooms th:not(:first-child),
+  #scheduleTableBeds th:not(:first-child),
+  #scheduleTableRooms td,
+  #scheduleTableBeds td {
+    min-width: 80px;
+  }
+
+  /* 画像はスマホ幅に合わせる */
   .image-section {
-    margin-top: 16px;
+    margin-top: 14px;
   }
   .image-section img {
     width: 100%;
@@ -602,10 +639,10 @@ p {
     margin: 10px auto;
   }
 
-  /* 横スクロールを極力抑える */
+  /* 横スクロールは許可（歓迎） */
   html,
   body {
-    overflow-x: hidden;
+    overflow-x: auto;
   }
 }
 

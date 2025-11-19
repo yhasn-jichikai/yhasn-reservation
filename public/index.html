@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約^^</title>
+  <title>YHASN施設予約~~</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -470,17 +470,28 @@ td.available::after {
 td.available.tap-active {
   transform: scale(0.985);
 }
-/* 選択状態は色＋うっすら内側シャドウで“留まる”強調 */
+
+/* === セル選択時（濃いめ＆立体感UP） === */
 td.available.selected {
-  background-color: #e8f5e9 !important;
+  background-color: #d0e8d2 !important;  /* ← 元より少し濃い緑 */
   box-shadow:
-    0 0 0 2px rgba(67,160,71,.25) inset,
-    0 2px 8px rgba(0,0,0,.05);
+    0 0 0 3px rgba(67,160,71,0.35) inset,  /* 枠線強め */
+    0 2px 10px rgba(0,0,0,0.08),            /* 外側の影少し強め */
+    inset 0 0 18px rgba(46,125,50,0.18);    /* 内部ほわっと光 */
+  transition: background-color 150ms ease,
+              box-shadow 200ms ease;
 }
+
 td.available.selected::after {
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1.03);  /* ちょっとだけ膨らむ → “押した感＋選択中” */
+  background: radial-gradient(
+    closest-side,
+    rgba(67,160,71,0.28),   /* ← 中央の輝きグラデを濃く */
+    transparent 75%
+  );
 }
+
 /* 未クリック可能時 */
 td.available:not(.clickable) {
   cursor: not-allowed;

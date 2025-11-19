@@ -506,13 +506,25 @@ button, .tab-button { touch-action: manipulation; }
       messagingSenderId: "406712332925",
       appId: "1:406712332925:web:fb9253a313e4c76cfcb714"
     };
-    // Firebase初期化
+// Firebase初期化
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 // ==== ここから追記（db の直後） ====
 // index.html と同じ Web アプリ URL とシークレットを使う
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwBztqWNBpozNAL9S10_K44z4T5l8vIv7a7s3SyjI1W7zZhvdhLfaZVeLNVSBvcxIQ06A/exec';
 const SHARED_SECRET = 'yhasn_2025jichikai_reservation_sending-email';
+
+/**
+ * 学生メールアドレスかどうか判定する
+ * ルール：@ の直前が 6 桁の数字だけなら「学生」とみなす
+ * 例）"211234@yhasn.ed.jp" → true
+ *     "teacher.tanaka@yhasn.ed.jp" → false
+ */
+function isStudentEmail(email) {
+  if (!email) return false;
+  const local = (email.split('@')[0] || '').trim();
+  return /^\d{6}$/.test(local);
+}
 
 // 管理者キャンセル通知メール（予約者へ）
 async function sendMailAdminCancel({ to, dateText, timeText, roomText, studentId, studentName, grade }) {
@@ -1040,7 +1052,7 @@ updatePrevButtonVisibility(currentDate);
   document.getElementById("prevDayBtn").style.display = isBeforeOrSame ? "none" : "inline-block";
 }
 }
-   // ▼ 一括キャンセル処理（メール送信対応版）
+// ▼ 一括キャンセル処理（メール送信対応版）
 document.getElementById("cancelSelectedBtn").addEventListener("click", async () => {
   const checked = document.querySelectorAll(".multi-cancel-checkbox:checked");
   if (checked.length === 0) {
@@ -1048,7 +1060,11 @@ document.getElementById("cancelSelectedBtn").addEventListener("click", async () 
     return;
   }
 
-  if (!confirm(`${checked.length}件の予約を一括キャンセルしますか？\n（各予約者にキャンセルメールが送信されます）`)) return;
+  // メールについて一言説明を変更（学生予約のみメール送信）
+  if (!confirm(
+    `${checked.length}件の予約を一括キャンセルしますか？\n` +
+    `（学生の予約に対してのみキャンセルメールが送信されます）`
+  )) return;
 
   let successCount = 0;
   let errorCount = 0;
@@ -1057,18 +1073,27 @@ document.getElementById("cancelSelectedBtn").addEventListener("click", async () 
     const id = cb.dataset.id;
     try {
       const snap = await db.collection("reservations").doc(id).get();
-      if (!snap.exists) { errorCount++; continue; }
+      if (!snap.exists) {
+        errorCount++;
+        continue;
+      }
       const d = snap.data();
 
-      await sendMailAdminCancel({
-        to: d.email,
-        dateText: d.date,
-        timeText: d.time,
-        roomText: formatRoomName(d.room),
-        studentId: d.studentId || '',
-        studentName: d.name || '',
-        grade: d.grade || ''
-      });
+      const to = d.email || '';
+      const roomText = formatRoomName(d.room);
+
+      // ★ 学生アドレスの場合のみメール送信（教員アドレスはメールなしで削除のみ）
+      if (isStudentEmail(to)) {
+        await sendMailAdminCancel({
+          to,
+          dateText: d.date,
+          timeText: d.time,
+          roomText,
+          studentId: d.studentId || '',
+          studentName: d.name || '',
+          grade: d.grade || ''
+        });
+      }
 
       await db.collection("reservations").doc(id).delete();
       successCount++;
@@ -1201,19 +1226,30 @@ async function cancelSingle(id) {
 
     if (!confirm(msg)) return;
 
-    // 先にメール送信（失敗してもキャンセル自体は進める設計）
-    await sendMailAdminCancel({
-      to: d.email,
-      dateText: d.date,
-      timeText: d.time,
-      roomText,
-      studentId: d.studentId || '',
-      studentName: d.name || '',
-      grade: d.grade || ''
-    });
+    const to = d.email || '';
+    const isStudent = isStudentEmail(to);
+
+    // ★ 学生アドレスに対してのみメール送信
+    if (isStudent) {
+      await sendMailAdminCancel({
+        to,
+        dateText: d.date,
+        timeText: d.time,
+        roomText,
+        studentId: d.studentId || '',
+        studentName: d.name || '',
+        grade: d.grade || ''
+      });
+    }
 
     await db.collection("reservations").doc(id).delete();
-    alert("キャンセルしました（予約者へ通知メール送信）");
+
+    if (isStudent) {
+      alert("キャンセルしました（学生へ通知メール送信）");
+    } else {
+      alert("キャンセルしました（教員予約のためメール送信なし）");
+    }
+
     currentPage = 0;
     loadReservations();
   } catch (e) {

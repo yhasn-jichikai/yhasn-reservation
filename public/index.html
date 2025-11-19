@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約'ω'</title>
+  <title>YHASN施設予約uuu
+  </title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -158,6 +159,26 @@ button {
   height: 32px;                /* デフォ目安を少し低めに */
   vertical-align: middle;
   font-size: 13px;             /* 文字もやや小さめ */
+}
+
+/* === 左端の「時間帯」列を横スクロール時も固定表示にする === */
+
+/* 演習室・交流室テーブルの左端列（ヘッダ＋各行） */
+#scheduleTableRooms table thead th:first-child,
+#scheduleTableRooms table tbody th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;                /* 他のセルより前面に */
+  background-color: #e7ffe9; /* 既存の時間帯セルと同じ色で塗り直し */
+}
+
+/* ベッドテーブルの左端列（ヘッダ＋各行） */
+#scheduleTableBeds table thead th:first-child,
+#scheduleTableBeds table tbody th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background-color: #e7ffe9; /* こちらも時間帯列の淡い緑で統一 */
 }
 
 /* 予約済みセル */

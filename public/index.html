@@ -724,11 +724,185 @@ p {
 }
 
 
+/* === テーマカラー切り替え ===================================== */
+
+/* テーマ全体にふわっと背景色が変わる感じのアニメーション */
+body.theme-green,
+body.theme-blue,
+body.theme-red,
+body.theme-yellow {
+  transition: background-color 0.25s ease;
+}
+
+/* ===== GREEN（デフォルト：今の配色） ===== */
+body.theme-green { background-color: #e8f5e9; }
+body.theme-green h1 { color: #43a047; }
+
+body.theme-green #scheduleTableRooms th,
+body.theme-green #scheduleTableBeds th {
+  background-color: #a5d6a7;
+}
+
+body.theme-green button {
+  background-color: #66bb6a;
+}
+body.theme-green button:hover {
+  background-color: #4caf50;
+}
+
+body.theme-green #sideMenu {
+  background-color: #3b8b3d;
+}
+body.theme-green #sideMenu hr {
+  background-color: #66bb6a;
+}
+
+body.theme-green #topRightLinks a {
+  background-color: #43a047;
+}
+body.theme-green #topRightLinks a:hover {
+  background-color: #2e7d32;
+}
+
+body.theme-green #noticeArea h2,
+body.theme-green #completeSection h2 {
+  color: #2e7d32;
+}
+
+/* ===== BLUE ===== */
+body.theme-blue { background-color: #e3f2fd; }
+body.theme-blue h1 { color: #1e88e5; }
+
+body.theme-blue #scheduleTableRooms th,
+body.theme-blue #scheduleTableBeds th {
+  background-color: #90caf9;
+}
+
+body.theme-blue button {
+  background-color: #42a5f5;
+}
+body.theme-blue button:hover {
+  background-color: #1e88e5;
+}
+
+body.theme-blue #sideMenu {
+  background-color: #1565c0;
+}
+body.theme-blue #sideMenu hr {
+  background-color: #64b5f6;
+}
+
+body.theme-blue #topRightLinks a {
+  background-color: #1e88e5;
+}
+body.theme-blue #topRightLinks a:hover {
+  background-color: #1565c0;
+}
+
+body.theme-blue #noticeArea h2,
+body.theme-blue #completeSection h2 {
+  color: #1565c0;
+}
+
+/* ===== RED ===== */
+body.theme-red { background-color: #ffebee; }
+body.theme-red h1 { color: #e53935; }
+
+body.theme-red #scheduleTableRooms th,
+body.theme-red #scheduleTableBeds th {
+  background-color: #ef9a9a;
+}
+
+body.theme-red button {
+  background-color: #e57373;
+}
+body.theme-red button:hover {
+  background-color: #e53935;
+}
+
+body.theme-red #sideMenu {
+  background-color: #b71c1c;
+}
+body.theme-red #sideMenu hr {
+  background-color: #ef9a9a;
+}
+
+body.theme-red #topRightLinks a {
+  background-color: #e53935;
+}
+body.theme-red #topRightLinks a:hover {
+  background-color: #b71c1c;
+}
+
+body.theme-red #noticeArea h2,
+body.theme-red #completeSection h2 {
+  color: #b71c1c;
+}
+
+/* ===== YELLOW ===== */
+body.theme-yellow { background-color: #fffde7; }
+body.theme-yellow h1 { color: #f9a825; }
+
+body.theme-yellow #scheduleTableRooms th,
+body.theme-yellow #scheduleTableBeds th {
+  background-color: #ffe082;
+}
+
+body.theme-yellow button {
+  background-color: #ffd54f;
+}
+body.theme-yellow button:hover {
+  background-color: #fbc02d;
+}
+
+body.theme-yellow #sideMenu {
+  background-color: #f9a825;
+}
+body.theme-yellow #sideMenu hr {
+  background-color: #ffe082;
+}
+
+body.theme-yellow #topRightLinks a {
+  background-color: #f9a825;
+}
+body.theme-yellow #topRightLinks a:hover {
+  background-color: #f57f17;
+}
+
+body.theme-yellow #noticeArea h2,
+body.theme-yellow #completeSection h2 {
+  color: #f57f17;
+}
+
+/* テーマ選択ボタンの見た目（サイドメニュー内） */
+#themeSelector {
+  margin: 8px 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+#themeSelector .theme-btn {
+  flex: 1 1 48%;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+#themeSelector .theme-btn.is-active {
+  outline: 2px solid #fff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.7);
+}
+
+@media (max-width: 480px) {
+  #themeSelector .theme-btn {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+}
+
 
   </style>
 </head>
 
-<body>
+<body class="theme-green">
 
 <!-- ハンバーガーメニューのボタン -->
 <div id="menuButton">
@@ -750,8 +924,18 @@ p {
   </div>
 
 
-  <div id="displayName" style="font-size: 16px;"></div>
+   <div id="displayName" style="font-size: 16px;"></div>
   <div id="displayEmail" style="font-size: 12px;"></div>
+
+  <!-- テーマカラー選択 -->
+  <div style="margin-top: 12px; font-size: 13px; font-weight: bold;">テーマカラー</div>
+  <div id="themeSelector">
+    <button type="button" class="theme-btn" data-theme="green">グリーン</button>
+    <button type="button" class="theme-btn" data-theme="blue">ブルー</button>
+    <button type="button" class="theme-btn" data-theme="red">レッド</button>
+    <button type="button" class="theme-btn" data-theme="yellow">イエロー</button>
+  </div>
+
   <hr style="margin: 12px 0;">
   <button id="toCancelButton">あなたの予約／キャンセル</button>
 <button id="sideLoginButton" style="display: none;">ログイン</button>
@@ -1030,13 +1214,67 @@ async function sendMailForReservation({ to, dateText, timeText, roomText, roomSa
     console.warn('メール送信に失敗(ネットワーク)', e);
   }
 }
+
 // ★★★ 追記ここまで ★★★
+
+// ===== テーマカラー関連（ユーザーごとに保存） =====
+function markThemeButton(theme) {
+  const buttons = document.querySelectorAll("#themeSelector .theme-btn");
+  buttons.forEach(btn => {
+    const isActive = btn.dataset.theme === theme;
+    btn.classList.toggle("is-active", isActive);
+  });
+}
+
+// ユーザーごとのテーマ読み込み
+async function loadThemeForUser(user) {
+  try {
+    if (!user) {
+      // 未ログイン時はデフォルト（グリーン）
+      applyTheme("green");
+      return;
+    }
+    const snap = await db.collection("userSettings").doc(user.uid).get();
+    const theme = snap.exists && snap.data().theme ? snap.data().theme : "green";
+    applyTheme(theme);
+  } catch (e) {
+    console.warn("テーマ読み込みに失敗", e);
+    applyTheme("green");
+  }
+}
+
+// ユーザーごとのテーマ保存
+async function saveThemeForUser(theme) {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  try {
+    await db.collection("userSettings").doc(user.uid).set(
+      { theme },
+      { merge: true }
+    );
+  } catch (e) {
+    console.warn("テーマ保存に失敗", e);
+  }
+}
+
+// 実際に class を付け替える
+function applyTheme(theme) {
+  const body = document.body;
+  const themes = ["green", "blue", "red", "yellow"];
+  if (!themes.includes(theme)) theme = "green";
+
+  themes.forEach(t => body.classList.remove(`theme-${t}`));
+  body.classList.add(`theme-${theme}`);
+  markThemeButton(theme);
+}
 
 
   let currentUser = null;
 
 firebase.auth().onAuthStateChanged(user => {
   currentUser = user;
+  // ログインユーザーごとのテーマを反映
+  loadThemeForUser(user);
 
   const nameDiv   = document.getElementById("menuUserName");
   const emailDiv  = document.getElementById("menuUserEmail");
@@ -1397,7 +1635,7 @@ const menuOverlay = document.getElementById("menuOverlay");
      
 
 
-    // 共通：即時タップ＆キーボード対応ユーティリティ
+   // 共通：即時タップ＆キーボード対応ユーティリティ
 function fastOn(el, handler) {
   // pointerup で即時発火（モバイルの click 遅延回避）
   el.addEventListener("pointerup", (ev) => {
@@ -1414,6 +1652,21 @@ function fastOn(el, handler) {
     }
   });
 }
+
+// テーマボタンのイベント設定
+function setupThemeButtons() {
+  const buttons = document.querySelectorAll("#themeSelector .theme-btn");
+  if (!buttons.length) return;
+
+  buttons.forEach(btn => {
+    const theme = btn.dataset.theme;
+    fastOn(btn, () => {
+      applyTheme(theme);
+      saveThemeForUser(theme);
+    });
+  });
+}
+setupThemeButtons();
 
 // ---- 「前の日」「次の日」 ----
 fastOn(document.getElementById("prevDayBtn"), () => {

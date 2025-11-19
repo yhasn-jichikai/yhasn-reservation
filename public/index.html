@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約･:*+.\(( °ω° ))/.:+</title>
+  <title>YHASN施設予約</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -659,6 +659,24 @@ p {
     overflow-x: auto;
   }
 }
+
+/* === スマホでは全体を 0.8倍 に縮小して、比率を保ったまま小さくする === */
+@media (max-width: 600px) {
+  .container {
+    transform: scale(0.80);
+    transform-origin: top center; /* 上中央を基準に縮小 */
+    width: 125%;  /* 縮小による余白を打ち消す調整 */
+  }
+
+  /* メニュー・ハンバーガーの位置を微調整 */
+  #menuButton {
+    transform: scale(1.0); /* メニューは縮小しない */
+  }
+  #sideMenu {
+    transform: scale(1); /* サイドメニューも縮小しない */
+  }
+}
+
 
 /* さらに小さい端末（～375px）ならもう一段階だけ文字を少し小さく */
 @media (max-width: 375px) {

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約🩵</title>
+  <title>YHASN施設予約</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -144,7 +144,6 @@ button {
 #scheduleTableBeds tbody th {
   white-space: normal;
   color: #333;
-  background-color: #e7ffe9;
   font-weight: 700;
   padding: 6px 8px;
   font-size: 13px;
@@ -170,7 +169,6 @@ button {
   position: sticky;
   left: 0;
   z-index: 3;                /* 他のセルより前面に */
-  background-color: #e7ffe9; /* 既存の時間帯セルと同じ色で塗り直し */
 }
 
 /* === sticky列に影をつけてスクロール時の段差を明確にする === */
@@ -183,12 +181,6 @@ button {
   z-index: 5;                              /* 他と重ならないよう強め */
 }
 
-/* === 左上セル「時間帯」だけ濃い緑に変更（他ヘッダと同じ色） === */
-#scheduleTableRooms table thead th:first-child,
-#scheduleTableBeds table thead th:first-child {
-  background-color: #a5d6a7 !important;
-  color: #fff;
-}
 
 /* ベッドテーブルの左端列（ヘッダ＋各行） */
 #scheduleTableBeds table thead th:first-child,
@@ -196,7 +188,6 @@ button {
   position: sticky;
   left: 0;
   z-index: 3;
-  background-color: #e7ffe9; /* こちらも時間帯列の淡い緑で統一 */
 }
 
 /* 予約済みセル */
@@ -379,7 +370,7 @@ td.disabled {
 #sideMenu.visible {
   transform: translateX(0);
 }
-#sideMenu button {
+ #sideMenu button {
   width: 100%;
   margin-bottom: 10px;
   background-color: white;
@@ -390,6 +381,7 @@ td.disabled {
   border-radius: 4px;
   cursor: pointer;
 }
+
 #sideMenu hr {
   border: 0;
   height: 1px;
@@ -471,25 +463,61 @@ td.available.tap-active {
   transform: scale(0.985);
 }
 
-/* === セル選択時（濃いめ＆立体感UP） === */
-td.available.selected {
-  background-color: #d0e8d2 !important;  /* ← 元より少し濃い緑 */
+/* === セル選択時（テーマ別カラー） === */
+body.theme-green td.available.selected {
+  background-color: #d0e8d2 !important;
   box-shadow:
-    0 0 0 3px rgba(67,160,71,0.35) inset,  /* 枠線強め */
-    0 2px 10px rgba(0,0,0,0.08),            /* 外側の影少し強め */
-    inset 0 0 18px rgba(46,125,50,0.18);    /* 内部ほわっと光 */
-  transition: background-color 150ms ease,
-              box-shadow 200ms ease;
+    0 0 0 3px rgba(67,160,71,0.35) inset,
+    0 2px 10px rgba(0,0,0,0.08),
+    inset 0 0 18px rgba(46,125,50,0.18);
+  transition: background-color 150ms ease, box-shadow 200ms ease;
+}
+body.theme-green td.available.selected::after {
+  opacity: 1;
+  transform: scale(1.03);
+  background: radial-gradient(closest-side, rgba(67,160,71,0.28), transparent 75%);
 }
 
-td.available.selected::after {
+body.theme-blue td.available.selected {
+  background-color: #d7e9ff !important;
+  box-shadow:
+    0 0 0 3px rgba(30,136,229,0.35) inset,
+    0 2px 10px rgba(0,0,0,0.08),
+    inset 0 0 18px rgba(21,101,192,0.18);
+  transition: background-color 150ms ease, box-shadow 200ms ease;
+}
+body.theme-blue td.available.selected::after {
   opacity: 1;
-  transform: scale(1.03);  /* ちょっとだけ膨らむ → “押した感＋選択中” */
-  background: radial-gradient(
-    closest-side,
-    rgba(67,160,71,0.28),   /* ← 中央の輝きグラデを濃く */
-    transparent 75%
-  );
+  transform: scale(1.03);
+  background: radial-gradient(closest-side, rgba(30,136,229,0.28), transparent 75%);
+}
+
+body.theme-red td.available.selected {
+  background-color: #ffd7d7 !important;
+  box-shadow:
+    0 0 0 3px rgba(229,57,53,0.35) inset,
+    0 2px 10px rgba(0,0,0,0.08),
+    inset 0 0 18px rgba(183,28,28,0.18);
+  transition: background-color 150ms ease, box-shadow 200ms ease;
+}
+body.theme-red td.available.selected::after {
+  opacity: 1;
+  transform: scale(1.03);
+  background: radial-gradient(closest-side, rgba(229,57,53,0.28), transparent 75%);
+}
+
+body.theme-yellow td.available.selected {
+  background-color: #fff3c8 !important;
+  box-shadow:
+    0 0 0 3px rgba(249,168,37,0.35) inset,
+    0 2px 10px rgba(0,0,0,0.08),
+    inset 0 0 18px rgba(245,127,23,0.18);
+  transition: background-color 150ms ease, box-shadow 200ms ease;
+}
+body.theme-yellow td.available.selected::after {
+  opacity: 1;
+  transform: scale(1.03);
+  background: radial-gradient(closest-side, rgba(249,168,37,0.28), transparent 75%);
 }
 
 /* 未クリック可能時 */
@@ -898,6 +926,94 @@ body.theme-yellow #completeSection h2 {
   }
 }
 
+/* お知らせ「更新」ボタンのベース */
+#noticeReloadBtn {
+  font-size: 13px;
+}
+
+/* テーマごとの更新ボタン色 */
+body.theme-green #noticeReloadBtn {
+  background-color: #43a047;
+  color: #fff;
+}
+body.theme-blue #noticeReloadBtn {
+  background-color: #1e88e5;
+  color: #fff;
+}
+body.theme-red #noticeReloadBtn {
+  background-color: #e53935;
+  color: #fff;
+}
+body.theme-yellow #noticeReloadBtn {
+  background-color: #f9a825;
+  color: #fff;
+}
+
+/* お知らせタイトル色（テーマ別） */
+body.theme-green .notice-title {
+  color: #1b5e20;
+}
+body.theme-blue .notice-title {
+  color: #0d47a1;
+}
+body.theme-red .notice-title {
+  color: #b71c1c;
+}
+body.theme-yellow .notice-title {
+  color: #f57f17;
+}
+
+/* サイドメニューボタンの文字色（テーマ別） */
+body.theme-green #sideMenu button {
+  color: #3b8b3d;
+}
+body.theme-blue #sideMenu button {
+  color: #1565c0;
+}
+body.theme-red #sideMenu button {
+  color: #b71c1c;
+}
+body.theme-yellow #sideMenu button {
+  color: #f57f17;
+}
+
+
+/* 左端列（時間帯）の背景色：テーマ別 */
+body.theme-green #scheduleTableRooms tbody th,
+body.theme-green #scheduleTableBeds tbody th,
+body.theme-green #scheduleTableRooms table thead th:first-child,
+body.theme-green #scheduleTableBeds table thead th:first-child,
+body.theme-green #scheduleTableRooms table tbody th:first-child,
+body.theme-green #scheduleTableBeds table tbody th:first-child {
+  background-color: #e7ffe9;
+}
+
+body.theme-blue #scheduleTableRooms tbody th,
+body.theme-blue #scheduleTableBeds tbody th,
+body.theme-blue #scheduleTableRooms table thead th:first-child,
+body.theme-blue #scheduleTableBeds table thead th:first-child,
+body.theme-blue #scheduleTableRooms table tbody th:first-child,
+body.theme-blue #scheduleTableBeds table tbody th:first-child {
+  background-color: #e3f2fd;
+}
+
+body.theme-red #scheduleTableRooms tbody th,
+body.theme-red #scheduleTableBeds tbody th,
+body.theme-red #scheduleTableRooms table thead th:first-child,
+body.theme-red #scheduleTableBeds table thead th:first-child,
+body.theme-red #scheduleTableRooms table tbody th:first-child,
+body.theme-red #scheduleTableBeds table tbody th:first-child {
+  background-color: #ffebee;
+}
+
+body.theme-yellow #scheduleTableRooms tbody th,
+body.theme-yellow #scheduleTableBeds tbody th,
+body.theme-yellow #scheduleTableRooms table thead th:first-child,
+body.theme-yellow #scheduleTableBeds table thead th:first-child,
+body.theme-yellow #scheduleTableRooms table tbody th:first-child,
+body.theme-yellow #scheduleTableBeds table tbody th:first-child {
+  background-color: #fffde7;
+}
 
   </style>
 </head>
@@ -951,8 +1067,8 @@ body.theme-yellow #completeSection h2 {
 <!-- ▼ 追記：お知らせ（掲示板表示） -->
 <section id="noticeArea" style="max-width:980px;margin:0 auto 16px;background:#ffffff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.06);">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #eee;">
-    <h2 style="margin:0;font-size:18px;color:#2e7d32;">お知らせ</h2>
-    <button id="noticeReloadBtn" style="border:none;background:#43a047;color:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;">更新</button>
+   <h2 style="margin:0;font-size:18px;">お知らせ</h2>
+   <button id="noticeReloadBtn" style="border:none;border-radius:999px;padding:6px 10px;cursor:pointer;">更新</button>
   </div>
   <div id="noticeListStudent" style="padding:10px 14px;">
     <div style="color:#777;">読み込み中…</div>
@@ -1121,12 +1237,12 @@ function renderNoticeItem(d){
   const dateStr = created
     ? `${created.getFullYear()}-${String(created.getMonth()+1).padStart(2,'0')}-${String(created.getDate()).padStart(2,'0')}`
     : '';
-  const pin = d.pinned ? '📌 ' : '';
+   const pin = d.pinned ? '📌 ' : '';
   const title = escapeHtml(d.title || '');
   const body  = d.body ? `<div style="white-space:pre-wrap;color:#333;margin-top:4px;">${escapeHtml(d.body)}</div>` : '';
   return `
     <article style="padding:10px 0;border-bottom:1px solid #eee;">
-      <div style="font-weight:700;color:#1b5e20;">${pin}${title}</div>
+      <div class="notice-title" style="font-weight:700;">${pin}${title}</div>
       ${body}
       <div style="font-size:12px;color:#777;margin-top:4px;">${dateStr}</div>
     </article>

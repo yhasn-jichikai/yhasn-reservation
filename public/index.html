@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約</title>
+  <title>YHASN施設予約&&&</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -290,12 +290,19 @@ td.disabled {
       color: red;
       margin-top: 10px;
     }
-    #loading {
-      text-align: center;
-      font-size: 24px;
-      color: #4caf50;
-      margin: 20px 0;
-    }
+   /* 読み込み中（テーマ別カラー） */
+#loading {
+  text-align: center;
+  font-size: 24px;
+  margin: 20px 0;
+  font-weight: bold;
+}
+
+body.theme-green #loading { color: #43a047; }
+body.theme-blue  #loading { color: #1e88e5; }
+body.theme-red   #loading { color: #e53935; }
+body.theme-yellow#loading { color: #f9a825; }
+
     /* モーダルスタイル */
 .modal {
   display: none;
@@ -981,8 +988,7 @@ body.theme-yellow #sideMenu button {
 /* 左端列（時間帯）の背景色：テーマ別 */
 body.theme-green #scheduleTableRooms tbody th,
 body.theme-green #scheduleTableBeds tbody th,
-body.theme-green #scheduleTableRooms table thead th:first-child,
-body.theme-green #scheduleTableBeds table thead th:first-child,
+
 body.theme-green #scheduleTableRooms table tbody th:first-child,
 body.theme-green #scheduleTableBeds table tbody th:first-child {
   background-color: #e7ffe9;
@@ -990,8 +996,7 @@ body.theme-green #scheduleTableBeds table tbody th:first-child {
 
 body.theme-blue #scheduleTableRooms tbody th,
 body.theme-blue #scheduleTableBeds tbody th,
-body.theme-blue #scheduleTableRooms table thead th:first-child,
-body.theme-blue #scheduleTableBeds table thead th:first-child,
+
 body.theme-blue #scheduleTableRooms table tbody th:first-child,
 body.theme-blue #scheduleTableBeds table tbody th:first-child {
   background-color: #e3f2fd;
@@ -999,8 +1004,7 @@ body.theme-blue #scheduleTableBeds table tbody th:first-child {
 
 body.theme-red #scheduleTableRooms tbody th,
 body.theme-red #scheduleTableBeds tbody th,
-body.theme-red #scheduleTableRooms table thead th:first-child,
-body.theme-red #scheduleTableBeds table thead th:first-child,
+
 body.theme-red #scheduleTableRooms table tbody th:first-child,
 body.theme-red #scheduleTableBeds table tbody th:first-child {
   background-color: #ffebee;
@@ -1008,11 +1012,35 @@ body.theme-red #scheduleTableBeds table tbody th:first-child {
 
 body.theme-yellow #scheduleTableRooms tbody th,
 body.theme-yellow #scheduleTableBeds tbody th,
-body.theme-yellow #scheduleTableRooms table thead th:first-child,
-body.theme-yellow #scheduleTableBeds table thead th:first-child,
+
 body.theme-yellow #scheduleTableRooms table tbody th:first-child,
 body.theme-yellow #scheduleTableBeds table tbody th:first-child {
   background-color: #fffde7;
+}
+
+/* 左上の「時間帯」セルは部屋名ヘッダと同じ濃い色 */
+body.theme-green  #scheduleTableRooms thead th:first-child,
+body.theme-green  #scheduleTableBeds  thead th:first-child {
+  background-color: #a5d6a7;
+  color: #fff;
+}
+
+body.theme-blue   #scheduleTableRooms thead th:first-child,
+body.theme-blue   #scheduleTableBeds  thead th:first-child {
+  background-color: #90caf9;
+  color: #fff;
+}
+
+body.theme-red    #scheduleTableRooms thead th:first-child,
+body.theme-red    #scheduleTableBeds  thead th:first-child {
+  background-color: #ef9a9a;
+  color: #fff;
+}
+
+body.theme-yellow #scheduleTableRooms thead th:first-child,
+body.theme-yellow #scheduleTableBeds  thead th:first-child {
+  background-color: #ffe082;
+  color: #fff;
 }
 
 /* テーブル外枠・セル枠線の色（テーマ別） */

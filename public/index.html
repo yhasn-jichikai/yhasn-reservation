@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約(´･ω･`)</title>
+  <title>YHASN施設予約🤩</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -613,21 +613,28 @@ p {
     font-size: 11px;
   }
 
-  /* 「時間帯」列は少し広め：09:00-10:40＋(１限) を2行で収めるイメージ */
-  #scheduleTableRooms th:first-child,
-  #scheduleTableBeds th:first-child,
-  #scheduleTableRooms tbody th:first-child,
-  #scheduleTableBeds tbody th:first-child {
-    min-width: 90px;
-  }
+/* ==== 演習室・交流室（Rooms）列幅縮小：全列 70% ==== */
+#scheduleTableRooms th:first-child,
+#scheduleTableRooms tbody th:first-child {
+  min-width: 70px;    /* 時間帯：元90px → 70へ縮小 */
+}
+#scheduleTableRooms th:not(:first-child),
+#scheduleTableRooms td:not(:first-child) {
+  min-width: 56px;    /* 他の列：元80px → 70% の 56 へ縮小 */
+}
 
-  /* 教室・ベッド側の列もある程度幅を確保 */
-  #scheduleTableRooms th:not(:first-child),
-  #scheduleTableBeds th:not(:first-child),
-  #scheduleTableRooms td,
-  #scheduleTableBeds td {
-    min-width: 80px;
-  }
+/* ==== ベッド（Beds）列幅調整 ==== */
+/* 左端（時間帯）列 → 約90% */
+#scheduleTableBeds th:first-child,
+#scheduleTableBeds tbody th:first-child {
+  min-width: 72px;    /* 80px → 90% の 72px */
+}
+
+/* その他ベッド列 → 約80% */
+#scheduleTableBeds th:not(:first-child),
+#scheduleTableBeds td:not(:first-child) {
+  min-width: 64px;    /* 80px → 80% の 64px */
+}
 
   /* 画像はスマホ幅に合わせる */
   .image-section {

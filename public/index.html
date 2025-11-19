@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約234567</title>
+  <title>YHASN施設予約＠</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1537,39 +1537,73 @@ async function sendMailForReservation({ to, dateText, timeText, roomText, roomSa
 
 // ★★★ 追記ここまで ★★★
 
-// ===== テーマカラー関連（ユーザーごとに保存） =====
+// ==== テーマのローカル保存（localStorage） ====
 
-function markThemeButton(theme) {
-  const circles = document.querySelectorAll("#themeSelector .theme-circle");
-  circles.forEach(c => {
-    const active = c.dataset.theme === theme;
-    c.classList.toggle("is-active", active);
-  });
+// ブラウザに保存してあるテーマを読む
+function loadThemeFromLocal() {
+  try {
+    const t = localStorage.getItem("yhasn_theme");
+    return t || null;
+  } catch (e) {
+    console.warn("ローカルテーマ読み込みに失敗", e);
+    return null;
+  }
 }
 
-
+// ブラウザにテーマを書き込む
+function saveThemeToLocal(theme) {
+  try {
+    localStorage.setItem("yhasn_theme", theme);
+  } catch (e) {
+    console.warn("ローカルテーマ保存に失敗", e);
+  }
+}
 
 // ユーザーごとのテーマ読み込み
 async function loadThemeForUser(user) {
   try {
+    const localTheme = loadThemeFromLocal();
+
+    // 未ログイン時：localStorage優先 → なければグリーン
     if (!user) {
-      // 未ログイン時はデフォルト（グリーン）
-      applyTheme("green");
+      if (localTheme) {
+        applyTheme(localTheme);
+      } else {
+        applyTheme("green");
+      }
       return;
     }
+
+    // ログイン時：Firestoreを見て、なければlocal→グリーン
     const snap = await db.collection("userSettings").doc(user.uid).get();
-    const theme = snap.exists && snap.data().theme ? snap.data().theme : "green";
+    let theme = "green";
+
+    if (snap.exists && snap.data().theme) {
+      theme = snap.data().theme;
+    } else if (localTheme) {
+      theme = localTheme;
+    }
+
     applyTheme(theme);
   } catch (e) {
     console.warn("テーマ読み込みに失敗", e);
-    applyTheme("green");
+    const localTheme = loadThemeFromLocal();
+    if (localTheme) {
+      applyTheme(localTheme);
+    } else {
+      applyTheme("green");
+    }
   }
 }
 
 // ユーザーごとのテーマ保存
 async function saveThemeForUser(theme) {
+  // まずローカルに保存 → Firestoreが失敗しても次回の再読み込みで反映される
+  saveThemeToLocal(theme);
+
   const user = firebase.auth().currentUser;
   if (!user) return;
+
   try {
     await db.collection("userSettings").doc(user.uid).set(
       { theme },
@@ -1586,8 +1620,14 @@ function applyTheme(theme) {
   const themes = ["green", "blue", "red", "yellow", "gray", "purple"];
   if (!themes.includes(theme)) theme = "green";
 
+  // 既存のテーマ class を全部外してから、新しいものだけ追加
   themes.forEach(t => body.classList.remove(`theme-${t}`));
   body.classList.add(`theme-${theme}`);
+
+  // ここで必ずローカルにも保存しておく
+  saveThemeToLocal(theme);
+
+  // サイドメニューのアイコン見た目更新（既存関数）
   markThemeButton(theme);
 }
 

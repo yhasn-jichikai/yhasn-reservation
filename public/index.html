@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YHASN施設予約🤩</title>
+  <title>YHASN施設予約･:*+.\(( °ω° ))/.:+</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -589,10 +589,17 @@ p {
     -webkit-overflow-scrolling: touch;
   }
 
-  #scheduleTableRooms table,
-  #scheduleTableBeds table {
+   /* 演習室・交流室テーブルはかなり細めに（横幅をキュッと） */
+  #scheduleTableRooms table {
     width: auto;          /* 画面幅に合わせず、中身ベースの幅 */
-    min-width: 1100px;    /* iPadで見ていたときくらいの横長感 */
+    min-width: 650px;     /* 以前の 1100px から大幅に縮小 */
+    margin: 6px auto;
+  }
+
+  /* ベッドテーブルは少しだけ細く（スクロール前提） */
+  #scheduleTableBeds table {
+    width: auto;
+    min-width: 900px;     /* 1100px → 900px に縮小 */
     margin: 6px auto;
   }
 

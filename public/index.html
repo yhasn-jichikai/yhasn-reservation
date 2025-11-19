@@ -121,9 +121,9 @@ button {
   border-collapse: separate;
   border-spacing: 0;
   background: #fff;
-  border: 1px solid #a5d6a7;
-  border-radius: 6px;   /* 角丸はそのまま */
-  position: relative;   /* sticky の基準を安定させる */
+  border: 1px solid #cccccc;   /* ← ベースはグレーに変更 */
+  border-radius: 6px;          /* 角丸はそのまま */
+  position: relative;          /* sticky の基準を安定させる */
   /* overflow: hidden;  ← sticky が効かなくなるので使わない */
 }
 
@@ -153,7 +153,7 @@ button {
 #scheduleTableRooms td,
 #scheduleTableBeds td {
   background-color: #fff;
-  border: 1px solid #81c784;
+  border: 1px solid #cccccc;   /* ← ここをニュートラルなグレーに */
   padding: 6px 8px;            /* 余白を小さめに */
   text-align: center;
   height: 32px;                /* デフォ目安を少し低めに */
@@ -1013,6 +1013,48 @@ body.theme-yellow #scheduleTableBeds table thead th:first-child,
 body.theme-yellow #scheduleTableRooms table tbody th:first-child,
 body.theme-yellow #scheduleTableBeds table tbody th:first-child {
   background-color: #fffde7;
+}
+
+/* テーブル外枠・セル枠線の色（テーマ別） */
+
+/* GREEN */
+body.theme-green #scheduleTableRooms table,
+body.theme-green #scheduleTableBeds table {
+  border-color: #a5d6a7;
+}
+body.theme-green #scheduleTableRooms td,
+body.theme-green #scheduleTableBeds td {
+  border-color: #81c784;
+}
+
+/* BLUE */
+body.theme-blue #scheduleTableRooms table,
+body.theme-blue #scheduleTableBeds table {
+  border-color: #90caf9;
+}
+body.theme-blue #scheduleTableRooms td,
+body.theme-blue #scheduleTableBeds td {
+  border-color: #64b5f6;
+}
+
+/* RED */
+body.theme-red #scheduleTableRooms table,
+body.theme-red #scheduleTableBeds table {
+  border-color: #ef9a9a;
+}
+body.theme-red #scheduleTableRooms td,
+body.theme-red #scheduleTableBeds td {
+  border-color: #e57373;
+}
+
+/* YELLOW */
+body.theme-yellow #scheduleTableRooms table,
+body.theme-yellow #scheduleTableBeds table {
+  border-color: #ffe082;
+}
+body.theme-yellow #scheduleTableRooms td,
+body.theme-yellow #scheduleTableBeds td {
+  border-color: #ffd54f;
 }
 
   </style>

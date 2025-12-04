@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>看護国試トレーニング</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --main: #43a047;
+      --main-light: #e8f5e9;
+      --accent: #1b5e20;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--main-light);
+      color: #333;
+    }
+    header {
+      background: var(--main);
+      color: #fff;
+      padding: 12px 16px;
+      text-align: center;
+      font-weight: 600;
+    }
+    main {
+      max-width: 800px;
+      margin: 16px auto 40px;
+      padding: 0 12px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #c8e6c9;
+      color: #1b5e20;
+      margin-right: 6px;
+    }
+    .mode-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .mode-buttons button {
+      flex: 1;
+      min-width: 120px;
+    }
+    .btn {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #e0e0e0;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-main {
+      background: var(--main);
+      color: #fff;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--main);
+      color: var(--main);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    #question-text {
+      margin: 8px 0 12px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .choice {
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1px solid #cfd8dc;
+      background: #fafafa;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+      transition: background 0.15s, border-color 0.15s, transform 0.05s;
+    }
+    .choice:hover {
+      background: #f1f8e9;
+      transform: translateY(-1px);
+    }
+    .choice.correct {
+      background: #a5d6a7;
+      border-color: #2e7d32;
+      color: #1b5e20;
+    }
+    .choice.wrong {
+      background: #ef9a9a;
+      border-color: #c62828;
+      color: #b71c1c;
+    }
+    #feedback {
+      margin-top: 10px;
+      min-height: 1.5em;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    #feedback.correct {
+      color: #2e7d32;
+    }
+    #feedback.wrong {
+      color: #c62828;
+    }
+    .bottom-buttons {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bottom-buttons button {
+      flex: 1;
+      min-width: 140px;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      font-size: 13px;
+    }
+    .stats span {
+      white-space: nowrap;
+    }
+    .tag-weak {
+      color: #c62828;
+      font-weight: 600;
+      font-size: 13px;
+      margin-left: 4px;
+    }
+    @media (max-width: 480px) {
+      .card {
+        padding: 12px;
+      }
+      header {
+        font-size: 16px;
+      }
+      .bottom-buttons button {
+        min-width: 110px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  看護国試トレーニング（ランダム演習）
+</header>
+
+<main>
+  <!-- モード切り替え & ステータス -->
+  <div class="card">
+    <div class="mode-buttons">
+      <button id="mode-all" class="btn btn-main">全問題から出題</button>
+      <button id="mode-weak" class="btn btn-outline">苦手のみ</button>
+    </div>
+    <div class="stats">
+      <span>解答数：<span id="stat-total">0</span>問</span>
+      <span>正答数：<span id="stat-correct">0</span>問</span>
+      <span>正答率：<span id="stat-rate">0</span>%</span>
+      <span>苦手登録：<span id="stat-weak">0</span>問</span>
+    </div>
+  </div>
+
+  <!-- 問題エリア -->
+  <div class="card">
+    <div>
+      <span id="question-category" class="badge" style="display:none;"></span>
+      <span class="badge" id="question-id-badge"></span>
+      <span id="weak-label" class="tag-weak" style="display:none;">★苦手登録中</span>
+    </div>
+    <h2>問題</h2>
+    <p id="question-text">読み込み中...</p>
+    <div class="choices" id="choices"></div>
+    <div id="feedback"></div>
+    <div class="bottom-buttons">
+      <button id="btn-toggle-weak" class="btn btn-outline">この問題を苦手に追加</button>
+      <button id="btn-next" class="btn btn-main" disabled>次の問題へ</button>
+    </div>
+  </div>
+
+  <!-- 簡単な説明 -->
+  <div class="card">
+    <h2>使い方</h2>
+    <ul style="margin-left: 1.2em; padding-left: 0;">
+      <li>「全問題から出題」：全ての問題からランダムに出題</li>
+      <li>「苦手のみ」：苦手登録されている問題だけをランダムに出題</li>
+      <li>間違えた問題は自動で「苦手」に登録されます</li>
+      <li>「この問題を苦手に追加／解除」ボタンで手動でも切り替え可能</li>
+      <li>成績と苦手リストはブラウザに自動保存（localStorage）されます</li>
+    </ul>
+  </div>
+</main>
+
+<script>
+  // ===============================
+  // 基本設定
+  // ===============================
+
+  // ★ここに問題を追加していけばOK（idは一意なら好きな番号でOK）
+  const QUESTIONS = [
+    {
+      id: 1,
+      category: "成人看護",
+      q: "呼吸性アシドーシスで典型的にみられる所見はどれか。",
+      choices: [
+        "PaCO2の低下",
+        "PaCO2の上昇",
+        "HCO3-の低下",
+        "代謝性アルカローシス"
+      ],
+      answer: 1
+    },
+    {
+      id: 2,
+      category: "救急看護",
+      q: "ショックが疑われる患者への初期対応として最も優先されるのはどれか。",
+      choices: [
+        "鎮痛薬の投与",
+        "酸素投与",
+        "血糖測定",
+        "体位変換"
+      ],
+      answer: 1
+    },
+    {
+      id: 3,
+      category: "成人看護",
+      q: "高カリウム血症で特徴的な心電図所見はどれか。",
+      choices: [
+        "T波の尖鋭化",
+        "P波の増高",
+        "QT時間の延長",
+        "STの著明な上昇"
+      ],
+      answer: 0
+    },
+    {
+      id: 4,
+      category: "老年看護",
+      q: "高齢者の転倒リスクを高める要因として適切なのはどれか。",
+      choices: [
+        "視力低下・筋力低下",
+        "睡眠時間の増加",
+        "水分摂取量の増加",
+        "社会参加の増加"
+      ],
+      answer: 0
+    },
+    {
+      id: 5,
+      category: "母性看護",
+      q: "妊娠高血圧症候群で注意すべき症状として最も適切なのはどれか。",
+      choices: [
+        "徐脈と低血圧",
+        "頭痛と視覚異常",
+        "頻尿と多飲",
+        "低体温と振戦"
+      ],
+      answer: 1
+    },
+    {
+      id: 6,
+      category: "小児看護",
+      q: "脱水が進行した乳児でまず観察すべき所見はどれか。",
+      choices: [
+        "皮膚の紅潮",
+        "大泉門の陥凹",
+        "血圧の一時的上昇",
+        "尿量の増加"
+      ],
+      answer: 1
+    }
+  ];
+
+  // localStorageキー
+  const LS_WEAK_KEY = "kokushi_weak_ids";
+  const LS_STATS_KEY = "kokushi_stats";
+
+  // 状態
+  let weakSet = new Set();   // 苦手登録されている問題のid
+  let mode = "all";          // "all" or "weak"
+  let currentQuestion = null;
+  let answered = false;
+
+  let stats = { total: 0, correct: 0 };
+
+  // ===============================
+  // localStorage の読み書き
+  // ===============================
+  function loadWeakSet() {
+    try {
+      const data = localStorage.getItem(LS_WEAK_KEY);
+      if (!data) return;
+      const arr = JSON.parse(data);
+      weakSet = new Set(arr);
+    } catch (e) {
+      console.warn("weakSet load error", e);
+    }
+  }
+
+  function saveWeakSet() {
+    try {
+      localStorage.setItem(LS_WEAK_KEY, JSON.stringify([...weakSet]));
+    } catch (e) {
+      console.warn("weakSet save error", e);
+    }
+  }
+
+  function loadStats() {
+    try {
+      const data = localStorage.getItem(LS_STATS_KEY);
+      if (!data) return;
+      const obj = JSON.parse(data);
+      if (typeof obj.total === "number" && typeof obj.correct === "number") {
+        stats = obj;
+      }
+    } catch (e) {
+      console.warn("stats load error", e);
+    }
+  }
+
+  function saveStats() {
+    try {
+      localStorage.setItem(LS_STATS_KEY, JSON.stringify(stats));
+    } catch (e) {
+      console.warn("stats save error", e);
+    }
+  }
+
+  // ===============================
+  // UI 更新
+  // ===============================
+  const elModeAll = document.getElementById("mode-all");
+  const elModeWeak = document.getElementById("mode-weak");
+  const elTotal = document.getElementById("stat-total");
+  const elCorrect = document.getElementById("stat-correct");
+  const elRate = document.getElementById("stat-rate");
+  const elWeakCount = document.getElementById("stat-weak");
+  const elQCategory = document.getElementById("question-category");
+  const elQIdBadge = document.getElementById("question-id-badge");
+  const elWeakLabel = document.getElementById("weak-label");
+  const elQText = document.getElementById("question-text");
+  const elChoices = document.getElementById("choices");
+  const elFeedback = document.getElementById("feedback");
+  const elBtnToggleWeak = document.getElementById("btn-toggle-weak");
+  const elBtnNext = document.getElementById("btn-next");
+
+  function updateStatsUI() {
+    elTotal.textContent = stats.total;
+    elCorrect.textContent = stats.correct;
+    const rate = stats.total === 0 ? 0 : Math.round((stats.correct / stats.total) * 100);
+    elRate.textContent = rate;
+    elWeakCount.textContent = weakSet.size;
+  }
+
+  function updateModeButtons() {
+    if (mode === "all") {
+      elModeAll.classList.add("btn-main");
+      elModeAll.classList.remove("btn-outline");
+      elModeWeak.classList.add("btn-outline");
+      elModeWeak.classList.remove("btn-main");
+    } else {
+      elModeWeak.classList.add("btn-main");
+      elModeWeak.classList.remove("btn-outline");
+      elModeAll.classList.add("btn-outline");
+      elModeAll.classList.remove("btn-main");
+    }
+  }
+
+  function updateWeakButtonAndLabel() {
+    if (!currentQuestion) return;
+    const isWeak = weakSet.has(currentQuestion.id);
+    elBtnToggleWeak.textContent = isWeak ? "この問題を苦手から外す" : "この問題を苦手に追加";
+    elWeakLabel.style.display = isWeak ? "inline" : "none";
+  }
+
+  // ===============================
+  // 問題出題
+  // ===============================
+  function pickRandomQuestion() {
+    let pool = [];
+    if (mode === "all") {
+      pool = QUESTIONS;
+    } else {
+      pool = QUESTIONS.filter(q => weakSet.has(q.id));
+    }
+
+    if (pool.length === 0) {
+      elQText.textContent = mode === "all"
+        ? "問題が登録されていません。QUESTIONS配列に問題を追加してください。"
+        : "苦手に登録されている問題がありません。間違えた問題や、手動で苦手登録した問題がここに出題されます。";
+      elChoices.innerHTML = "";
+      elBtnNext.disabled = true;
+      elBtnToggleWeak.disabled = true;
+      elFeedback.textContent = "";
+      return null;
+    }
+
+    const idx = Math.floor(Math.random() * pool.length);
+    return pool[idx];
+  }
+
+  function showQuestion() {
+    answered = false;
+    elBtnNext.disabled = true;
+    elBtnToggleWeak.disabled = false;
+    elFeedback.textContent = "";
+    elFeedback.className = "";
+
+    const q = pickRandomQuestion();
+    currentQuestion = q;
+    if (!q) return;
+
+    // カテゴリやID表示
+    if (q.category) {
+      elQCategory.style.display = "inline-block";
+      elQCategory.textContent = q.category;
+    } else {
+      elQCategory.style.display = "none";
+    }
+    elQIdBadge.textContent = "ID: " + q.id;
+    elQText.textContent = q.q;
+
+    // 選択肢表示
+    elChoices.innerHTML = "";
+    q.choices.forEach((choiceText, index) => {
+      const div = document.createElement("button");
+      div.type = "button";
+      div.className = "choice";
+      div.textContent = (index + 1) + ". " + choiceText;
+      div.addEventListener("click", () => handleAnswer(index, div));
+      elChoices.appendChild(div);
+    });
+
+    updateWeakButtonAndLabel();
+  }
+
+  function handleAnswer(index, elClicked) {
+    if (answered || !currentQuestion) return;
+    answered = true;
+
+    const correctIndex = currentQuestion.answer;
+    const choiceButtons = Array.from(document.querySelectorAll(".choice"));
+
+    // 全ボタンのクリックを無効に
+    choiceButtons.forEach(btn => btn.disabled = true);
+
+    stats.total += 1;
+
+    if (index === correctIndex) {
+      // 正解
+      stats.correct += 1;
+      elClicked.classList.add("correct");
+      elFeedback.textContent = "正解！";
+      elFeedback.classList.add("correct");
+    } else {
+      // 不正解
+      elClicked.classList.add("wrong");
+      const correctBtn = choiceButtons[correctIndex];
+      if (correctBtn) correctBtn.classList.add("correct");
+      elFeedback.textContent = "不正解… この問題を「苦手」に登録しました。";
+      elFeedback.classList.add("wrong");
+      // 自動で苦手登録
+      weakSet.add(currentQuestion.id);
+      saveWeakSet();
+      updateWeakButtonAndLabel();
+    }
+
+    saveStats();
+    updateStatsUI();
+    elBtnNext.disabled = false;
+  }
+
+  // ===============================
+  // イベント設定
+  // ===============================
+  elModeAll.addEventListener("click", () => {
+    mode = "all";
+    updateModeButtons();
+    showQuestion();
+  });
+
+  elModeWeak.addEventListener("click", () => {
+    mode = "weak";
+    updateModeButtons();
+    showQuestion();
+  });
+
+  elBtnNext.addEventListener("click", () => {
+    showQuestion();
+  });
+
+  elBtnToggleWeak.addEventListener("click", () => {
+    if (!currentQuestion) return;
+    const id = currentQuestion.id;
+    if (weakSet.has(id)) {
+      weakSet.delete(id);
+    } else {
+      weakSet.add(id);
+    }
+    saveWeakSet();
+    updateWeakButtonAndLabel();
+    updateStatsUI();
+  });
+
+  // ===============================
+  // 初期化
+  // ===============================
+  function init() {
+    loadWeakSet();
+    loadStats();
+    updateStatsUI();
+    updateModeButtons();
+    showQuestion();
+  }
+
+  init();
+</script>
+</body>
+</html>

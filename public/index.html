@@ -1215,6 +1215,48 @@ body.theme-purple #toCancelButton {
   color: white !important;
 }
 
+/* ===== GRAY：選択セルのハイライト（持続） ===== */
+body.theme-gray td.available.selected {
+  background-color: #e0e0e0 !important;
+  box-shadow:
+    0 0 0 3px rgba(97,97,97,0.35) inset,
+    0 2px 10px rgba(0,0,0,0.08),
+    inset 0 0 18px rgba(66,66,66,0.18);
+  transition: background-color 150ms ease, box-shadow 200ms ease;
+}
+
+body.theme-gray td.available.selected::after {
+  opacity: 1;
+  transform: scale(1.03);
+  background: radial-gradient(
+    closest-side,
+    rgba(97,97,97,0.28),
+    transparent 75%
+  );
+}
+
+
+/* ===== PURPLE：選択セルのハイライト（持続） ===== */
+body.theme-purple td.available.selected {
+  background-color: #eadcf2 !important;
+  box-shadow:
+    0 0 0 3px rgba(142,36,170,0.35) inset,
+    0 2px 10px rgba(0,0,0,0.08),
+    inset 0 0 18px rgba(106,27,154,0.18);
+  transition: background-color 150ms ease, box-shadow 200ms ease;
+}
+
+body.theme-purple td.available.selected::after {
+  opacity: 1;
+  transform: scale(1.03);
+  background: radial-gradient(
+    closest-side,
+    rgba(142,36,170,0.28),
+    transparent 75%
+  );
+}
+
+
 
   </style>
 </head>
